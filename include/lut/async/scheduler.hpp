@@ -9,29 +9,13 @@
 
 namespace lut { namespace async
 {
-
-    enum class ThreadUtilizationResult
-    {
-        limitExhausted,
-        releaseRequest,
-        notBeenUtilized  //was not be utilized
-    };
-
-    enum class ThreadReleaseResult
-    {
-        ok,
-        notInWork
-    };
-
     namespace impl
     {
-        class CoroContainer;
-        class ThreadContainer;
+        class Scheduler;
     }
 
     class Scheduler
-            : private HiddenImpl<impl::CoroContainer>
-            , private HiddenImpl<impl::ThreadContainer>
+            : private HiddenImpl<impl::Scheduler>
     {
         Scheduler(const Scheduler &from) = delete;
         Scheduler &operator=(const Scheduler &from) = delete;

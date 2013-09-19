@@ -132,11 +132,9 @@ source_group(include/details FILES ${INC_DETAILS})
 
 ############################################################
 set(INC_IMPL
-#    ${PSRC}/impl/scheduler.hpp
+    ${PSRC}/impl/scheduler.hpp
     ${PSRC}/impl/thread.hpp
-    ${PSRC}/impl/threadContainer.hpp
     ${PSRC}/impl/coro.hpp
-    ${PSRC}/impl/coroContainer.hpp
 #    ${PSRC}/impl/contextEngine.hpp
     ${PSRC}/impl/event.hpp
     ${PSRC}/impl/mutex.hpp
@@ -156,13 +154,12 @@ source_group(src FILES ${SRC})
 
 ############################################################
 set(SRC_IMPL
+    ${PSRC}/impl/scheduler.cpp
     ${PSRC}/impl/barrier.cpp
     ${PSRC}/impl/context.cpp
     ${PSRC}/impl/coro.cpp
-    ${PSRC}/impl/coroContainer.cpp
     ${PSRC}/impl/synchronizer.cpp
     ${PSRC}/impl/thread.cpp
-    ${PSRC}/impl/threadContainer.cpp
 )
 source_group(src/impl FILES ${SRC_IMPL})
 

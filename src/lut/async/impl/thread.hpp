@@ -8,14 +8,14 @@ namespace lut { namespace async { namespace impl
     class Thread
     {
     public:
-        Thread(ThreadContainer &threadContainer, ThreadState *stateEvt);
+        Thread(Scheduler &scheduler, ThreadState *stateEvt);
         ~Thread();
 
         template <class StoppingMeter>
         ThreadUtilizationResult utilize(StoppingMeter &stoppingMeter);
 
     private:
-        ThreadContainer &_threadContainer;
+        Scheduler &_scheduler;
         ThreadState *_stateEvt;
 
         std::mutex _mtx;

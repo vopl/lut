@@ -1,8 +1,7 @@
 #include <iostream>
 using namespace std;
 
-#include "lut/async/impl/threadContainer.hpp"
-#include "lut/async/impl/coroContainer.hpp"
+#include "lut/async/impl/scheduler.hpp"
 #include "lut/async/impl/event.hpp"
 #include "lut/async/impl/mutex.hpp"
 
@@ -28,8 +27,7 @@ int main()
 #define ONE(name) \
            "    namespace impl { class " #name "; } \n" \
            "    template <> struct sizeofImpl<impl::" #name "> { static const std::size_t _value =  " << sizeof(lut::async::impl::name) << ";};\n\n"
-           ONE(ThreadContainer)
-           ONE(CoroContainer)
+           ONE(Scheduler)
            ONE(Event)
            ONE(Mutex)
 

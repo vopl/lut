@@ -1,14 +1,12 @@
 #include "lut/async/stable.hpp"
 #include "lut/async/scheduler.hpp"
-#include "lut/async/impl/coroContainer.hpp"
-#include "lut/async/impl/threadContainer.hpp"
+#include "lut/async/impl/scheduler.hpp"
 #include "lut/async/impl/thread.hpp"
 
 namespace lut { namespace async
 {
     Scheduler::Scheduler()
-        : HiddenImpl<impl::CoroContainer>()
-        , HiddenImpl<impl::ThreadContainer>()
+        : HiddenImpl<impl::Scheduler>()
     {
     }
 
@@ -38,7 +36,7 @@ namespace lut { namespace async
 
     ThreadUtilizationResult Scheduler::threadUtilize(ThreadState *stateEvt)
     {
-        impl::Thread thread(HiddenImpl<impl::ThreadContainer>::impl(), stateEvt);
+        impl::Thread thread(impl(), stateEvt);
         StoppingMeterNull stoppingMeter;
         return thread.utilize(stoppingMeter);
     }
@@ -76,7 +74,7 @@ namespace lut { namespace async
 
     ThreadUtilizationResult Scheduler::threadUtilize(const size_t &workPiecesAmount, ThreadState *stateEvt)
     {
-        impl::Thread thread(HiddenImpl<impl::ThreadContainer>::impl(), stateEvt);
+        impl::Thread thread(impl(), stateEvt);
         StoppingMeterByAmount stoppingMeter(workPiecesAmount);
         return thread.utilize(stoppingMeter);
     }
@@ -113,7 +111,7 @@ namespace lut { namespace async
 
     ThreadUtilizationResult Scheduler::threadUtilize(const std::chrono::steady_clock::time_point &time, ThreadState *stateEvt)
     {
-        impl::Thread thread(HiddenImpl<impl::ThreadContainer>::impl(), stateEvt);
+        impl::Thread thread(impl(), stateEvt);
         StoppingMeterByTime<std::chrono::steady_clock::time_point> stoppingMeter(time);
 
         return thread.utilize(stoppingMeter);
@@ -121,7 +119,7 @@ namespace lut { namespace async
 
     ThreadUtilizationResult Scheduler::threadUtilize(const std::chrono::high_resolution_clock::time_point &time, ThreadState *stateEvt)
     {
-        impl::Thread thread(HiddenImpl<impl::ThreadContainer>::impl(), stateEvt);
+        impl::Thread thread(impl(), stateEvt);
         StoppingMeterByTime<std::chrono::high_resolution_clock::time_point> stoppingMeter(time);
 
         return thread.utilize(stoppingMeter);
@@ -129,12 +127,12 @@ namespace lut { namespace async
 
     ThreadReleaseResult Scheduler::threadRelease()
     {
-        return HiddenImpl<impl::ThreadContainer>::impl().threadRelease();
+        return impl().threadRelease();
     }
 
     ThreadReleaseResult Scheduler::threadRelease(std::thread::native_handle_type id)
     {
-        return HiddenImpl<impl::ThreadContainer>::impl().threadRelease(id);
+        return impl().threadRelease(id);
     }
 
     void Scheduler::spawn(const std::function<void()> &code)

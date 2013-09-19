@@ -10,11 +10,8 @@ namespace lut { namespace async
     {
     };
 
-    namespace impl { class ThreadContainer; } 
-    template <> struct sizeofImpl<impl::ThreadContainer> { static const std::size_t _value =  1;};
-
-    namespace impl { class CoroContainer; } 
-    template <> struct sizeofImpl<impl::CoroContainer> { static const std::size_t _value =  1;};
+    namespace impl { class Scheduler; } 
+    template <> struct sizeofImpl<impl::Scheduler> { static const std::size_t _value =  1;};
 
     namespace impl { class Event; } 
     template <> struct sizeofImpl<impl::Event> { static const std::size_t _value =  1;};

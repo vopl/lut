@@ -3,8 +3,8 @@
 
 namespace lut { namespace async { namespace impl
 {
-    Thread::Thread(ThreadContainer &threadContainer, ThreadState *stateEvt)
-        : _threadContainer(threadContainer)
+    Thread::Thread(Scheduler &scheduler, ThreadState *stateEvt)
+        : _scheduler(scheduler)
         , _stateEvt(stateEvt)
         , _mtx()
         , _cv()
