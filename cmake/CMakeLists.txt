@@ -1,5 +1,5 @@
-set(CMAKE_CXX_COMPILER g++)
-set(CMAKE_C_COMPILER gcc)
+set(CMAKE_CXX_COMPILER g++-4.8)
+set(CMAKE_C_COMPILER gcc-4.8)
 
 #set(CMAKE_CXX_COMPILER clang++)
 #set(CMAKE_C_COMPILER clang)
@@ -14,7 +14,7 @@ endif()
 set(CMAKE_VERBOSE_MAKEFILE On CACHE BOOLEAN "verbose makefile")
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+    set(CMAKE_BUILD_TYPE Debug)
 #    set(CMAKE_BUILD_TYPE Debug CACHE STRING "build type")
 endif()
 
@@ -22,7 +22,7 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 cmake_minimum_required(VERSION 2.6)
 
-project(async)
+project(lut)
 
 #message(${CMAKE_BUILD_TYPE})
 

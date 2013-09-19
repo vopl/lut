@@ -1,32 +1,87 @@
-#ifndef _ASYNC_SCHEDULER_HPP_
-#define _ASYNC_SCHEDULER_HPP_
+#ifndef _LUT_ASYNC_SCHEDULER_HPP_
+#define _LUT_ASYNC_SCHEDULER_HPP_
 
-#include <memory>
+#include "lut/async/threadState.hpp"
+#include "lut/async/hiddenImpl.hpp"
 
-namespace async
+#include <thread>
+#include <functional>
+
+namespace lut { namespace async
 {
-    class ThreadUtilizer;
-    class CodeManager;
+
+    enum class ThreadUtilizationResult
+    {
+        limitExhausted,
+        releaseRequest,
+        notBeenUtilized  //was not be utilized
+    };
+
+    enum class ThreadReleaseResult
+    {
+        ok,
+        notInWork
+    };
 
     namespace impl
     {
-        class Scheduler;
-        typedef std::shared_ptr<Scheduler> SchedulerPtr;
+        class CoroContainer;
+        class ThreadContainer;
     }
 
     class Scheduler
+            : private HiddenImpl<impl::CoroContainer>
+            , private HiddenImpl<impl::ThreadContainer>
     {
+        Scheduler(const Scheduler &from) = delete;
+        Scheduler &operator=(const Scheduler &from) = delete;
+
     public:
         Scheduler();
-        Scheduler(const impl::SchedulerPtr &implScheduler);
         ~Scheduler();
 
-        operator ThreadUtilizer();
-        operator CodeManager();
+    public://threads
+        ThreadUtilizationResult threadUtilize(ThreadState *stateEvt = NULL);
+        ThreadUtilizationResult threadUtilize(const size_t &workPiecesAmount, ThreadState *stateEvt = NULL);
+        ThreadUtilizationResult threadUtilize(const std::chrono::steady_clock::time_point &time, ThreadState *stateEvt = NULL);
+        ThreadUtilizationResult threadUtilize(const std::chrono::high_resolution_clock::time_point &time, ThreadState *stateEvt = NULL);
 
-    private:
-        const impl::SchedulerPtr _implScheduler;
+        template<typename rep, typename period>
+        ThreadUtilizationResult threadUtilize(const std::chrono::duration<rep, period> &duration, ThreadState *stateEvt = NULL);
+
+        template<typename clock, typename duration>
+        ThreadUtilizationResult threadUtilize(const std::chrono::time_point<clock, duration> &time, ThreadState *stateEvt = NULL);
+
+        template<typename duration>
+        ThreadUtilizationResult threadUtilize(const std::chrono::time_point<std::chrono::steady_clock, duration> &time, ThreadState *stateEvt = NULL);
+
+        ThreadReleaseResult threadRelease();
+        ThreadReleaseResult threadRelease(std::thread::native_handle_type id);
+
+    public://code
+        void spawn(const std::function<void()> &code);
+        void spawn(std::function<void()> &&code);
     };
-}
+
+    ////////////////////////////////////////////////////////////////////////////////
+    template<typename rep, typename period>
+    ThreadUtilizationResult Scheduler::threadUtilize(const std::chrono::duration<rep, period> &duration, ThreadState *stateEvt)
+    {
+        return threadUtilize(std::chrono::steady_clock::now() + duration, stateEvt);
+    }
+
+    template<typename clock, typename duration>
+    ThreadUtilizationResult Scheduler::threadUtilize(const std::chrono::time_point<clock, duration> &time, ThreadState *stateEvt)
+    {
+        return threadUtilize(std::chrono::time_point_cast<std::chrono::high_resolution_clock>(time), stateEvt);
+    }
+
+    template<typename duration>
+    ThreadUtilizationResult Scheduler::threadUtilize(const std::chrono::time_point<std::chrono::steady_clock, duration> &time, ThreadState *stateEvt)
+    {
+        return threadUtilize(std::chrono::time_point_cast<std::chrono::steady_clock>(time), stateEvt);
+    }
+
+}}
 
 #endif

@@ -1,10 +1,10 @@
-#ifndef _ASYNC_HIDDENIMPL_HPP_
-#define _ASYNC_HIDDENIMPL_HPP_
+#ifndef _LUT_ASYNC_HIDDENIMPL_HPP_
+#define _LUT_ASYNC_HIDDENIMPL_HPP_
 
-#include "async/sizeofImpl.hpp"
+#include "lut/async/sizeofImpl.hpp"
 #include <type_traits>
 
-namespace async
+namespace lut { namespace async
 {
     template <class T>
     class HiddenImpl
@@ -35,6 +35,6 @@ namespace async
     private:
         typename std::aligned_storage<sizeofImpl<T>::_value>::type _data;
     };
-}
+}}
 
 #endif

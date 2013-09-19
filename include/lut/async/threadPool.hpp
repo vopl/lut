@@ -1,24 +1,25 @@
-#ifndef _ASYNC_THREADPOOL_HPP_
-#define _ASYNC_THREADPOOL_HPP_
+#ifndef _LUT_ASYNC_THREADPOOL_HPP_
+#define _LUT_ASYNC_THREADPOOL_HPP_
 
-#include "async/threadUtilizer.hpp"
+#include "lut/async/scheduler.hpp"
 
+#include <thread>
 #include <vector>
 
-namespace async
+namespace lut { namespace async
 {
 
     class ThreadPool
     {
     public:
-        ThreadPool(const async::ThreadUtilizer &tu, size_t amount = std::thread::hardware_concurrency());
+        ThreadPool(Scheduler &scheduler, size_t amount = std::thread::hardware_concurrency());
         ~ThreadPool();
 
     private:
-        async::ThreadUtilizer _tu;
-        std::vector<std::thread> _threads;
-        std::vector<ThreadState> _states;
+        Scheduler                   &_scheduler;
+        std::vector<std::thread>    _threads;
+        std::vector<ThreadState>    _states;
     };
-}
+}}
 
 #endif

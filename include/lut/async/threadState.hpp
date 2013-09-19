@@ -1,10 +1,10 @@
-#ifndef _ASYNC_THREADSTATE_HPP_
-#define _ASYNC_THREADSTATE_HPP_
+#ifndef _LUT_ASYNC_THREADSTATE_HPP_
+#define _LUT_ASYNC_THREADSTATE_HPP_
 
 #include <mutex>
 #include <condition_variable>
 
-namespace async
+namespace lut { namespace async
 {
 
     namespace impl
@@ -12,36 +12,35 @@ namespace async
         class Thread;
     }
 
+    enum class ThreadStateValue
+    {
+        init,
+        inited,
+        inWork,
+        doneWork,
+        deinit,
+        deinited
+    };
+
     class ThreadState
     {
-    public:
-        enum EValue
-        {
-            init,
-            inited,
-            inWork,
-            doneWork,
-            deinit,
-            deinited
-        };
-
     public:
         ThreadState();
         ~ThreadState();
 
-        EValue get();
-        void wait(EValue v);
-        void waitNot(EValue v);
+        ThreadStateValue get();
+        void wait(ThreadStateValue v);
+        void waitNot(ThreadStateValue v);
 
     private:
         friend class impl::Thread;
-        void set(EValue v);
+        void set(ThreadStateValue v);
 
     private:
-        std::mutex _mtx;
+        std::mutex              _mtx;
         std::condition_variable _cv;
-        EValue _value;
+        ThreadStateValue        _value;
     };
-}
+}}
 
 #endif

@@ -110,13 +110,17 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${PINC}/config.h)
 
 ############################################################
 set(INC
-    ${PSRC}/stable.hpp
-    ${PINC}/threadUtilizer.hpp
     ${PINC}/threadState.hpp
     ${PINC}/threadPool.hpp
     ${PINC}/scheduler.hpp
-    ${PINC}/codeManager.hpp
     ${PINC}/hiddenImpl.hpp
+    ${PINC}/conditionVariable.hpp
+    ${PINC}/event.hpp
+    ${PINC}/mutex.hpp
+    ${PINC}/recursiveMutex.hpp
+    ${PINC}/semaphore.hpp
+    ${PINC}/singleEvent.hpp
+    ${PINC}/wait.hpp
 )
 source_group(include FILES ${INC})
 
@@ -129,51 +133,36 @@ source_group(include/details FILES ${INC_DETAILS})
 ############################################################
 set(INC_IMPL
 #    ${PSRC}/impl/scheduler.hpp
-#    ${PSRC}/impl/thread.hpp
-#    ${PSRC}/impl/threadContainer.hpp
-#    ${PSRC}/impl/coro.hpp
-#    ${PSRC}/impl/coroContainer.hpp
+    ${PSRC}/impl/thread.hpp
+    ${PSRC}/impl/threadContainer.hpp
+    ${PSRC}/impl/coro.hpp
+    ${PSRC}/impl/coroContainer.hpp
 #    ${PSRC}/impl/contextEngine.hpp
-#    ${PSRC}/impl/event.hpp
-#    ${PSRC}/impl/mutex.hpp
+    ${PSRC}/impl/event.hpp
+    ${PSRC}/impl/mutex.hpp
 #    ${PSRC}/impl/waiter.hpp
-#    ${PSRC}/impl/synchronizer.hpp
+    ${PSRC}/impl/synchronizer.hpp
 #    ${PSRC}/impl/synchronizerWaiterNode.hpp
 )
 source_group(include/impl FILES ${INC_IMPL})
 
 ############################################################
 set(SRC
-#    ${PSRC}/threadUtilizer.cpp
+    ${PSRC}/stable.hpp
     ${PSRC}/threadPool.cpp
-#    ${PSRC}/threadState.cpp
-#    ${PSRC}/scheduler.cpp
-#    ${PSRC}/codeManager.cpp
-#    ${PSRC}/event.cpp
-#    ${PSRC}/mutex.cpp
+    ${PSRC}/scheduler.cpp
 )
 source_group(src FILES ${SRC})
 
 ############################################################
-set(SRC_DETAILS
-#    ${PSRC}/details/waiter.cpp
-)
-source_group(src/details FILES ${SRC_DETAILS})
-
-############################################################
 set(SRC_IMPL
-#    ${PSRC}/impl/scheduler.cpp
-#    ${PSRC}/impl/thread.cpp
-#    ${PSRC}/impl/threadContainer.cpp
-#    ${PSRC}/impl/coro.cpp
-#    ${PSRC}/impl/coroContainer.cpp
-#    ${PSRC}/impl/contextEngine.cpp
-#    ${PSRC}/impl/event.cpp
-#    ${PSRC}/impl/mutex.cpp
-#    ${PSRC}/impl/waiter.cpp
-#    ${PSRC}/impl/synchronizer.cpp
-#    ${PSRC}/impl/synchronizerWaiterNode.cpp
-#    ${PSRC}/impl/sizeofImplGen.cpp
+    ${PSRC}/impl/barrier.cpp
+    ${PSRC}/impl/context.cpp
+    ${PSRC}/impl/coro.cpp
+    ${PSRC}/impl/coroContainer.cpp
+    ${PSRC}/impl/synchronizer.cpp
+    ${PSRC}/impl/thread.cpp
+    ${PSRC}/impl/threadContainer.cpp
 )
 source_group(src/impl FILES ${SRC_IMPL})
 
@@ -226,8 +215,6 @@ add_custom_command(OUTPUT ${PINC}/sizeofImpl.hpp
                         ${PSRC}/impl/scheduler.hpp
                         ${PSRC}/impl/event.hpp
                         ${PSRC}/impl/mutex.hpp
-                        ${PSRC}/impl/waiter.hpp
-                        ${PSRC}/impl/synchronizerWaiterNode.hpp
                     VERBATIM)
                     
 #set_source_files_properties(
@@ -243,8 +230,8 @@ add_custom_command(OUTPUT ${PINC}/sizeofImpl.hpp
 
 ############################################################
 add_library(${PROJECT} STATIC
-    ${INC} ${INC_IMPL} ${INC_DETAILS}
-    ${SRC} ${SRC_IMPL} ${SRC_DETAILS}
+    ${INC} ${INC_IMPL}
+    ${SRC} ${SRC_IMPL}
     ${SRC_PCH}
     ${PINC}/sizeofImpl.hpp)
 
