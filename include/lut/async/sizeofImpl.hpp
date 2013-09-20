@@ -11,7 +11,7 @@ namespace lut { namespace async
     };
 
     namespace impl { class Scheduler; } 
-    template <> struct sizeofImpl<impl::Scheduler> { static const std::size_t _value =  1;};
+    template <> struct sizeofImpl<impl::Scheduler> { static const std::size_t _value =  88;};
 
     namespace impl { class Event; } 
     template <> struct sizeofImpl<impl::Event> { static const std::size_t _value =  1;};

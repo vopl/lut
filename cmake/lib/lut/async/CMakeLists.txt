@@ -13,6 +13,10 @@ include(CheckIncludeFiles)
 include(CheckTypeSize)
 
 ############################################################
+check_type_size("void *" PVOID_SIZE)
+check_type_size("int" INT_SIZE)
+
+############################################################
 check_include_files(ucontext.h HAVE_UCONTEXT)
 
 ############################################################
@@ -125,29 +129,35 @@ set(INC
 source_group(include FILES ${INC})
 
 ############################################################
-set(INC_DETAILS
-#    ${PINC}/details/waiter.hpp
-)
-source_group(include/details FILES ${INC_DETAILS})
-
-############################################################
 set(INC_IMPL
     ${PSRC}/impl/scheduler.hpp
     ${PSRC}/impl/thread.hpp
     ${PSRC}/impl/coro.hpp
-#    ${PSRC}/impl/contextEngine.hpp
+    ${PSRC}/impl/context.hpp
     ${PSRC}/impl/event.hpp
     ${PSRC}/impl/mutex.hpp
 #    ${PSRC}/impl/waiter.hpp
     ${PSRC}/impl/synchronizer.hpp
 #    ${PSRC}/impl/synchronizerWaiterNode.hpp
 )
+
+if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)
+    list(APPEND INC_IMPL ${PSRC}/impl/contextEngine_winfiber.hpp)
+endif()
+if(ASYNCSCHEDULER_CONTEXTENGINE_UCONTEXT)
+    list(APPEND INC_IMPL ${PSRC}/impl/contextEngine_ucontext.hpp)
+endif()
+if(ASYNCSCHEDULER_CONTEXTENGINE_BOOSTCONTEXT)
+    list(APPEND INC_IMPL ${PSRC}/impl/contextEngine_boostcontext.hpp)
+endif()
+
 source_group(include/impl FILES ${INC_IMPL})
 
 ############################################################
 set(SRC
     ${PSRC}/stable.hpp
     ${PSRC}/threadPool.cpp
+    ${PSRC}/threadState.cpp
     ${PSRC}/scheduler.cpp
 )
 source_group(src FILES ${SRC})
@@ -161,6 +171,17 @@ set(SRC_IMPL
     ${PSRC}/impl/synchronizer.cpp
     ${PSRC}/impl/thread.cpp
 )
+
+if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)
+    list(APPEND SRC_IMPL ${PSRC}/impl/contextEngine_winfiber.cpp)
+endif()
+if(ASYNCSCHEDULER_CONTEXTENGINE_UCONTEXT)
+    list(APPEND SRC_IMPL ${PSRC}/impl/contextEngine_ucontext.cpp)
+endif()
+if(ASYNCSCHEDULER_CONTEXTENGINE_BOOSTCONTEXT)
+    list(APPEND SRC_IMPL ${PSRC}/impl/contextEngine_boostcontext.cpp)
+endif()
+
 source_group(src/impl FILES ${SRC_IMPL})
 
 set_source_files_properties(${PSRC}/impl/sizeofImplGen.cpp PROPERTIES HEADER_FILE_ONLY ON)

@@ -22,7 +22,7 @@ namespace lut { namespace async
             {
             }
 
-            bool completed()
+            bool signalled()
             {
                 return false;
             }
@@ -59,7 +59,7 @@ namespace lut { namespace async
                 _counter++;
             }
 
-            bool completed()
+            bool signalled()
             {
                 return _counter >= _amount;
             }
@@ -97,7 +97,7 @@ namespace lut { namespace async
             {
             }
 
-            bool completed()
+            bool signalled()
             {
                 return std::cv_status::timeout == _lastWaitStatus || time_point::clock::now() >= _time;
             }
@@ -127,12 +127,12 @@ namespace lut { namespace async
 
     ThreadReleaseResult Scheduler::threadRelease()
     {
-        return impl().threadRelease();
+        return impl().threadRelease(std::this_thread::get_id());
     }
 
     ThreadReleaseResult Scheduler::threadRelease(std::thread::native_handle_type id)
     {
-        return impl().threadRelease(id);
+        return impl().threadRelease(std::thread::id(id));
     }
 
     void Scheduler::spawn(const std::function<void()> &code)

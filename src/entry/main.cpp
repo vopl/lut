@@ -19,8 +19,8 @@ int lmain()
     if(1)
     {
         sched.threadUtilize(std::chrono::nanoseconds(200));
-        sched.threadUtilize(std::chrono::minutes(200));
-        sched.threadUtilize(std::chrono::system_clock::now()+std::chrono::minutes(200));
+        sched.threadUtilize(std::chrono::seconds(2));
+        sched.threadUtilize(std::chrono::system_clock::now()+std::chrono::seconds(2));
 
         std::thread t(
                     [&t,&sched] ()
