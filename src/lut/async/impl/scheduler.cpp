@@ -79,4 +79,14 @@ namespace lut { namespace async { namespace impl
         return true;
     }
 
+    void Scheduler::spawn(const std::function<void()> &code)
+    {
+        assert(0);
+    }
+
+    void Scheduler::spawn(std::function<void()> &&code)
+    {
+        assert(0);
+    }
+
 }}}

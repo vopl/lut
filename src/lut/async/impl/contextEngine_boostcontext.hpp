@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <boost/context/all.hpp>
+#include <functional>
 
 namespace lut { namespace async { namespace impl
 {
@@ -10,7 +11,7 @@ namespace lut { namespace async { namespace impl
     {
     public:
         ContextEngine();
-        ContextEngine(void(* fn)(intptr_t), intptr_t arg, size_t stackSize);
+        ContextEngine(const std::function<void()> &fn, size_t stackSize);
         ~ContextEngine();
 
     protected:
@@ -19,6 +20,14 @@ namespace lut { namespace async { namespace impl
 
     private:
         boost::context::fcontext_t *_ctx;
+
+        size_t _stackSize;
+        char *_stack;
+
+        std::function<void()> _fn;
+
+    private:
+        static void s_contextProc(intptr_t);
     };
 }}}
 

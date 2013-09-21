@@ -12,8 +12,8 @@ namespace lut { namespace async { namespace impl
     {
     }
 
-    Context::Context(void(* fn)(intptr_t), intptr_t arg, size_t stackSize)
-        : ContextEngine(fn, arg, stackSize)
+    Context::Context(const std::function<void()> &fn, size_t stackSize)
+        : ContextEngine(fn, stackSize)
     {
 #if defined(USE_VALGRIND)
         _valgrindStackId = VALGRIND_STACK_REGISTER(getStackBegin(), getStackEnd());

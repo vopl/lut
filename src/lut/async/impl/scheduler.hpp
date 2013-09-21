@@ -23,6 +23,11 @@ namespace lut { namespace async { namespace impl
         bool threadEntry_utilize(Thread *thread);
         bool threadEntry_deinit(Thread *thread);
 
+    public:
+        void spawn(const std::function<void()> &code);
+        void spawn(std::function<void()> &&code);
+
+
     private://threads
         std::mutex _threadsMtx;
         typedef std::map<std::thread::id, Thread *> TMThreads;

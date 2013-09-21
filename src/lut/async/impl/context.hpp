@@ -17,6 +17,7 @@
 #   define USE_VALGRIND
 #endif
 
+#include <functional>
 #include <cstdint>
 
 namespace lut { namespace async { namespace impl
@@ -26,7 +27,7 @@ namespace lut { namespace async { namespace impl
     {
     public:
         Context();
-        Context(void(* fn)(intptr_t), intptr_t arg, size_t stackSize=1024*32);
+        Context(const std::function<void()> &fn, size_t stackSize=1024*32);
         ~Context();
 
     private:

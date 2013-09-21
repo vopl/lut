@@ -18,14 +18,12 @@ int lmain()
 
     if(1)
     {
-        sched.threadUtilize(std::chrono::nanoseconds(200));
-        sched.threadUtilize(std::chrono::seconds(2));
-        sched.threadUtilize(std::chrono::system_clock::now()+std::chrono::seconds(2));
+        sched.threadUtilize();
 
         std::thread t(
                     [&t,&sched] ()
                     {
-                        lut::async::ThreadUtilizationResult etur = sched.threadUtilize(std::chrono::nanoseconds(200));
+                        lut::async::ThreadUtilizationResult etur = sched.threadUtilize();
                         (void)etur;
                         assert(lut::async::ThreadUtilizationResult::limitExhausted == etur);
 
