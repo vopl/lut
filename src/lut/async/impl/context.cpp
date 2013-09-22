@@ -10,6 +10,9 @@ namespace lut { namespace async { namespace impl
 {
     Context::Context()
         : ContextEngine()
+#if defined(USE_VALGRIND)
+        , _valgrindStackId()
+#endif
     {
     }
 

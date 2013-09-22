@@ -18,7 +18,7 @@ namespace lut { namespace async { namespace impl
         void *getStackBegin();
         void *getStackEnd();
 
-        void activateFrom(ContextEngine *current);
+        void switchTo(ContextEngine *to);
 
     private:
         boost::context::fcontext_t *_ctx;

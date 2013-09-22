@@ -33,7 +33,7 @@ namespace lut { namespace async { namespace impl
         void switchTo(Context *to);
 
     private:
-        void contextProc() override;
+        virtual void contextProc() override;
 
     private:
 

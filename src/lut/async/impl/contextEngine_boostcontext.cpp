@@ -12,14 +12,14 @@ namespace lut { namespace async { namespace impl
         : _ctx()
     {
         void *sp = malloc(stackSize);
-        _ctx = boost::context::make_fcontext(sp, stackSize, &ContextEngine::s_contextProc);
+        _ctx = boost::context::make_fcontext((char *)sp+stackSize, stackSize, &ContextEngine::s_contextProc);
     }
 
     ContextEngine::~ContextEngine()
     {
         if(haveStack())
         {
-            free(_ctx->fc_stack.sp);
+            free((char *)_ctx->fc_stack.sp - _ctx->fc_stack.size);
         }
         else
         {
@@ -42,9 +42,9 @@ namespace lut { namespace async { namespace impl
         return (char*)_ctx->fc_stack.sp + _ctx->fc_stack.size;
     }
 
-    void ContextEngine::activateFrom(ContextEngine *current)
+    void ContextEngine::switchTo(ContextEngine *to)
     {
-        boost::context::jump_fcontext(current->_ctx, _ctx, reinterpret_cast<intptr_t>(this));
+        boost::context::jump_fcontext(_ctx, to->_ctx, reinterpret_cast<intptr_t>(to));
     }
 
     void ContextEngine::s_contextProc(intptr_t callable)
