@@ -13,7 +13,7 @@
 #include <atomic>
 
 std::atomic<size_t> g_cnt(0);
-std::atomic<size_t> g_iters(1000);
+std::atomic<size_t> g_iters(100000);
 
 std::atomic<size_t> g_amount(0);
 std::size_t g_avgAmount(100);
@@ -40,15 +40,12 @@ int lmain()
 {
     lut::async::Scheduler sched;
 
-    lut::async::ThreadPool tp(sched, 2);
+    lut::async::ThreadPool tp(sched, 4);
 
     sched.spawn(std::bind(f, &sched));
 
     while(g_cnt < g_iters || g_amount)
     {
-        size_t cnt = g_cnt;
-        size_t iters = g_iters;
-        size_t amount = g_amount;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 

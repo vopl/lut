@@ -10,7 +10,6 @@ namespace lut { namespace async { namespace impl
     Thread::Thread(Scheduler *scheduler, ThreadState *stateEvt)
         : _scheduler(scheduler)
         , _stateEvt(stateEvt)
-        , _mtxForScheduler()
         , _releaseRequest(false)
         , _context()
         , _storedEmptyCoro()
@@ -56,8 +55,6 @@ namespace lut { namespace async { namespace impl
 
         //work
         {
-            std::unique_lock<std::mutex> lockForScheduler(_mtxForScheduler);
-
             assert(!_context);
             Context context;
             _context = &context;
@@ -70,17 +67,13 @@ namespace lut { namespace async { namespace impl
 
             for(;;)
             {
-                lockForScheduler.unlock();
                 bool utilizeResult = _scheduler->threadEntry_utilize(this);
                 (void)utilizeResult;
-                lockForScheduler.lock();
 
-                if(isReleaseRequested())
+                if(!_scheduler->threadEntry_sleep(this))
                 {
                     break;
                 }
-
-                _scheduler->threadEntry_sleep(this, lockForScheduler);
             }
 
             if(_stateEvt)
@@ -110,7 +103,6 @@ namespace lut { namespace async { namespace impl
     ////////////////////////////////////////////////////////////////////////////////
     void Thread::releaseRequest()
     {
-        std::unique_lock<std::mutex> lockForScheduler(_mtxForScheduler);
         _releaseRequest.store(true);
     }
 

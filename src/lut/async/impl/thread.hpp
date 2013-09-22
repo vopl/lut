@@ -35,7 +35,6 @@ namespace lut { namespace async { namespace impl
         Scheduler           *_scheduler;
         ThreadState         *_stateEvt;
 
-        std::mutex          _mtxForScheduler;
         std::atomic_bool    _releaseRequest;
 
         static thread_local Thread

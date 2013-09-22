@@ -37,8 +37,12 @@ namespace lut { namespace async { namespace impl
             return ThreadReleaseResult::notInWork;
         }
 
-        iter->second->releaseRequest();
-        _threadsCv.notify_all();
+        {
+            std::lock_guard<std::mutex> l(_threadsCvMtx);
+            iter->second->releaseRequest();
+            _threadsCv.notify_all();
+        }
+
         return ThreadReleaseResult::ok;
     }
 
@@ -77,11 +81,20 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::threadEntry_sleep(Thread *thread, std::unique_lock<std::mutex> &mtx)
+    bool Scheduler::threadEntry_sleep(Thread *thread)
     {
         assert(Thread::current() == thread);
 
-        _threadsCv.wait(mtx);
+        std::unique_lock<std::mutex> lock(_threadsCvMtx);
+
+        if(thread->isReleaseRequested())
+        {
+            return false;
+        }
+
+        _threadsCv.wait(lock);
+
+        return !thread->isReleaseRequested();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -114,6 +127,9 @@ namespace lut { namespace async { namespace impl
 
         coro->setCode(code);
         _coroListReady.enqueue(coro);
+
+        std::unique_lock<std::mutex> lock(_threadsCvMtx);
+        _threadsCv.notify_one();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
