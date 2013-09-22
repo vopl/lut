@@ -147,8 +147,6 @@ namespace lut { namespace async { namespace impl
     {
         Thread *thread = Thread::current();
 
-        enqueuePerThreadCoros(thread);
-
         thread->storeEmptyCoro(coro);
 
         Context *next = thread->isReleaseRequested() ? thread->context() : _coroListReady.dequeue();
@@ -166,8 +164,6 @@ namespace lut { namespace async { namespace impl
     void Scheduler::coroEntry_deactivateAndStayReady(Coro *coro)
     {
         Thread *thread = Thread::current();
-
-        enqueuePerThreadCoros(thread);
 
         thread->storeReadyCoro(coro);
 

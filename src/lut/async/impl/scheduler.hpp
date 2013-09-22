@@ -38,7 +38,7 @@ namespace lut { namespace async { namespace impl
         void coroEntry_deactivateAndStayReady(Coro *coro);
 
 
-    private:
+    public:
         void enqueuePerThreadCoros(Thread *thread);
 
     private://threads
