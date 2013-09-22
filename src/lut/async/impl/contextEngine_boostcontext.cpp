@@ -29,7 +29,7 @@ namespace lut { namespace async { namespace impl
 
     bool ContextEngine::haveStack()
     {
-        return _ctx->fc_stack.sp;
+        return _ctx->fc_stack.sp ? true : false;
     }
 
     void *ContextEngine::getStackBegin()

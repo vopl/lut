@@ -9,7 +9,6 @@ namespace lut { namespace async
 
     enum class ThreadUtilizationResult
     {
-        limitExhausted,
         releaseRequest,
         notBeenUtilized  //was not be utilized
     };

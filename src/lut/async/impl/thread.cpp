@@ -3,25 +3,33 @@
 
 namespace lut { namespace async { namespace impl
 {
-    thread_local Thread *Thread::_thread(nullptr);
+    ////////////////////////////////////////////////////////////////////////////////
+    thread_local Thread *Thread::_current(nullptr);
 
-    Thread::Thread(Scheduler &scheduler, ThreadState *stateEvt)
+    ////////////////////////////////////////////////////////////////////////////////
+    Thread::Thread(Scheduler *scheduler, ThreadState *stateEvt)
         : _scheduler(scheduler)
         , _stateEvt(stateEvt)
-        , _mtx()
-        , _cv()
+        , _mtxForScheduler()
         , _releaseRequest(false)
         , _context()
+        , _storedEmptyCoro()
+        , _storedReadyCoro()
+
     {
-        assert(!_thread);
+        assert(!_current);
     }
 
+    ////////////////////////////////////////////////////////////////////////////////
     Thread::~Thread()
     {
-        assert(!_thread);
+        assert(!_current);
         assert(!_context);
+        assert(!_storedEmptyCoro);
+        assert(!_storedReadyCoro);
     }
 
+    ////////////////////////////////////////////////////////////////////////////////
     ThreadUtilizationResult Thread::utilize()
     {
         if(_stateEvt)
@@ -29,9 +37,9 @@ namespace lut { namespace async { namespace impl
             _stateEvt->set(ThreadStateValue::init);
         }
 
-        assert(!_thread);
-        _thread = this;
-        if(!_scheduler.threadEntry_init(this))
+        assert(!_current);
+        _current = this;
+        if(!_scheduler->threadEntry_init(this))
         {
             if(_stateEvt)
             {
@@ -46,10 +54,10 @@ namespace lut { namespace async { namespace impl
             _stateEvt->set(ThreadStateValue::inited);
         }
 
-        std::unique_lock<std::mutex> lock(_mtx);
-
         //work
         {
+            std::unique_lock<std::mutex> lockForScheduler(_mtxForScheduler);
+
             assert(!_context);
             Context context;
             _context = &context;
@@ -60,16 +68,19 @@ namespace lut { namespace async { namespace impl
                 _stateEvt->set(ThreadStateValue::inWork);
             }
 
-            while(!_releaseRequest)
+            for(;;)
             {
-                lock.unlock();
-                bool utilizeResult = _scheduler.threadEntry_utilize(this);
-                lock.lock();
+                lockForScheduler.unlock();
+                bool utilizeResult = _scheduler->threadEntry_utilize(this);
+                (void)utilizeResult;
+                lockForScheduler.lock();
 
-                if(!utilizeResult)
+                if(_releaseRequest.load(std::memory_order_relaxed))
                 {
-                    _cv.wait(lock);
+                    break;
                 }
+
+                _scheduler->threadEntry_sleep(this, lockForScheduler);
             }
 
             if(_stateEvt)
@@ -80,42 +91,90 @@ namespace lut { namespace async { namespace impl
             _context = nullptr;
         }
 
-        lock.unlock();
-
         if(_stateEvt)
         {
             _stateEvt->set(ThreadStateValue::deinit);
         }
 
-        _scheduler.threadEntry_deinit(this);
-        _thread = nullptr;
+        _scheduler->threadEntry_deinit(this);
+        _current = nullptr;
 
         if(_stateEvt)
         {
             _stateEvt->set(ThreadStateValue::deinited);
         }
 
-        return _releaseRequest ?
-                    ThreadUtilizationResult::releaseRequest :
-                    ThreadUtilizationResult::limitExhausted;
+        return ThreadUtilizationResult::releaseRequest;
     }
 
-    Thread *Thread::instance()
+    ////////////////////////////////////////////////////////////////////////////////
+    void Thread::releaseRequest()
     {
-        return _thread;
+        std::unique_lock<std::mutex> lockForScheduler(_mtxForScheduler);
+        _releaseRequest.store(true, std::memory_order_relaxed);
     }
 
+    bool Thread::isReleaseRequested()
+    {
+        return _releaseRequest.load(std::memory_order_relaxed);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    Thread *Thread::current()
+    {
+        return _current;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
     Context *Thread::context()
     {
         return _context;
     }
 
-    void Thread::releaseRequest()
+    ////////////////////////////////////////////////////////////////////////////////
+    Scheduler *Thread::scheduler()
     {
-        std::lock_guard<std::mutex> l(_mtx);
+        return _scheduler;
+    }
 
-        _releaseRequest = true;
-        _cv.notify_all();
+    ////////////////////////////////////////////////////////////////////////////////
+    void Thread::storeEmptyCoro(Coro *coro)
+    {
+        assert(!_storedEmptyCoro);
+        _storedEmptyCoro = coro;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    void Thread::storeReadyCoro(Coro *coro)
+    {
+        assert(!_storedReadyCoro);
+        _storedReadyCoro = coro;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    Coro *Thread::fetchEmptyCoro()
+    {
+        if(_storedEmptyCoro)
+        {
+            Coro *coro = _storedEmptyCoro;
+            _storedEmptyCoro = nullptr;
+            return coro;
+        }
+
+        return nullptr;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    Coro *Thread::fetchReadyCoro()
+    {
+        if(_storedReadyCoro)
+        {
+            Coro *coro = _storedReadyCoro;
+            _storedReadyCoro = nullptr;
+            return coro;
+        }
+
+        return nullptr;
     }
 
 }}}

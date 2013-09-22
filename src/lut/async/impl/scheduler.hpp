@@ -3,7 +3,7 @@
 
 #include "lut/async/threadState.hpp"
 #include "lut/async/impl/coro.hpp"
-#include "lut/async/impl/queue.hpp"
+#include "lut/async/impl/intrusiveQueue.hpp"
 
 #include <map>
 #include <thread>
@@ -26,23 +26,30 @@ namespace lut { namespace async { namespace impl
     public:
         bool threadEntry_init(Thread *thread);
         bool threadEntry_utilize(Thread *thread);
+        void threadEntry_sleep(Thread *thread, std::unique_lock<std::mutex> &mtx);
         bool threadEntry_deinit(Thread *thread);
 
     public:
         void spawn(const Task &code);
         void spawn(Task &&code);
 
+    public:
+        void coroEntry_deactivateAndStayEmpty(Coro *coro);
+        void coroEntry_deactivateAndStayReady(Coro *coro);
+
+
+    private:
+        void enqueuePerThreadCoros(Thread *thread);
 
     private://threads
         std::mutex _threadsMtx;
         typedef std::map<std::thread::id, Thread *> TMThreads;
         TMThreads _threads;
-
+        std::condition_variable _threadsCv;
 
     private:
-        Queue<Coro> _coroListReady;
-        Queue<Coro> _coroListEmpty;
-
+        IntrusiveQueue<Coro> _coroListReady;
+        IntrusiveQueue<Coro> _coroListEmpty;
     };
 }}}
 

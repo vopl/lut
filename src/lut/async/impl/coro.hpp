@@ -2,7 +2,7 @@
 #define _LUT_ASYNC_IMPL_CORO_HPP_
 
 #include "lut/async/impl/context.hpp"
-#include "lut/async/impl/queue.hpp"
+#include "lut/async/impl/intrusiveQueue.hpp"
 
 #include <functional>
 
@@ -11,7 +11,7 @@ namespace lut { namespace async { namespace impl
 
     class Coro
         : public Context
-        , public Queue<Coro>::ElementBase
+        , public IntrusiveQueue<Coro>::ElementBase
     {
     public:
         using Task = std::function<void()>;
@@ -27,8 +27,7 @@ namespace lut { namespace async { namespace impl
         void contextProc() override;
 
     private:
-        Coro *_readyList_next;
-        Coro *_emptyList_next;
+        Task _code;
     };
 }}}
 

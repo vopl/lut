@@ -17,14 +17,17 @@ namespace lut { namespace async { namespace impl
         virtual ~ContextEngine();
 
     protected:
+        bool haveStack();
         void *getStackBegin();
         void *getStackEnd();
 
+        void switchTo(ContextEngine *to);
+
     private:
 #if PVOID_SIZE == INT_SIZE
-        void s_contextProc(int iarg1);
+        static void s_contextProc(int iarg1);
 #elif PVOID_SIZE == 2*INT_SIZE
-        void s_contextProc(int iarg1, int iarg2);
+        static void s_contextProc(int iarg1, int iarg2);
 #else
 #   error unknown int and pvoid sizes
 #endif

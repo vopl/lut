@@ -30,14 +30,12 @@ namespace lut { namespace async { namespace impl
         ~Context();
 
     public:
-        void activate();
+        void switchTo(Context *to);
 
     private:
         void contextProc() override;
 
     private:
-        friend class Thread;
-        static thread_local Context *_currentInThread;
 
 #if defined(USE_VALGRIND)
         int _valgrindStackId;

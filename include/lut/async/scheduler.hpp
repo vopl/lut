@@ -15,7 +15,7 @@ namespace lut { namespace async
     }
 
     class Scheduler
-            : private HiddenImpl<impl::Scheduler>
+        : private HiddenImpl<impl::Scheduler>
     {
         Scheduler(const Scheduler &from) = delete;
         Scheduler &operator=(const Scheduler &from) = delete;

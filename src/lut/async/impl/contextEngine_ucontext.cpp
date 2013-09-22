@@ -10,7 +10,7 @@ namespace lut { namespace async { namespace impl
     {
         if(getcontext(this))
         {
-            assert(!"handle errors");
+            assert(!"getcontext failed");
             abort();
         }
     }
@@ -20,7 +20,7 @@ namespace lut { namespace async { namespace impl
     {
         if(getcontext(this))
         {
-            assert(!"handle errors");
+            assert(!"getcontext failed");
             abort();
         }
 
@@ -48,10 +48,15 @@ namespace lut { namespace async { namespace impl
 
     ContextEngine::~ContextEngine()
     {
-        if(uc_stack.ss_sp)
+        if(haveStack())
         {
             free(uc_stack.ss_sp);
         }
+    }
+
+    bool ContextEngine::haveStack()
+    {
+        return uc_stack.ss_sp ? true : false;
     }
 
     void *ContextEngine::getStackBegin()
@@ -62,6 +67,15 @@ namespace lut { namespace async { namespace impl
     void *ContextEngine::getStackEnd()
     {
         return (char *)uc_stack.ss_sp + uc_stack.ss_size;
+    }
+
+    void ContextEngine::switchTo(ContextEngine *to)
+    {
+        if(swapcontext(this, to))
+        {
+            assert(!"swapcontext failed");
+            abort();
+        }
     }
 
 #if PVOID_SIZE == INT_SIZE

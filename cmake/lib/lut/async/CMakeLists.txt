@@ -139,7 +139,7 @@ set(INC_IMPL
 #    ${PSRC}/impl/waiter.hpp
     ${PSRC}/impl/synchronizer.hpp
 #    ${PSRC}/impl/synchronizerWaiterNode.hpp
-    ${PSRC}/impl/queue.hpp
+    ${PSRC}/impl/intrusiveQueue.hpp
 )
 
 if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)
@@ -171,6 +171,7 @@ set(SRC_IMPL
     ${PSRC}/impl/coro.cpp
     ${PSRC}/impl/synchronizer.cpp
     ${PSRC}/impl/thread.cpp
+    ${PSRC}/impl/sizeofImplGen.cpp
 )
 
 if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)

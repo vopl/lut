@@ -8,13 +8,9 @@
 
 namespace lut { namespace async { namespace impl
 {
-    thread_local Context *Context::_currentInThread(nullptr);
-
     Context::Context()
         : ContextEngine()
     {
-        assert(!_currentInThread);
-        _currentInThread = this;
     }
 
     Context::Context(size_t stackSize)
@@ -27,28 +23,14 @@ namespace lut { namespace async { namespace impl
 
     Context::~Context()
     {
-        if(!haveStack())
-        {
-            assert(this == _currentInThread);
-            _currentInThread = nullptr;
-        }
-
 #if defined(USE_VALGRIND)
         VALGRIND_STACK_DEREGISTER(_valgrindStackId);
 #endif
     }
 
-    void Context::activate()
+    void Context::switchTo(Context *to)
     {
-        Context *current = _currentInThread;
-
-        assert(current);
-        assert(this == current);
-
-        _currentInThread = this;
-        activateFrom(current);
-
-        assert(this == current);
+        ContextEngine::switchTo(to);
     }
 
     void Context::contextProc()

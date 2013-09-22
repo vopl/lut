@@ -10,28 +10,40 @@ namespace lut { namespace async { namespace impl
     class Thread
     {
     public:
-        Thread(Scheduler &scheduler, ThreadState *stateEvt);
+        Thread(Scheduler *scheduler, ThreadState *stateEvt);
         ~Thread();
 
         ThreadUtilizationResult utilize();
 
-        static Thread *instance();
-        Context *context();
-
     public:
         void releaseRequest();
+        bool isReleaseRequested();
+
+    public:
+        static Thread *current();
+        Context *context();
+        Scheduler *scheduler();
+
+    public:
+        void storeEmptyCoro(Coro *coro);
+        void storeReadyCoro(Coro *coro);
+
+        Coro *fetchEmptyCoro();
+        Coro *fetchReadyCoro();
 
     private:
-        Scheduler &_scheduler;
-        ThreadState *_stateEvt;
+        Scheduler           *_scheduler;
+        ThreadState         *_stateEvt;
 
-        std::mutex _mtx;
-        std::condition_variable _cv;
+        std::mutex          _mtxForScheduler;
+        std::atomic_bool    _releaseRequest;
 
-        bool _releaseRequest;
+        static thread_local Thread
+                            *_current;
+        Context             *_context;
 
-        static thread_local Thread *_thread;
-        Context *_context;
+        Coro                *_storedEmptyCoro;
+        Coro                *_storedReadyCoro;
     };
 }}}
 
