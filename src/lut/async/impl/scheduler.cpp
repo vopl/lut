@@ -52,13 +52,15 @@ namespace lut { namespace async { namespace impl
         }
 #endif
 
-        assert(0);
-        //if(work absent)
+        Coro *coro = _coroListReady.dequeue();
+        if(!coro)
         {
             return false;
         }
 
-        assert(0);
+        assert(Thread::instance() == thread);
+
+        coro->activate();
         return true;
     }
 
@@ -79,14 +81,28 @@ namespace lut { namespace async { namespace impl
         return true;
     }
 
-    void Scheduler::spawn(const std::function<void()> &code)
+    void Scheduler::spawn(const Task &code)
     {
-        assert(0);
+        Coro *coro = _coroListEmpty.dequeue();
+        if(!coro)
+        {
+            coro = new Coro();
+        }
+
+        coro->setCode(code);
+        _coroListReady.enqueue(coro);
     }
 
-    void Scheduler::spawn(std::function<void()> &&code)
+    void Scheduler::spawn(Task &&code)
     {
-        assert(0);
+        Coro *coro = _coroListEmpty.dequeue();
+        if(!coro)
+        {
+            coro = new Coro();
+        }
+
+        coro->setCode(std::forward<Task>(code));
+        _coroListReady.enqueue(coro);
     }
 
 }}}

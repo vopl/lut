@@ -5,26 +5,21 @@ namespace lut { namespace async { namespace impl
 {
     ContextEngine::ContextEngine()
         : _ctx(new boost::context::fcontext_t)
-        , _stackSize()
-        , _stack()
-        , _fn()
     {
     }
 
-    ContextEngine::ContextEngine(const std::function<void()> &fn, size_t stackSize)
+    ContextEngine::ContextEngine(size_t stackSize)
         : _ctx()
-        , _stackSize(stackSize?stackSize:1)
-        , _stack(new char [stackSize])
-        , _fn(fn)
     {
-        _ctx = boost::context::make_fcontext(_stack, _stackSize, &ContextEngine::s_contextProc);
+        void *sp = malloc(stackSize);
+        _ctx = boost::context::make_fcontext(sp, stackSize, &ContextEngine::s_contextProc);
     }
 
     ContextEngine::~ContextEngine()
     {
-        if(_stackSize)
+        if(haveStack())
         {
-            delete _stack;
+            free(_ctx->fc_stack.sp);
         }
         else
         {
@@ -32,18 +27,28 @@ namespace lut { namespace async { namespace impl
         }
     }
 
+    bool ContextEngine::haveStack()
+    {
+        return _ctx->fc_stack.sp;
+    }
+
     void *ContextEngine::getStackBegin()
     {
-        return _stack;
+        return _ctx->fc_stack.sp;
     }
 
     void *ContextEngine::getStackEnd()
     {
-        return _stack ? (_stack+_stackSize) : nullptr;
+        return (char*)_ctx->fc_stack.sp + _ctx->fc_stack.size;
     }
 
-    void ContextEngine::s_contextProc(intptr_t self)
+    void ContextEngine::activateFrom(ContextEngine *current)
     {
-        return reinterpret_cast<ContextEngine*>(self)->_fn();
+        boost::context::jump_fcontext(current->_ctx, _ctx, reinterpret_cast<intptr_t>(this));
+    }
+
+    void ContextEngine::s_contextProc(intptr_t callable)
+    {
+        return reinterpret_cast<ContextEngine*>(callable)->contextProc();
     }
 }}}

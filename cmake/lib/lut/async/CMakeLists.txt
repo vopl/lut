@@ -139,6 +139,7 @@ set(INC_IMPL
 #    ${PSRC}/impl/waiter.hpp
     ${PSRC}/impl/synchronizer.hpp
 #    ${PSRC}/impl/synchronizerWaiterNode.hpp
+    ${PSRC}/impl/queue.hpp
 )
 
 if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)

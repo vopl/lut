@@ -16,24 +16,23 @@ int lmain()
 {
     lut::async::Scheduler sched;
 
-    if(1)
-    {
-        sched.threadUtilize();
+    std::thread t(
+                [&t,&sched] ()
+                {
+                    lut::async::ThreadUtilizationResult etur = sched.threadUtilize();
+                    (void)etur;
+                    assert(lut::async::ThreadUtilizationResult::limitExhausted == etur);
 
-        std::thread t(
-                    [&t,&sched] ()
-                    {
-                        lut::async::ThreadUtilizationResult etur = sched.threadUtilize();
-                        (void)etur;
-                        assert(lut::async::ThreadUtilizationResult::limitExhausted == etur);
+                    assert(lut::async::ThreadReleaseResult::notInWork == sched.threadRelease());
+                    assert(lut::async::ThreadReleaseResult::notInWork == sched.threadRelease(t.native_handle()));
+                });
 
-                        assert(lut::async::ThreadReleaseResult::notInWork == sched.threadRelease());
-                        assert(lut::async::ThreadReleaseResult::notInWork == sched.threadRelease(t.native_handle()));
-                    });
+    sched.spawn([](){
+        std::cout<<"in coro"<<std::endl;
+    });
 
-        t.join();
-        assert(lut::async::ThreadReleaseResult::notInWork == sched.threadRelease(t.native_handle()));
-    }
+    sched.threadRelease(t.native_handle());
+    t.join();
 
     return 0;
 }

@@ -5,7 +5,6 @@
 
 #include <ucontext.h>
 #include <cstdint>
-#include <functional>
 
 namespace lut { namespace async { namespace impl
 {
@@ -14,8 +13,8 @@ namespace lut { namespace async { namespace impl
     {
     public:
         ContextEngine();
-        ContextEngine(const std::function<void()> &fn, size_t stackSize);
-        ~ContextEngine();
+        ContextEngine(size_t stackSize);
+        virtual ~ContextEngine();
 
     protected:
         void *getStackBegin();
@@ -31,7 +30,7 @@ namespace lut { namespace async { namespace impl
 #endif
 
     private:
-        std::function<void()> _fn;
+        virtual void contextProc() = 0;
 
     };
 }}}

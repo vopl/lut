@@ -1,9 +1,10 @@
-#include <iostream>
-using namespace std;
-
+#include "lut/async/stable.hpp"
 #include "lut/async/impl/scheduler.hpp"
 #include "lut/async/impl/event.hpp"
 #include "lut/async/impl/mutex.hpp"
+
+#include <iostream>
+using namespace std;
 
 int main()
 {

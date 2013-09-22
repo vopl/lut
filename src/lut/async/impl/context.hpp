@@ -17,23 +17,32 @@
 #   define USE_VALGRIND
 #endif
 
-#include <functional>
 #include <cstdint>
 
 namespace lut { namespace async { namespace impl
 {
     class Context
-        : ContextEngine
+        : private ContextEngine
     {
     public:
         Context();
-        Context(const std::function<void()> &fn, size_t stackSize=1024*32);
+        Context(size_t stackSize);
         ~Context();
 
+    public:
+        void activate();
+
     private:
+        void contextProc() override;
+
+    private:
+        friend class Thread;
+        static thread_local Context *_currentInThread;
+
 #if defined(USE_VALGRIND)
         int _valgrindStackId;
 #endif
+
     };
 }}}
 

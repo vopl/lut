@@ -54,6 +54,7 @@ namespace lut { namespace async { namespace impl
             Context context;
             _context = &context;
 
+
             if(_stateEvt)
             {
                 _stateEvt->set(ThreadStateValue::inWork);
@@ -102,6 +103,11 @@ namespace lut { namespace async { namespace impl
     Thread *Thread::instance()
     {
         return _thread;
+    }
+
+    Context *Thread::context()
+    {
+        return _context;
     }
 
     void Thread::releaseRequest()

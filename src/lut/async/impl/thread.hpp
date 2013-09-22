@@ -16,6 +16,8 @@ namespace lut { namespace async { namespace impl
         ThreadUtilizationResult utilize();
 
         static Thread *instance();
+        Context *context();
+
     public:
         void releaseRequest();
 

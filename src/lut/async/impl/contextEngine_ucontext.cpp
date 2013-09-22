@@ -7,21 +7,21 @@ namespace lut { namespace async { namespace impl
 {
     ContextEngine::ContextEngine()
         : ucontext_t()
-        , _fn()
     {
         if(getcontext(this))
         {
             assert(!"handle errors");
+            abort();
         }
     }
 
-    ContextEngine::ContextEngine(const std::function<void()> &fn, size_t stackSize)
+    ContextEngine::ContextEngine(size_t stackSize)
         : ucontext_t()
-        , _fn(fn)
     {
         if(getcontext(this))
         {
             assert(!"handle errors");
+            abort();
         }
 
         uc_link = nullptr;
@@ -67,14 +67,14 @@ namespace lut { namespace async { namespace impl
 #if PVOID_SIZE == INT_SIZE
     void ContextEngine::s_contextProc(int iarg1)
     {
-        return reinterpret_cast<ContextEngine*>(iarg)->_fn();
+        return reinterpret_cast<ContextEngine*>(iarg)->contextProc();
     }
 #elif PVOID_SIZE == 2*INT_SIZE
     void ContextEngine::s_contextProc(int iarg1, int iarg2)
     {
-        intptr_t self = ((unsigned int)iarg1) | (((uint64_t)iarg2)<<32);
+        intptr_t callable = ((unsigned int)iarg1) | (((uint64_t)iarg2)<<32);
 
-        return reinterpret_cast<ContextEngine*>(self)->_fn();
+        return reinterpret_cast<ContextEngine*>(callable)->contextProc();
     }
 #else
 #   error unknown int and pvoid sizes
