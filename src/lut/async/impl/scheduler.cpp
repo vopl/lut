@@ -60,13 +60,6 @@ namespace lut { namespace async { namespace impl
     {
         assert(Thread::current() == thread);
 
-#ifndef NDEBUG
-        {
-            std::lock_guard<std::mutex> l(_threadsMtx);
-            assert(_threads.end() != _threads.find(std::this_thread::get_id()));
-        }
-#endif
-
         Coro *coro = _coroListReady.dequeue();
         if(!coro)
         {
@@ -77,6 +70,7 @@ namespace lut { namespace async { namespace impl
 
         thread->context()->switchTo(coro);
 
+        assert(Thread::current() == thread);
         enqueuePerThreadCoros(thread);
 
         return true;
@@ -86,13 +80,6 @@ namespace lut { namespace async { namespace impl
     void Scheduler::threadEntry_sleep(Thread *thread, std::unique_lock<std::mutex> &mtx)
     {
         assert(Thread::current() == thread);
-
-#ifndef NDEBUG
-        {
-            std::lock_guard<std::mutex> l(_threadsMtx);
-            assert(_threads.end() != _threads.find(std::this_thread::get_id()));
-        }
-#endif
 
         _threadsCv.wait(mtx);
     }
@@ -157,6 +144,7 @@ namespace lut { namespace async { namespace impl
 
         coro->switchTo(next);
 
+        thread = Thread::current();
         enqueuePerThreadCoros(thread);
     }
 
@@ -175,6 +163,7 @@ namespace lut { namespace async { namespace impl
 
         coro->switchTo(next);
 
+        thread = Thread::current();
         enqueuePerThreadCoros(thread);
     }
 

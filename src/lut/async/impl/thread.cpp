@@ -75,7 +75,7 @@ namespace lut { namespace async { namespace impl
                 (void)utilizeResult;
                 lockForScheduler.lock();
 
-                if(_releaseRequest.load(std::memory_order_relaxed))
+                if(isReleaseRequested())
                 {
                     break;
                 }
@@ -111,12 +111,12 @@ namespace lut { namespace async { namespace impl
     void Thread::releaseRequest()
     {
         std::unique_lock<std::mutex> lockForScheduler(_mtxForScheduler);
-        _releaseRequest.store(true, std::memory_order_relaxed);
+        _releaseRequest.store(true);
     }
 
     bool Thread::isReleaseRequested()
     {
-        return _releaseRequest.load(std::memory_order_relaxed);
+        return _releaseRequest.load();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
