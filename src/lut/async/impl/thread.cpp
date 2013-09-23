@@ -14,7 +14,7 @@ namespace lut { namespace async { namespace impl
         , _context()
         , _storedEmptyCoro()
         , _storedReadyCoro()
-
+        , _currentCoro()
     {
         assert(!_current);
     }
@@ -26,6 +26,7 @@ namespace lut { namespace async { namespace impl
         assert(!_context);
         assert(!_storedEmptyCoro);
         assert(!_storedReadyCoro);
+        assert(!_currentCoro);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -167,6 +168,18 @@ namespace lut { namespace async { namespace impl
         }
 
         return nullptr;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    void Thread::setCurrentCoro(Coro *coro)
+    {
+        _currentCoro = coro;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    Coro *Thread::getCurrentCoro()
+    {
+        return _currentCoro;
     }
 
 }}}

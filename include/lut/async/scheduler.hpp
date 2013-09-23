@@ -32,6 +32,8 @@ namespace lut { namespace async
     public://code
         void spawn(const std::function<void()> &code);
         void spawn(std::function<void()> &&code);
+
+        void yield();
     };
 }}
 

@@ -72,6 +72,8 @@ namespace lut { namespace async { namespace impl
 
         assert(Thread::current() == thread);
 
+        assert(!thread->getCurrentCoro());
+        thread->setCurrentCoro(coro);
         thread->context()->switchTo(coro);
 
         assert(Thread::current() == thread);
@@ -85,13 +87,12 @@ namespace lut { namespace async { namespace impl
     {
         assert(Thread::current() == thread);
 
-        std::unique_lock<std::mutex> lock(_threadsCvMtx);
-
         if(thread->isReleaseRequested())
         {
             return false;
         }
 
+        std::unique_lock<std::mutex> lock(_threadsCvMtx);
         _threadsCv.wait(lock);
 
         return !thread->isReleaseRequested();
@@ -129,7 +130,7 @@ namespace lut { namespace async { namespace impl
         _coroListReady.enqueue(coro);
 
         std::unique_lock<std::mutex> lock(_threadsCvMtx);
-        _threadsCv.notify_one();
+        _threadsCv.notify_all();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -143,7 +144,22 @@ namespace lut { namespace async { namespace impl
 
         coro->setCode(std::forward<Task>(code));
         _coroListReady.enqueue(coro);
+
+        std::unique_lock<std::mutex> lock(_threadsCvMtx);
+        _threadsCv.notify_all();
     }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    void Scheduler::yield()
+    {
+        Thread *thread = Thread::current();
+        Coro *coro = thread->getCurrentCoro();
+        if(coro)
+        {
+            coroEntry_deactivateAndStayReady(coro);
+        }
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////////
     void Scheduler::coroEntry_deactivateAndStayEmpty(Coro *coro)
@@ -152,13 +168,25 @@ namespace lut { namespace async { namespace impl
 
         thread->storeEmptyCoro(coro);
 
-        Context *next = thread->isReleaseRequested() ? thread->context() : _coroListReady.dequeue();
-        if(!next)
+        if(thread->isReleaseRequested())
         {
-            next = thread->context();
+            thread->setCurrentCoro(nullptr);
+            coro->switchTo(thread->context());
         }
-
-        coro->switchTo(next);
+        else
+        {
+            Coro *next = _coroListReady.dequeue();
+            if(next)
+            {
+                thread->setCurrentCoro(next);
+                coro->switchTo(next);
+            }
+            else
+            {
+                thread->setCurrentCoro(nullptr);
+                coro->switchTo(thread->context());
+            }
+        }
 
         thread = Thread::current();
         enqueuePerThreadCoros(thread);
@@ -171,13 +199,25 @@ namespace lut { namespace async { namespace impl
 
         thread->storeReadyCoro(coro);
 
-        Context *next = thread->isReleaseRequested() ? thread->context() : _coroListReady.dequeue();
-        if(!next)
+        if(thread->isReleaseRequested())
         {
-            next = thread->context();
+            thread->setCurrentCoro(nullptr);
+            coro->switchTo(thread->context());
         }
-
-        coro->switchTo(next);
+        else
+        {
+            Coro *next = _coroListReady.dequeue();
+            if(next)
+            {
+                thread->setCurrentCoro(next);
+                coro->switchTo(next);
+            }
+            else
+            {
+                thread->setCurrentCoro(nullptr);
+                coro->switchTo(thread->context());
+            }
+        }
 
         thread = Thread::current();
         enqueuePerThreadCoros(thread);

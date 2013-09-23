@@ -32,6 +32,7 @@ namespace lut { namespace async { namespace impl
     public:
         void spawn(const Task &code);
         void spawn(Task &&code);
+        void yield();
 
     public:
         void coroEntry_deactivateAndStayEmpty(Coro *coro);

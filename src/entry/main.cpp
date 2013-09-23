@@ -13,7 +13,7 @@
 #include <atomic>
 
 std::atomic<size_t> g_cnt(0);
-std::atomic<size_t> g_iters(100000);
+std::atomic<size_t> g_iters(10000000);
 
 std::atomic<size_t> g_amount(0);
 std::size_t g_avgAmount(100);
@@ -22,18 +22,26 @@ void f(lut::async::Scheduler *sched)
 {
     ++g_amount;
 
-    if(g_iters > g_cnt)
+    for(size_t k(0); k<100; k++)
     {
-        if(g_amount < g_avgAmount)
+        if(! (g_cnt % 10000))
         {
-            sched->spawn(std::bind(f, sched));
+            std::cout<<g_amount.load()<<std::endl;
         }
+
+        if(g_iters > g_cnt)
+        {
+            if(g_amount < g_avgAmount)
+            {
+                sched->spawn(std::bind(f, sched));
+            }
+        }
+
+        sched->yield();
     }
 
     --g_amount;
     ++g_cnt;
-
-    std::cout<<g_amount.load()<<std::endl;
 }
 
 int lmain()

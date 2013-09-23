@@ -46,4 +46,11 @@ namespace lut { namespace async
     {
         return impl().spawn(std::forward<std::function<void()>>(code));
     }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    void Scheduler::yield()
+    {
+        return impl().yield();
+    }
+
 }}

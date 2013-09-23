@@ -31,6 +31,11 @@ namespace lut { namespace async { namespace impl
         Coro *fetchEmptyCoro();
         Coro *fetchReadyCoro();
 
+    public:
+        void setCurrentCoro(Coro *coro);
+        Coro * getCurrentCoro();
+
+
     private:
         Scheduler           *_scheduler;
         ThreadState         *_stateEvt;
@@ -43,6 +48,8 @@ namespace lut { namespace async { namespace impl
 
         Coro                *_storedEmptyCoro;
         Coro                *_storedReadyCoro;
+
+        Coro                *_currentCoro;
     };
 }}}
 
