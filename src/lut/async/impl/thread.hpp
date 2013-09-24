@@ -4,6 +4,7 @@
 #include "lut/async/scheduler.hpp"
 #include "lut/async/impl/scheduler.hpp"
 #include "lut/async/impl/context.hpp"
+#include "lut/async/impl/coro.hpp"
 
 namespace lut { namespace async { namespace impl
 {
@@ -33,23 +34,22 @@ namespace lut { namespace async { namespace impl
 
     public:
         void setCurrentCoro(Coro *coro);
-        Coro * getCurrentCoro();
+        Coro *getCurrentCoro();
 
 
     private:
-        Scheduler           *_scheduler;
-        ThreadState         *_stateEvt;
+        Scheduler                   *_scheduler;
+        ThreadState                 *_stateEvt;
 
-        std::atomic_bool    _releaseRequest;
+        std::atomic_bool            _releaseRequest;
 
-        static thread_local Thread
-                            *_current;
-        Context             *_context;
+        static thread_local Thread  *_current;
+        Context                     *_context;
 
-        Coro                *_storedEmptyCoro;
-        Coro                *_storedReadyCoro;
+        Coro                        *_storedEmptyCoro;
+        Coro                        *_storedReadyCoro;
 
-        Coro                *_currentCoro;
+        Coro                        *_currentCoro;
     };
 }}}
 

@@ -9,32 +9,16 @@
 namespace lut { namespace async { namespace impl
 {
     class ContextEngine
-        : private ucontext_t
+        : ucontext_t
     {
     public:
-        ContextEngine();
-        ContextEngine(size_t stackSize);
-        virtual ~ContextEngine();
+        void constructRoot();
+        void destructRoot();
 
-    protected:
-        bool haveStack();
-        void *getStackBegin();
-        void *getStackEnd();
+        void constructCoro(size_t sizeWithStack, void(*f)(intptr_t), intptr_t arg);
+        void destructCoro();
 
         void switchTo(ContextEngine *to);
-
-    private:
-#if PVOID_SIZE == INT_SIZE
-        static void s_contextProc(int iarg1);
-#elif PVOID_SIZE == 2*INT_SIZE
-        static void s_contextProc(int iarg1, int iarg2);
-#else
-#   error unknown int and pvoid sizes
-#endif
-
-    private:
-        virtual void contextProc() = 0;
-
     };
 }}}
 

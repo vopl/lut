@@ -66,16 +66,7 @@ namespace lut { namespace async { namespace impl
                 _stateEvt->set(ThreadStateValue::inWork);
             }
 
-            for(;;)
-            {
-                bool utilizeResult = _scheduler->threadEntry_utilize(this);
-                (void)utilizeResult;
-
-                if(!_scheduler->threadEntry_sleep(this))
-                {
-                    break;
-                }
-            }
+            _scheduler->threadEntry_utilize(this);
 
             if(_stateEvt)
             {

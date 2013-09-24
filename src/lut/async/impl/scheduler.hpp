@@ -2,6 +2,7 @@
 #define _LUT_ASYNC_IMPL_SCHEDULER_HPP_
 
 #include "lut/async/threadState.hpp"
+#include "lut/async/impl/context.hpp"
 #include "lut/async/impl/coro.hpp"
 #include "lut/async/impl/intrusiveQueue.hpp"
 
@@ -25,8 +26,7 @@ namespace lut { namespace async { namespace impl
 
     public:
         bool threadEntry_init(Thread *thread);
-        bool threadEntry_utilize(Thread *thread);
-        bool threadEntry_sleep(Thread *thread);
+        void threadEntry_utilize(Thread *thread);
         bool threadEntry_deinit(Thread *thread);
 
     public:
@@ -35,8 +35,8 @@ namespace lut { namespace async { namespace impl
         void yield();
 
     public:
-        void coroEntry_deactivateAndStayEmpty(Coro *coro);
-        void coroEntry_deactivateAndStayReady(Coro *coro);
+        void coroEntry_stayEmptyAndDeactivate(Coro *coro);
+        void coroEntry_stayReadyAndDeactivate(Coro *coro);
 
 
     public:
@@ -46,9 +46,6 @@ namespace lut { namespace async { namespace impl
         std::mutex _threadsMtx;
         typedef std::map<std::thread::id, Thread *> TMThreads;
         TMThreads _threads;
-
-        std::mutex _threadsCvMtx;
-        std::condition_variable _threadsCv;
 
     private:
         IntrusiveQueue<Coro> _coroListReady;

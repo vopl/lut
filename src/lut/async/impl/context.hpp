@@ -1,6 +1,8 @@
 #ifndef _LUT_ASYNC_IMPL_CONTEXT_HPP_
 #define _LUT_ASYNC_IMPL_CONTEXT_HPP_
 
+#include "lut/async/impl/intrusiveQueue.hpp"
+
 #include "lut/async/config.h"
 
 #if ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER
@@ -13,34 +15,24 @@
 #   error "unknown context engine"
 #endif
 
-#if defined(HAVE_VALGRIND)
-#   define USE_VALGRIND
-#endif
-
 #include <cstdint>
 
 namespace lut { namespace async { namespace impl
 {
+    class Coro;
     class Context
-        : private ContextEngine
     {
+        Context &operator=(const Context &) = delete;
     public:
         Context();
-        Context(size_t stackSize);
         ~Context();
 
-    public:
         void switchTo(Context *to);
+        void switchTo(Coro *to);
 
     private:
-        virtual void contextProc() override;
-
-    private:
-
-#if defined(USE_VALGRIND)
-        int _valgrindStackId;
-#endif
-
+        friend class Coro;
+        ContextEngine _engine;
     };
 }}}
 

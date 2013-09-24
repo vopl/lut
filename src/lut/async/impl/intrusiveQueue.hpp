@@ -76,8 +76,8 @@ namespace lut { namespace async { namespace impl
         }
 
         while(_headLock.exchange(true));
-        //Element *head = _head.load();
-        //assert(!head);
+        Element *head = _head.load();
+        assert(!head);
 
         //if(!head)
         {

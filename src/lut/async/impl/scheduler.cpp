@@ -37,11 +37,7 @@ namespace lut { namespace async { namespace impl
             return ThreadReleaseResult::notInWork;
         }
 
-        {
-            std::lock_guard<std::mutex> l(_threadsCvMtx);
-            iter->second->releaseRequest();
-            _threadsCv.notify_all();
-        }
+        iter->second->releaseRequest();
 
         return ThreadReleaseResult::ok;
     }
@@ -60,42 +56,25 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    bool Scheduler::threadEntry_utilize(Thread *thread)
+    void Scheduler::threadEntry_utilize(Thread *thread)
     {
         assert(Thread::current() == thread);
 
         Coro *coro = _coroListReady.dequeue();
-        if(!coro)
+        while(!coro)
         {
-            return false;
+            coro = _coroListReady.dequeue();
         }
 
         assert(Thread::current() == thread);
 
         assert(!thread->getCurrentCoro());
+
         thread->setCurrentCoro(coro);
         thread->context()->switchTo(coro);
 
         assert(Thread::current() == thread);
         enqueuePerThreadCoros(thread);
-
-        return true;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    bool Scheduler::threadEntry_sleep(Thread *thread)
-    {
-        assert(Thread::current() == thread);
-
-        if(thread->isReleaseRequested())
-        {
-            return false;
-        }
-
-        std::unique_lock<std::mutex> lock(_threadsCvMtx);
-        _threadsCv.wait(lock);
-
-        return !thread->isReleaseRequested();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -123,14 +102,11 @@ namespace lut { namespace async { namespace impl
         Coro *coro = _coroListEmpty.dequeue();
         if(!coro)
         {
-            coro = new Coro();
+            coro = Coro::make();
         }
 
         coro->setCode(code);
         _coroListReady.enqueue(coro);
-
-        std::unique_lock<std::mutex> lock(_threadsCvMtx);
-        _threadsCv.notify_all();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -139,14 +115,11 @@ namespace lut { namespace async { namespace impl
         Coro *coro = _coroListEmpty.dequeue();
         if(!coro)
         {
-            coro = new Coro();
+            coro = Coro::make();
         }
 
         coro->setCode(std::forward<Task>(code));
         _coroListReady.enqueue(coro);
-
-        std::unique_lock<std::mutex> lock(_threadsCvMtx);
-        _threadsCv.notify_all();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -154,73 +127,74 @@ namespace lut { namespace async { namespace impl
     {
         Thread *thread = Thread::current();
         Coro *coro = thread->getCurrentCoro();
+        assert(coro);
         if(coro)
         {
-            coroEntry_deactivateAndStayReady(coro);
+            coroEntry_stayReadyAndDeactivate(coro);
         }
     }
 
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::coroEntry_deactivateAndStayEmpty(Coro *coro)
+    void Scheduler::coroEntry_stayEmptyAndDeactivate(Coro *coro)
     {
-        Thread *thread = Thread::current();
-
-        thread->storeEmptyCoro(coro);
-
-        if(thread->isReleaseRequested())
         {
-            thread->setCurrentCoro(nullptr);
-            coro->switchTo(thread->context());
-        }
-        else
-        {
-            Coro *next = _coroListReady.dequeue();
-            if(next)
+            Thread *thread = Thread::current();
+            thread->storeEmptyCoro(coro);
+
+            for(;;)
             {
-                thread->setCurrentCoro(next);
-                coro->switchTo(next);
-            }
-            else
-            {
-                thread->setCurrentCoro(nullptr);
-                coro->switchTo(thread->context());
+                if(thread->isReleaseRequested())
+                {
+                    thread->setCurrentCoro(nullptr);
+                    coro->switchTo(thread->context());
+                    break;
+                }
+                else
+                {
+                    Coro *next = _coroListReady.dequeue();
+                    if(next)
+                    {
+                        thread->setCurrentCoro(next);
+                        coro->switchTo(next);
+                        break;
+                    }
+                }
             }
         }
 
-        thread = Thread::current();
-        enqueuePerThreadCoros(thread);
+        {
+            Thread *thread = Thread::current();
+            thread->scheduler()->enqueuePerThreadCoros(thread);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::coroEntry_deactivateAndStayReady(Coro *coro)
+    void Scheduler::coroEntry_stayReadyAndDeactivate(Coro *coro)
     {
         Thread *thread = Thread::current();
-
-        thread->storeReadyCoro(coro);
-
         if(thread->isReleaseRequested())
         {
+            thread->storeReadyCoro(coro);
             thread->setCurrentCoro(nullptr);
             coro->switchTo(thread->context());
-        }
-        else
-        {
-            Coro *next = _coroListReady.dequeue();
-            if(next)
-            {
-                thread->setCurrentCoro(next);
-                coro->switchTo(next);
-            }
-            else
-            {
-                thread->setCurrentCoro(nullptr);
-                coro->switchTo(thread->context());
-            }
+
+            Thread *thread = Thread::current();
+            thread->scheduler()->enqueuePerThreadCoros(thread);
+            return;
         }
 
-        thread = Thread::current();
-        enqueuePerThreadCoros(thread);
+        Coro *next = _coroListReady.dequeue();
+        if(next)
+        {
+            thread->storeReadyCoro(coro);
+            thread->setCurrentCoro(next);
+            coro->switchTo(next);
+
+            Thread *thread = Thread::current();
+            thread->scheduler()->enqueuePerThreadCoros(thread);
+            return;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////

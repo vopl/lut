@@ -5,17 +5,32 @@
 
 namespace lut { namespace async { namespace impl
 {
+    Coro *Coro::make(size_t stackSize)
+    {
+        Coro *coro = (Coro *)malloc(sizeof(Coro) + stackSize);
+
+        new(coro) Coro;
+
+        coro->_engine.constructCoro(
+                    sizeof(ContextEngine) + stackSize,
+                    &Coro::s_contextProc,
+                    reinterpret_cast<intptr_t>(coro));
+
+        return coro;
+    }
 
     Coro::Coro()
-        : Context(1024*32)
-        , _code()
     {
+    }
 
+    void Coro::operator delete(void *p)
+    {
+        free(p);
     }
 
     Coro::~Coro()
     {
-        assert(!_code);
+        _engine.destructCoro();
     }
 
     void Coro::setCode(const Task &code)
@@ -30,6 +45,21 @@ namespace lut { namespace async { namespace impl
         assert(!_code);
         _code = code;
         assert(_code);
+    }
+
+    void Coro::switchTo(Context *to)
+    {
+        _engine.switchTo(&to->_engine);
+    }
+
+    void Coro::switchTo(Coro *to)
+    {
+        _engine.switchTo(&to->_engine);
+    }
+
+    void Coro::s_contextProc(intptr_t self)
+    {
+        reinterpret_cast<Coro*>(self)->contextProc();
     }
 
     void Coro::contextProc()
@@ -64,9 +94,8 @@ namespace lut { namespace async { namespace impl
             }
 
             {
-                Thread::current()->scheduler()->coroEntry_deactivateAndStayEmpty(this);
+                Thread::current()->scheduler()->coroEntry_stayEmptyAndDeactivate(this);
             }
         }
     }
-
 }}}

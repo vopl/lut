@@ -13,43 +13,47 @@
 #include <atomic>
 
 std::atomic<size_t> g_cnt(0);
-std::atomic<size_t> g_iters(10000000);
+std::atomic<size_t> g_iters(1000000);
 
 std::atomic<size_t> g_amount(0);
 std::size_t g_avgAmount(100);
 
 void f(lut::async::Scheduler *sched)
 {
-    ++g_amount;
+    ++g_cnt;
 
-    for(size_t k(0); k<100; k++)
+    //if(! (g_cnt % 1000))
     {
-        if(! (g_cnt % 10000))
+        std::cout<<g_amount.load()<<", "<<g_cnt<<std::endl;
+    }
+    sched->yield();
+    if(g_iters > g_cnt)
+    {
+        if(g_amount < g_avgAmount)
         {
-            std::cout<<g_amount.load()<<std::endl;
-        }
+            ++g_amount;
+            sched->spawn(std::bind(f, sched));
+            sched->yield();
 
-        if(g_iters > g_cnt)
-        {
-            if(g_amount < g_avgAmount)
-            {
-                sched->spawn(std::bind(f, sched));
-            }
+            ++g_amount;
+            sched->spawn(std::bind(f, sched));
         }
-
-        sched->yield();
     }
 
+    for(size_t k(0); k<10; k++)
+    {
+        sched->yield();
+    }
     --g_amount;
-    ++g_cnt;
 }
 
 int lmain()
 {
     lut::async::Scheduler sched;
 
-    lut::async::ThreadPool tp(sched, 4);
+    lut::async::ThreadPool tp(sched, 1);
 
+    ++g_amount;
     sched.spawn(std::bind(f, &sched));
 
     while(g_cnt < g_iters || g_amount)

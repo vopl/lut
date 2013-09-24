@@ -1,45 +1,29 @@
 #include "lut/async/stable.hpp"
 #include "lut/async/impl/context.hpp"
+#include "lut/async/impl/coro.hpp"
 
-#include <cstdlib>
-#if defined(USE_VALGRIND)
-#   include <valgrind.h>
-#endif
 
 namespace lut { namespace async { namespace impl
 {
-    Context::Context()
-        : ContextEngine()
-#if defined(USE_VALGRIND)
-        , _valgrindStackId()
-#endif
-    {
-    }
 
-    Context::Context(size_t stackSize)
-        : ContextEngine(stackSize)
+    Context::Context()
     {
-#if defined(USE_VALGRIND)
-        _valgrindStackId = VALGRIND_STACK_REGISTER(getStackBegin(), getStackEnd());
-#endif
+        _engine.constructRoot();
     }
 
     Context::~Context()
     {
-#if defined(USE_VALGRIND)
-        VALGRIND_STACK_DEREGISTER(_valgrindStackId);
-#endif
+        _engine.destructRoot();
     }
 
     void Context::switchTo(Context *to)
     {
-        ContextEngine::switchTo(to);
+        _engine.switchTo(&to->_engine);
     }
 
-    void Context::contextProc()
+    void Context::switchTo(Coro *to)
     {
-        assert(!"never here");
-        abort();
+        _engine.switchTo(&to->_engine);
     }
 
 }}}
