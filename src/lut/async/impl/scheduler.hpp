@@ -5,6 +5,7 @@
 #include "lut/async/impl/context.hpp"
 #include "lut/async/impl/coro.hpp"
 #include "lut/async/impl/intrusiveQueue.hpp"
+#include "lut/async/impl/task.hpp"
 
 #include <map>
 #include <thread>
@@ -17,8 +18,6 @@ namespace lut { namespace async { namespace impl
     class Scheduler
     {
     public:
-        using Task = std::function<void()>;
-    public:
         Scheduler();
         ~Scheduler();
 
@@ -30,7 +29,6 @@ namespace lut { namespace async { namespace impl
         bool threadEntry_deinit(Thread *thread);
 
     public:
-        void spawn(const Task &code);
         void spawn(Task &&code);
         void yield();
 

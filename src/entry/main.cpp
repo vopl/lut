@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "lut/async/stable.hpp"
 #include "lut/async/scheduler.hpp"
 #include "lut/async/threadPool.hpp"
 #include "lut/async/event.hpp"
@@ -38,13 +39,13 @@ void f(lut::async::Scheduler *sched)
         if(g_amount < g_avgAmount)
         {
             ++g_amount;
-            sched->spawn(std::bind(f, sched));
+            sched->spawn(&f, sched);
             sched->yield();
         }
         if(g_amount < g_avgAmount)
         {
             ++g_amount;
-            sched->spawn(std::bind(f, sched));
+            sched->spawn(&f, sched);
             sched->yield();
         }
     }
@@ -59,13 +60,16 @@ int lmain()
     lut::async::ThreadPool tp(sched, 4);
 
     ++g_amount;
-    sched.spawn(std::bind(f, &sched));
+    sched.spawn(&f, &sched);
 
     while(g_cnt < g_iters || g_amount)
     {
         size_t cnt = g_cnt;
+        (void)cnt;
         size_t iters = g_iters;
+        (void)iters;
         size_t amount = g_amount;
+        (void)amount;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }

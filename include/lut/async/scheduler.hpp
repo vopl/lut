@@ -2,10 +2,10 @@
 #define _LUT_ASYNC_SCHEDULER_HPP_
 
 #include "lut/async/threadState.hpp"
+#include "lut/async/impl/task.hpp"
 #include "lut/async/hiddenImpl.hpp"
 
 #include <thread>
-#include <functional>
 
 namespace lut { namespace async
 {
@@ -30,11 +30,23 @@ namespace lut { namespace async
         ThreadReleaseResult threadRelease(std::thread::native_handle_type id);
 
     public://code
-        void spawn(const std::function<void()> &code);
-        void spawn(std::function<void()> &&code);
+        template<class F, class... Args>
+        void spawn(F &&f, Args &&...args);
 
         void yield();
+
+    private:
+        void spawn(impl::Task &&task);
     };
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    template<class F, class... Args>
+    void Scheduler::spawn(F&& f, Args&&... args)
+    {
+        spawn(impl::Task(std::forward<F>(f), std::forward<Args>(args)...));
+    }
+
 }}
 
 #endif

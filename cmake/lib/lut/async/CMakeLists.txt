@@ -136,10 +136,9 @@ set(INC_IMPL
     ${PSRC}/impl/context.hpp
     ${PSRC}/impl/event.hpp
     ${PSRC}/impl/mutex.hpp
-#    ${PSRC}/impl/waiter.hpp
     ${PSRC}/impl/synchronizer.hpp
-#    ${PSRC}/impl/synchronizerWaiterNode.hpp
     ${PSRC}/impl/intrusiveQueue.hpp
+    ${PINC}/impl/task.hpp
 )
 
 if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)
@@ -172,6 +171,7 @@ set(SRC_IMPL
     ${PSRC}/impl/synchronizer.cpp
     ${PSRC}/impl/thread.cpp
     ${PSRC}/impl/sizeofImplGen.cpp
+    ${PSRC}/impl/task.cpp
 )
 
 if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)

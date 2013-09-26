@@ -2,8 +2,7 @@
 #define _LUT_ASYNC_IMPL_CORO_HPP_
 
 #include "lut/async/impl/context.hpp"
-
-#include <functional>
+#include "lut/async/impl/task.hpp"
 
 namespace lut { namespace async { namespace impl
 {
@@ -14,15 +13,11 @@ namespace lut { namespace async { namespace impl
         Coro &operator=(const Coro &) = delete;
 
     public:
-        using Task = std::function<void()>;
-
-    public:
         static Coro *make(size_t stackSize = 1024*32);
         Coro();
         void operator delete(void *p);
         ~Coro();
 
-        void setCode(const Task &code);
         void setCode(Task &&code);
 
         void switchTo(Context *to);
@@ -33,7 +28,7 @@ namespace lut { namespace async { namespace impl
         void contextProc();
 
     private:
-        Task _code;
+        Task _task;
 
     private://last
         friend class Context;

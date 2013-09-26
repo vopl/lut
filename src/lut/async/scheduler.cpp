@@ -36,21 +36,15 @@ namespace lut { namespace async
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::spawn(const std::function<void()> &code)
-    {
-        return impl().spawn(code);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::spawn(std::function<void()> &&code)
-    {
-        return impl().spawn(std::forward<std::function<void()>>(code));
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
     void Scheduler::yield()
     {
         return impl().yield();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    void Scheduler::spawn(impl::Task &&task)
+    {
+        return impl().spawn(std::forward<impl::Task>(task));
     }
 
 }}

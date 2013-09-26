@@ -97,19 +97,6 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::spawn(const Task &code)
-    {
-        Coro *coro = _coroListEmpty.dequeue();
-        if(!coro)
-        {
-            coro = Coro::make();
-        }
-
-        coro->setCode(code);
-        _coroListReady.enqueue(coro);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
     void Scheduler::spawn(Task &&code)
     {
         Coro *coro = _coroListEmpty.dequeue();
