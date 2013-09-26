@@ -61,32 +61,32 @@ namespace lut { namespace async { namespace impl
     template <typename Element>
     void IntrusiveQueue<Element>::enqueue(Element *element)
     {
+        element->_next.store(nullptr, std::memory_order_relaxed);
+
         while(_tailLock.exchange(true));
 
-        Element *tail = _tail.load();
+        Element *tail = _tail.load(std::memory_order_acquire);
 
         if(tail)
         {
-            element->_next.store(nullptr);
-            _tail.store(element);
-            tail->_next.store(element);
+            tail->_next.store(element, std::memory_order_relaxed);
+            _tail.store(element, std::memory_order_relaxed);
 
-            _tailLock.store(false);
+            _tailLock.store(false, std::memory_order_release);
             return;
         }
 
-        while(_headLock.exchange(true));
-        Element *head = _head.load();
-        assert(!head);
+        while(_headLock.exchange(true, std::memory_order_acquire));
+        //Element *head = _head.load(std::memory_order_relaxed);
+        //assert(!head);
 
         //if(!head)
         {
-            element->_next.store(nullptr);
-            _tail.store(element);
-            _head.store(element);
+            _tail.store(element, std::memory_order_relaxed);
+            _head.store(element, std::memory_order_relaxed);
 
-            _tailLock.store(false);
-            _headLock.store(false);
+            _tailLock.store(false, std::memory_order_release);
+            _headLock.store(false, std::memory_order_release);
             return;
         }
 
@@ -97,51 +97,50 @@ namespace lut { namespace async { namespace impl
     template <typename Element>
     Element *IntrusiveQueue<Element>::dequeue()
     {
-        while(_headLock.exchange(true));
+        while(_headLock.exchange(true, std::memory_order_acquire));
 
-        Element *head = _head.load();
+        Element *head = _head.load(std::memory_order_relaxed);
         if(!head)
         {
-            _headLock.store(false);
+            _headLock.store(false, std::memory_order_release);
             return nullptr;
         }
 
-        Element *next = head->_next.load();
+        Element *next = head->_next.load(std::memory_order_relaxed);
 
         if(next)
         {
-            _head.store(next);
-            _headLock.store(false);
-            /*unwanted*/ head->_next.store(nullptr);
+            _head.store(next, std::memory_order_relaxed);
+            _headLock.store(false, std::memory_order_release);
+            // /*unwanted*/ head->_next.store(nullptr, std::memory_order_relaxed);
             return head;
         }
 
-        bool tailLockWas = false;
-        if(_tailLock.compare_exchange_strong(tailLockWas, true))
+        if(!_tailLock.exchange(true, std::memory_order_acquire))
         {
-            Element *tail = _tail.load();
+            Element *tail = _tail.load(std::memory_order_relaxed);
 
             if(head == tail)
             {
-                _head.store(nullptr);
-                _tail.store(nullptr);
-                _headLock.store(false);
-                _tailLock.store(false);
+                _head.store(nullptr, std::memory_order_relaxed);
+                _tail.store(nullptr, std::memory_order_relaxed);
+                _headLock.store(false, std::memory_order_release);
+                _tailLock.store(false, std::memory_order_release);
                 return head;
             }
 
-            _tailLock.store(false);
+            _tailLock.store(false, std::memory_order_release);
         }
 
         do
         {
-            next = head->_next.load();
+            next = head->_next.load(std::memory_order_relaxed);
         }
         while(!next);
 
-        _head.store(next);
-        _headLock.store(false);
-        /*unwanted*/ head->_next.store(nullptr);
+        _head.store(next, std::memory_order_relaxed);
+        _headLock.store(false, std::memory_order_release);
+        // /*unwanted*/ head->_next.store(nullptr);
         return head;
     }
 

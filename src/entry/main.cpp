@@ -14,7 +14,7 @@
 #include <atomic>
 
 std::atomic<size_t> g_cnt(0);
-std::atomic<size_t> g_iters(10000000);
+std::atomic<size_t> g_iters(1000000);
 
 std::atomic<size_t> g_amount(0);
 std::size_t g_avgAmount(100);
