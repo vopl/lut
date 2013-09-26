@@ -64,6 +64,7 @@ namespace lut { namespace async { namespace impl
         while(!coro)
         {
             coro = _coroListReady.dequeue();
+            std::this_thread::yield();
         }
 
         assert(Thread::current() == thread);
@@ -146,6 +147,7 @@ namespace lut { namespace async { namespace impl
                         coro->switchTo(next);
                         break;
                     }
+                    std::this_thread::yield();
                 }
             }
         }

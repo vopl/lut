@@ -10,22 +10,20 @@ namespace lut { namespace async { namespace impl
     {
     public:
         ContextEngine();
-        ContextEngine(size_t stackSize);
-        virtual ~ContextEngine();
 
-    protected:
-        bool haveStack();
-        void *getStackBegin();
-        void *getStackEnd();
+        void constructRoot();
+        void destructRoot();
+
+        void constructCoro(size_t sizeWithStack, void(*f)(intptr_t), intptr_t arg);
+        void destructCoro();
 
         void switchTo(ContextEngine *to);
 
     private:
         boost::context::fcontext_t *_ctx;
+        intptr_t _coroArg;
 
-    private:
-        static void s_contextProc(intptr_t callable);
-        virtual void contextProc() = 0;
+        char _buffer[sizeof(boost::context::fcontext_t)];
     };
 }}}
 

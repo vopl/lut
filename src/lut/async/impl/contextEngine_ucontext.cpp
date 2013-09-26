@@ -5,6 +5,7 @@
 
 namespace lut { namespace async { namespace impl
 {
+    ////////////////////////////////////////////////////////////////////////////////
     void ContextEngine::constructRoot()
     {
         if(getcontext(this))
@@ -15,11 +16,13 @@ namespace lut { namespace async { namespace impl
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////////
     void ContextEngine::destructRoot()
     {
         //empty ok
     }
 
+    ////////////////////////////////////////////////////////////////////////////////
 #if PVOID_SIZE == INT_SIZE*2
     namespace
     {
@@ -70,11 +73,13 @@ namespace lut { namespace async { namespace impl
 
     }
 
+    ////////////////////////////////////////////////////////////////////////////////
     void ContextEngine::destructCoro()
     {
         //empry ok
     }
 
+    ////////////////////////////////////////////////////////////////////////////////
     void ContextEngine::switchTo(ContextEngine *to)
     {
         swapcontext(this, to);

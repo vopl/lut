@@ -21,7 +21,14 @@ namespace lut { namespace async { namespace impl
         assert(!empty());
         assert(task.empty());
         task._size = _size;
-        callHolderBase()->moveTo(task.callHolderBase());
+        if(isInternalPlaced())
+        {
+            callHolderBase()->moveTo(task.callHolderBase());
+        }
+        else
+        {
+            task._data._callHolderPointer = _data._callHolderPointer;
+        }
         _size = 0;
     }
 

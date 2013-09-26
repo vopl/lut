@@ -14,7 +14,9 @@ namespace lut { namespace async { namespace impl
         {
             ElementBase();
 
+            char pad1[256];
             std::atomic<Element*> _next;
+            char pad2[256];
         };
 
     public:
@@ -25,11 +27,15 @@ namespace lut { namespace async { namespace impl
         Element *dequeue();
 
     private:
+        char pad1[256];
         std::atomic_bool        _headLock;
         std::atomic<Element*>   _head;
 
+        char pad3[256];
+
         std::atomic_bool        _tailLock;
         std::atomic<Element*>   _tail;
+        char pad5[256];
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -63,9 +69,9 @@ namespace lut { namespace async { namespace impl
     {
         element->_next.store(nullptr, std::memory_order_relaxed);
 
-        while(_tailLock.exchange(true));
+        while(_tailLock.exchange(true, std::memory_order_acquire));
 
-        Element *tail = _tail.load(std::memory_order_acquire);
+        Element *tail = _tail.load(std::memory_order_relaxed);
 
         if(tail)
         {

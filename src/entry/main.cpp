@@ -23,7 +23,7 @@ void f(lut::async::Scheduler *sched)
 {
     ++g_cnt;
 
-    if(! (g_cnt % 10000))
+    if(! (g_cnt % 100000))
     {
         std::cout<<g_amount.load()<<", "<<g_cnt<<std::endl;
     }
@@ -59,6 +59,24 @@ int lmain()
 
     lut::async::ThreadPool tp(sched, 4);
 
+    ++g_amount;
+    sched.spawn(&f, &sched);
+    ++g_amount;
+    sched.spawn(&f, &sched);
+    ++g_amount;
+    sched.spawn(&f, &sched);
+    ++g_amount;
+    sched.spawn(&f, &sched);
+    ++g_amount;
+    sched.spawn(&f, &sched);
+    ++g_amount;
+    sched.spawn(&f, &sched);
+    ++g_amount;
+    sched.spawn(&f, &sched);
+    ++g_amount;
+    sched.spawn(&f, &sched);
+    ++g_amount;
+    sched.spawn(&f, &sched);
     ++g_amount;
     sched.spawn(&f, &sched);
 
