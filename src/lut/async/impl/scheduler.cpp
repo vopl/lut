@@ -18,10 +18,11 @@ namespace lut { namespace async { namespace impl
         {
             delete empty;
         }
-        while(Coro *ready = _coroListReady.dequeue())
-        {
-            delete ready;
-        }
+
+//        while(Coro *ready = _coroListReady.dequeue())
+//        {
+//            delete ready;
+//        }
 
         assert(_threads.empty());
     }
@@ -60,11 +61,11 @@ namespace lut { namespace async { namespace impl
     {
         assert(Thread::current() == thread);
 
-        Coro *coro = _coroListReady.dequeue();
+        Coro *coro = fetchReadyCoro4Thread(thread);
         while(!coro)
         {
-            coro = _coroListReady.dequeue();
-            //std::this_thread::yield();
+            //TODO: freeze
+            coro = fetchReadyCoro4Thread(thread);
         }
 
         assert(Thread::current() == thread);
@@ -75,7 +76,9 @@ namespace lut { namespace async { namespace impl
         thread->context()->switchTo(coro);
 
         assert(Thread::current() == thread);
-        enqueuePerThreadCoros(thread);
+        enqueuePerThreadCoros(thread, true);
+
+        _coroListReady.gripFrom(thread->_coroListReady);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +110,16 @@ namespace lut { namespace async { namespace impl
         }
 
         coro->setCode(std::forward<Task>(code));
-        _coroListReady.enqueue(coro);
+
+        Thread *thread = Thread::current();
+        if(thread)
+        {
+            thread->_coroListReady.enqueue(coro);
+        }
+        else
+        {
+            _coroListReady.enqueue(coro);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -140,14 +152,15 @@ namespace lut { namespace async { namespace impl
                 }
                 else
                 {
-                    Coro *next = _coroListReady.dequeue();
+                    Coro *next = fetchReadyCoro4Thread(thread);
+
                     if(next)
                     {
                         thread->setCurrentCoro(next);
                         coro->switchTo(next);
                         break;
                     }
-                    //std::this_thread::yield();
+                    //TODO: freeze
                 }
             }
         }
@@ -173,7 +186,8 @@ namespace lut { namespace async { namespace impl
             return;
         }
 
-        Coro *next = _coroListReady.dequeue();
+        Coro *next = fetchReadyCoro4Thread(thread);
+
         if(next)
         {
             thread->storeReadyCoro(coro);
@@ -187,7 +201,7 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::enqueuePerThreadCoros(Thread *thread)
+    void Scheduler::enqueuePerThreadCoros(Thread *thread, bool threadWantExit)
     {
         if(Coro *empty = thread->fetchEmptyCoro())
         {
@@ -195,7 +209,32 @@ namespace lut { namespace async { namespace impl
         }
         if(Coro *ready = thread->fetchReadyCoro())
         {
-            _coroListReady.enqueue(ready);
+            if(threadWantExit)
+            {
+                _coroListReady.enqueue(ready);
+            }
+            else
+            {
+                thread->_coroListReady.enqueue(ready);
+            }
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    Coro *Scheduler::fetchReadyCoro4Thread(Thread *forThread)
+    {
+        Coro *coro = forThread->_coroListReady.dequeue();
+        if(!coro)
+        {
+            coro = _coroListReady.dequeue();
+        }
+
+        if(!coro)
+        {
+            //from over threads
+        }
+
+        return coro;
+    }
+
 }}}

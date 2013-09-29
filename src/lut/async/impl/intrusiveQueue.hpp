@@ -26,6 +26,8 @@ namespace lut { namespace async { namespace impl
         void enqueue(Element *element);
         Element *dequeue();
 
+        void gripFrom(IntrusiveQueue &from);
+
     private:
         char pad1[256];
         std::atomic_bool        _headLock;
@@ -150,6 +152,57 @@ namespace lut { namespace async { namespace impl
         _headLock.store(false, std::memory_order_release);
         // /*unwanted*/ head->_next.store(nullptr);
         return head;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    template <typename Element>
+    void IntrusiveQueue<Element>::gripFrom(IntrusiveQueue &from)
+    {
+        while(from._headLock.exchange(true, std::memory_order_acquire));
+        Element *fromHead = from._head.load(std::memory_order_relaxed);
+        if(!fromHead)
+        {
+            from._headLock.store(false, std::memory_order_release);
+            return;
+        }
+
+        while(from._tailLock.exchange(true, std::memory_order_acquire));
+        Element *fromTail = from._tail.load(std::memory_order_relaxed);
+
+        while(_headLock.exchange(true, std::memory_order_acquire));
+        while(_tailLock.exchange(true, std::memory_order_acquire));
+
+
+
+        Element *tail = _tail.load(std::memory_order_relaxed);
+        if(!tail)
+        {
+            _head.store(fromHead);
+            _tail.store(fromTail);
+            from._head.store(nullptr);
+            from._tail.store(nullptr);
+
+            _headLock.store(false, std::memory_order_release);
+            _tailLock.store(false, std::memory_order_release);
+
+            from._headLock.store(false, std::memory_order_release);
+            from._tailLock.store(false, std::memory_order_release);
+
+            return;
+        }
+
+
+        tail->_next.store(fromHead);
+        _tail.store(fromTail);
+
+        from._head.store(nullptr);
+        from._tail.store(nullptr);
+
+        _headLock.store(false, std::memory_order_release);
+        _tailLock.store(false, std::memory_order_release);
+
+        from._headLock.store(false, std::memory_order_release);
+        from._tailLock.store(false, std::memory_order_release);
     }
 
 }}}
