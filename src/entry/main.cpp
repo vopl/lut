@@ -13,82 +13,37 @@
 #include <vector>
 #include <atomic>
 
-std::atomic<size_t> g_cnt(0);
-std::atomic<size_t> g_iters(1000000);
 
-std::atomic<size_t> g_amount(0);
-std::size_t g_avgAmount(100);
-
-void f(lut::async::Scheduler *sched)
-{
-    ++g_cnt;
-
-    if(! (g_cnt % 100000))
-    {
-        std::cout<<g_amount.load()<<", "<<g_cnt<<std::endl;
-    }
-
-//    for(size_t k(0); k<10; k++)
-//    {
-//        sched->yield();
-//    }
-
-//    sched->yield();
-    if(g_iters > g_cnt)
-    {
-        if(g_amount < g_avgAmount)
-        {
-            ++g_amount;
-            sched->spawn(&f, sched);
-            sched->yield();
-        }
-        if(g_amount < g_avgAmount)
-        {
-            ++g_amount;
-            sched->spawn(&f, sched);
-            sched->yield();
-        }
-    }
-
-    --g_amount;
-}
+std::atomic<size_t> cnt(0);
 
 int lmain()
 {
     lut::async::Scheduler sched;
 
-    lut::async::ThreadPool tp(sched, 4);
+    lut::async::ThreadPool tp(sched, 1);
 
-    ++g_amount;
-    sched.spawn(&f, &sched);
-    ++g_amount;
-    sched.spawn(&f, &sched);
-    ++g_amount;
-    sched.spawn(&f, &sched);
-    ++g_amount;
-    sched.spawn(&f, &sched);
-    ++g_amount;
-    sched.spawn(&f, &sched);
-    ++g_amount;
-    sched.spawn(&f, &sched);
-    ++g_amount;
-    sched.spawn(&f, &sched);
-    ++g_amount;
-    sched.spawn(&f, &sched);
-    ++g_amount;
-    sched.spawn(&f, &sched);
-    ++g_amount;
-    sched.spawn(&f, &sched);
 
-    while(g_cnt < g_iters || g_amount)
+    auto f = [&](lut::async::Scheduler *sched, size_t iters){
+
+        for(size_t i(0); i<iters; i++)
+        {
+            for(volatile int k(0); k<10; k++);
+
+            sched->yield();
+        }
+
+        cnt.fetch_add(-1, std::memory_order_relaxed);
+    };
+
+
+    for(size_t i(0); i<20; i++)
     {
-        size_t cnt = g_cnt;
-        (void)cnt;
-        size_t iters = g_iters;
-        (void)iters;
-        size_t amount = g_amount;
-        (void)amount;
+        cnt.fetch_add(1);
+        sched.spawn(f, &sched, 1000*1000);
+    }
 
+    while(cnt.load(std::memory_order_relaxed))
+    {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 

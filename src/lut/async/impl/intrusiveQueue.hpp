@@ -29,11 +29,13 @@ namespace lut { namespace async { namespace impl
     private:
         char pad1[256];
         std::atomic_bool        _headLock;
+        char pad2[256];
         std::atomic<Element*>   _head;
 
         char pad3[256];
 
         std::atomic_bool        _tailLock;
+        char pad4[256];
         std::atomic<Element*>   _tail;
         char pad5[256];
     };
