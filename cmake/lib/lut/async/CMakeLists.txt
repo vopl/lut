@@ -137,7 +137,7 @@ set(INC_IMPL
     ${PSRC}/impl/event.hpp
     ${PSRC}/impl/mutex.hpp
     ${PSRC}/impl/synchronizer.hpp
-    ${PSRC}/impl/intrusiveQueue.hpp
+    ${PSRC}/impl/coroContainer.hpp
     ${PINC}/impl/task.hpp
 )
 
@@ -169,6 +169,7 @@ set(SRC_IMPL
     ${PSRC}/impl/context.cpp
     ${PSRC}/impl/coro.cpp
     ${PSRC}/impl/synchronizer.cpp
+    ${PSRC}/impl/coroContainer.cpp
     ${PSRC}/impl/thread.cpp
     ${PSRC}/impl/sizeofImplGen.cpp
     ${PSRC}/impl/task.cpp

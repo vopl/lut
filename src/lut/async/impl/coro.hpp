@@ -7,8 +7,9 @@
 namespace lut { namespace async { namespace impl
 {
 
+    class CoroContainer;
+
     class Coro
-        : public IntrusiveQueue<Coro>::ElementBase
     {
         Coro &operator=(const Coro &) = delete;
 
@@ -29,6 +30,10 @@ namespace lut { namespace async { namespace impl
 
     private:
         Task _task;
+
+    private:
+        friend class CoroContainer;
+        Coro *_nextForContainer;
 
     private://last
         friend class Context;

@@ -5,7 +5,7 @@
 #include "lut/async/impl/scheduler.hpp"
 #include "lut/async/impl/context.hpp"
 #include "lut/async/impl/coro.hpp"
-#include "lut/async/impl/intrusiveQueue.hpp"
+#include "lut/async/impl/coroContainer.hpp"
 
 namespace lut { namespace async { namespace impl
 {
@@ -54,7 +54,7 @@ namespace lut { namespace async { namespace impl
 
     private:
         friend class Scheduler;
-        IntrusiveQueue<Coro>        _coroListReady;
+        CoroContainer               _coroListReady;
     };
 }}}
 

@@ -4,7 +4,7 @@
 #include "lut/async/threadState.hpp"
 #include "lut/async/impl/context.hpp"
 #include "lut/async/impl/coro.hpp"
-#include "lut/async/impl/intrusiveQueue.hpp"
+#include "lut/async/impl/coroContainer.hpp"
 #include "lut/async/impl/task.hpp"
 
 #include <map>
@@ -49,8 +49,8 @@ namespace lut { namespace async { namespace impl
         TMThreads _threads;
 
     private:
-        IntrusiveQueue<Coro> _coroListReady;
-        IntrusiveQueue<Coro> _coroListEmpty;
+        CoroContainer _coroListReady;
+        CoroContainer _coroListEmpty;
     };
 }}}
 

@@ -1,8 +1,6 @@
 #ifndef _LUT_ASYNC_IMPL_CONTEXT_HPP_
 #define _LUT_ASYNC_IMPL_CONTEXT_HPP_
 
-#include "lut/async/impl/intrusiveQueue.hpp"
-
 #include "lut/async/config.h"
 
 #if ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER
