@@ -12,7 +12,7 @@ namespace lut { namespace async { namespace impl
     class Thread
     {
     public:
-        Thread(Scheduler *scheduler, ThreadState *stateEvt);
+        Thread(Scheduler *getScheduler, ThreadState *stateEvt);
         ~Thread();
 
         ThreadUtilizationResult utilize();
@@ -22,9 +22,10 @@ namespace lut { namespace async { namespace impl
         bool isReleaseRequested();
 
     public:
-        static Thread *current();
-        Context *context();
-        Scheduler *scheduler();
+        std::thread::id getId();
+        static Thread *getCurrent();
+        Context *getRootContext();
+        Scheduler *getScheduler();
 
     public:
         void storeEmptyCoro(Coro *coro);
@@ -39,13 +40,15 @@ namespace lut { namespace async { namespace impl
 
 
     private:
+        std::thread::id             _id;
+
         Scheduler                   *_scheduler;
         ThreadState                 *_stateEvt;
 
         std::atomic_bool            _releaseRequest;
 
         static thread_local Thread  *_current;
-        Context                     *_context;
+        Context                     *_rootContext;
 
         Coro                        *_storedEmptyCoro;
         Coro                        *_storedReadyCoro;

@@ -31,73 +31,83 @@ namespace lut { namespace async { namespace impl
     ThreadReleaseResult Scheduler::threadRelease(const std::thread::id &id)
     {
         std::lock_guard<std::mutex> l(_threadsMtx);
-        TMThreads::iterator iter = _threads.find(id);
+        TVThreads::iterator iter = _threads.begin();
+        TVThreads::iterator end = _threads.end();
 
-        if(_threads.end() == iter)
+        for(; iter!=end; ++iter)
         {
-            return ThreadReleaseResult::notInWork;
+            Thread *thread = *iter;
+            if(thread->getId() == id)
+            {
+                thread->releaseRequest();
+                return ThreadReleaseResult::ok;
+            }
         }
 
-        iter->second->releaseRequest();
-
-        return ThreadReleaseResult::ok;
+        return ThreadReleaseResult::notInWork;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     bool Scheduler::threadEntry_init(Thread *thread)
     {
-        assert(Thread::current() == thread);
+        assert(Thread::getCurrent() == thread);
 
         std::lock_guard<std::mutex> l(_threadsMtx);
 
-        std::pair<TMThreads::iterator, bool> insertRes =
-            _threads.insert(std::make_pair(std::this_thread::get_id(), thread));
+        _threads.push_back(thread);
 
-        return insertRes.second;
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     void Scheduler::threadEntry_utilize(Thread *thread)
     {
-        assert(Thread::current() == thread);
+        assert(Thread::getCurrent() == thread);
 
         Coro *coro = fetchReadyCoro4Thread(thread);
-        while(!coro)
-        {
-            //TODO: freeze
-            coro = fetchReadyCoro4Thread(thread);
-        }
+        assert(coro || thread->isReleaseRequested());
 
-        assert(Thread::current() == thread);
+        assert(Thread::getCurrent() == thread);
 
         assert(!thread->getCurrentCoro());
 
-        thread->setCurrentCoro(coro);
-        thread->context()->switchTo(coro);
+        if(coro)
+        {
+            thread->setCurrentCoro(coro);
+            thread->getRootContext()->switchTo(coro);
 
-        assert(Thread::current() == thread);
+            assert(Thread::getCurrent() == thread);
+        }
+        else
+        {
+            assert(thread->isReleaseRequested());
+            //nothing, done work
+        }
+
         enqueuePerThreadCoros(thread, true);
-
         _coroListReady.gripFrom(thread->_coroListReady);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     bool Scheduler::threadEntry_deinit(Thread *thread)
     {
-        assert(Thread::current() == thread);
+        assert(Thread::getCurrent() == thread);
 
         std::lock_guard<std::mutex> l(_threadsMtx);
 
-        TMThreads::iterator iter = _threads.find(std::this_thread::get_id());
+        TVThreads::iterator iter = _threads.begin();
+        TVThreads::iterator end = _threads.end();
 
-        if(_threads.end() == iter)
+        for(; iter!=end; ++iter)
         {
-            return false;
+            if(*iter == thread)
+            {
+                _threads.erase(iter);
+                return true;
+            }
         }
 
-        _threads.erase(iter);
-
-        return true;
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -111,7 +121,7 @@ namespace lut { namespace async { namespace impl
 
         coro->setCode(std::forward<Task>(code));
 
-        Thread *thread = Thread::current();
+        Thread *thread = Thread::getCurrent();
         if(thread)
         {
             thread->_coroListReady.enqueue(coro);
@@ -125,78 +135,82 @@ namespace lut { namespace async { namespace impl
     ////////////////////////////////////////////////////////////////////////////////
     void Scheduler::yield()
     {
-        Thread *thread = Thread::current();
+        Thread *thread = Thread::getCurrent();
         Coro *coro = thread->getCurrentCoro();
         assert(coro);
         if(coro)
         {
-            coroEntry_stayReadyAndDeactivate(coro);
+            coroEntry_stayReadyAndDeactivate(coro, thread);
         }
     }
 
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::coroEntry_stayEmptyAndDeactivate(Coro *coro)
+    void Scheduler::coroEntry_stayEmptyAndDeactivate(Coro *coro, Thread *thread)
     {
-        {
-            Thread *thread = Thread::current();
-            thread->storeEmptyCoro(coro);
+        assert(Thread::getCurrent() == thread);
+        assert(thread->getCurrentCoro() == coro);
 
-            for(;;)
-            {
-                if(thread->isReleaseRequested())
-                {
-                    thread->setCurrentCoro(nullptr);
-                    coro->switchTo(thread->context());
-                    break;
-                }
-                else
-                {
-                    Coro *next = fetchReadyCoro4Thread(thread);
-
-                    if(next)
-                    {
-                        thread->setCurrentCoro(next);
-                        coro->switchTo(next);
-                        break;
-                    }
-                    //TODO: freeze
-                }
-            }
-        }
-
-        {
-            Thread *thread = Thread::current();
-            thread->scheduler()->enqueuePerThreadCoros(thread);
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::coroEntry_stayReadyAndDeactivate(Coro *coro)
-    {
-        Thread *thread = Thread::current();
-        if(thread->isReleaseRequested())
-        {
-            thread->storeReadyCoro(coro);
-            thread->setCurrentCoro(nullptr);
-            coro->switchTo(thread->context());
-
-            Thread *thread = Thread::current();
-            thread->scheduler()->enqueuePerThreadCoros(thread);
-            return;
-        }
+        thread->storeEmptyCoro(coro);
 
         Coro *next = fetchReadyCoro4Thread(thread);
 
         if(next)
         {
-            thread->storeReadyCoro(coro);
             thread->setCurrentCoro(next);
             coro->switchTo(next);
+        }
+        else
+        {
+            assert(thread->isReleaseRequested());
+            thread->setCurrentCoro(nullptr);
+            coro->switchTo(thread->getRootContext());
+        }
 
-            Thread *thread = Thread::current();
-            thread->scheduler()->enqueuePerThreadCoros(thread);
+        {
+            Thread *thread = Thread::getCurrent();
+            thread->getScheduler()->enqueuePerThreadCoros(thread);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    void Scheduler::coroEntry_stayReadyAndDeactivate(Coro *coro, Thread *thread)
+    {
+        assert(Thread::getCurrent() == thread);
+        assert(thread->getCurrentCoro() == coro);
+
+        if(thread->isReleaseRequested())
+        {
+            thread->storeReadyCoro(coro);
+            thread->setCurrentCoro(nullptr);
+
+            coro->switchTo(thread->getRootContext());
+
+            {
+                Thread *thread = Thread::getCurrent();
+                thread->getScheduler()->enqueuePerThreadCoros(thread);
+            }
+
             return;
+        }
+
+        Coro *next = thread->_coroListReady.dequeue();
+
+        if(next)
+        {
+            thread->storeReadyCoro(coro);
+            thread->setCurrentCoro(next);
+
+            coro->switchTo(next);
+
+            {
+                Thread *thread = Thread::getCurrent();
+                thread->getScheduler()->enqueuePerThreadCoros(thread);
+            }
+        }
+        else
+        {
+            //continue current coro
         }
     }
 
@@ -221,20 +235,69 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    Coro *Scheduler::fetchReadyCoro4Thread(Thread *forThread)
+    Coro *Scheduler::fetchReadyCoro4Thread(Thread *thread)
     {
-        Coro *coro = forThread->_coroListReady.dequeue();
-        if(!coro)
+        assert(Thread::getCurrent() == thread);
+
+        for(;;)
         {
-            coro = _coroListReady.dequeue();
+            if(thread->isReleaseRequested())
+            {
+                return nullptr;
+            }
+
+            Coro *coro = thread->_coroListReady.dequeue();
+            if(coro)
+            {
+                return coro;
+            }
+
+            if(_coroListReady.sizeRelaxed())
+            {
+                thread->_coroListReady.gripFrom(_coroListReady);
+                coro = thread->_coroListReady.dequeue();
+                if(coro)
+                {
+                    return coro;
+                }
+            }
+
+            //lock relocator
+
+            if(relocateReadyCoros(thread))
+            {
+                //unlock relocator
+                Coro *coro = thread->_coroListReady.dequeue();
+                if(coro)
+                {
+                    return coro;
+                }
+            }
+            else
+            {
+                if(thread->isReleaseRequested())
+                {
+                    //unlock relocator
+                    return nullptr;
+                }
+
+                //unlock relocator and sleep
+            }
         }
 
-        if(!coro)
-        {
-            //from over threads
-        }
+        assert(!"never here");
+        return nullptr;
+    }
 
-        return coro;
+    ////////////////////////////////////////////////////////////////////////////////
+    bool Scheduler::relocateReadyCoros(Thread *thread)
+    {
+        assert(Thread::getCurrent() == thread);
+        assert(thread->_coroListReady.emptyRelaxed());
+
+        using ThreadWithSize = std::pair<Thread *, size_t>;
+
+        assert(!"not impl");
     }
 
 }}}

@@ -8,10 +8,11 @@ namespace lut { namespace async { namespace impl
 
     ////////////////////////////////////////////////////////////////////////////////
     Thread::Thread(Scheduler *scheduler, ThreadState *stateEvt)
-        : _scheduler(scheduler)
+        : _id(std::this_thread::get_id())
+        , _scheduler(scheduler)
         , _stateEvt(stateEvt)
         , _releaseRequest(false)
-        , _context()
+        , _rootContext()
         , _storedEmptyCoro()
         , _storedReadyCoro()
         , _currentCoro()
@@ -23,7 +24,7 @@ namespace lut { namespace async { namespace impl
     Thread::~Thread()
     {
         assert(!_current);
-        assert(!_context);
+        assert(!_rootContext);
         assert(!_storedEmptyCoro);
         assert(!_storedReadyCoro);
         assert(!_currentCoro);
@@ -56,9 +57,9 @@ namespace lut { namespace async { namespace impl
 
         //work
         {
-            assert(!_context);
+            assert(!_rootContext);
             Context context;
-            _context = &context;
+            _rootContext = &context;
 
 
             if(_stateEvt)
@@ -73,7 +74,7 @@ namespace lut { namespace async { namespace impl
                 _stateEvt->set(ThreadStateValue::doneWork);
             }
 
-            _context = nullptr;
+            _rootContext = nullptr;
         }
 
         if(_stateEvt)
@@ -104,19 +105,25 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    Thread *Thread::current()
+    std::thread::id Thread::getId()
+    {
+        return _id;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    Thread *Thread::getCurrent()
     {
         return _current;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    Context *Thread::context()
+    Context *Thread::getRootContext()
     {
-        return _context;
+        return _rootContext;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    Scheduler *Thread::scheduler()
+    Scheduler *Thread::getScheduler()
     {
         return _scheduler;
     }

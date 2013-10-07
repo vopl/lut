@@ -58,8 +58,8 @@ namespace lut { namespace async { namespace impl
     void Coro::contextProc()
     {
         {
-            Thread *thread = Thread::current();
-            thread->scheduler()->enqueuePerThreadCoros(thread);
+            Thread *thread = Thread::getCurrent();
+            thread->getScheduler()->enqueuePerThreadCoros(thread);
         }
 
         for(;;)
@@ -87,7 +87,8 @@ namespace lut { namespace async { namespace impl
             }
 
             {
-                Thread::current()->scheduler()->coroEntry_stayEmptyAndDeactivate(this);
+                Thread *thread = Thread::getCurrent();
+                thread->getScheduler()->coroEntry_stayEmptyAndDeactivate(this, thread);
             }
         }
     }

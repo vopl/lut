@@ -7,7 +7,7 @@
 #include "lut/async/impl/coroContainer.hpp"
 #include "lut/async/impl/task.hpp"
 
-#include <map>
+#include <vector>
 #include <thread>
 #include <mutex>
 
@@ -33,20 +33,22 @@ namespace lut { namespace async { namespace impl
         void yield();
 
     public:
-        void coroEntry_stayEmptyAndDeactivate(Coro *coro);
-        void coroEntry_stayReadyAndDeactivate(Coro *coro);
+        void coroEntry_stayEmptyAndDeactivate(Coro *coro, Thread *thread);
+        void coroEntry_stayReadyAndDeactivate(Coro *coro, Thread *thread);
 
 
     public:
         void enqueuePerThreadCoros(Thread *thread, bool threadWantExit = false);
 
     private:
-        Coro *fetchReadyCoro4Thread(Thread *forThread);
+        Coro *fetchReadyCoro4Thread(Thread *thread);
+
+        bool relocateReadyCoros(Thread *thread);
 
     private://threads
         std::mutex _threadsMtx;
-        typedef std::map<std::thread::id, Thread *> TMThreads;
-        TMThreads _threads;
+        typedef std::vector<Thread *> TVThreads;
+        TVThreads _threads;
 
     private:
         CoroContainer _coroListReady;
