@@ -1,6 +1,6 @@
 #include "lut/async/stable.hpp"
 #include "lut/async/impl/coroContainer.hpp"
-#include "lut/async/impl/coro.hpp"
+#include "lut/async/impl/ctx/coro.hpp"
 
 namespace lut { namespace async { namespace impl
 {
@@ -18,7 +18,7 @@ namespace lut { namespace async { namespace impl
         assert(emptyRelaxed());
     }
 
-    void CoroContainer::enqueue(Coro *coro)
+    void CoroContainer::enqueue(ctx::Coro *coro)
     {
         coro->_nextForContainer = nullptr;
 
@@ -45,11 +45,11 @@ namespace lut { namespace async { namespace impl
         unlock();
     }
 
-    Coro *CoroContainer::dequeue()
+    ctx::Coro *CoroContainer::dequeue()
     {
         lock();
 
-        Coro *coro;
+        ctx::Coro *coro;
         if(!_head)
         {
             assert(!_tail);

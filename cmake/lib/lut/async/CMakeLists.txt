@@ -130,28 +130,25 @@ source_group(include FILES ${INC})
 
 ############################################################
 set(INC_IMPL
-    ${PSRC}/impl/scheduler.hpp
-    ${PSRC}/impl/thread.hpp
-    ${PSRC}/impl/coro.hpp
-    ${PSRC}/impl/context.hpp
-    ${PSRC}/impl/event.hpp
-    ${PSRC}/impl/mutex.hpp
-    ${PSRC}/impl/synchronizer.hpp
-    ${PSRC}/impl/coroContainer.hpp
     ${PINC}/impl/task.hpp
+)
+source_group(include/impl FILES ${INC_IMPL})
+
+############################################################
+set(INC_IMPL_CTX
 )
 
 if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)
-    list(APPEND INC_IMPL ${PSRC}/impl/contextEngine_winfiber.hpp)
+    list(APPEND INC_IMPL_CTX ${PSRC}/impl/ctx/engine_winfiber.hpp)
 endif()
 if(ASYNCSCHEDULER_CONTEXTENGINE_UCONTEXT)
-    list(APPEND INC_IMPL ${PSRC}/impl/contextEngine_ucontext.hpp)
+    list(APPEND INC_IMPL_CTX ${PSRC}/impl/ctx/engine_ucontext.hpp)
 endif()
 if(ASYNCSCHEDULER_CONTEXTENGINE_BOOSTCONTEXT)
-    list(APPEND INC_IMPL ${PSRC}/impl/contextEngine_boostcontext.hpp)
+    list(APPEND INC_IMPL_CTX ${PSRC}/impl/ctx/engine_boostcontext.hpp)
 endif()
 
-source_group(include/impl FILES ${INC_IMPL})
+source_group(include/impl/ctx FILES ${INC_IMPL_CTX})
 
 ############################################################
 set(SRC
@@ -164,30 +161,41 @@ source_group(src FILES ${SRC})
 
 ############################################################
 set(SRC_IMPL
+    ${PSRC}/impl/scheduler.hpp
+    ${PSRC}/impl/thread.hpp
+    ${PSRC}/impl/coroContainer.hpp
     ${PSRC}/impl/scheduler.cpp
-    ${PSRC}/impl/barrier.cpp
-    ${PSRC}/impl/context.cpp
-    ${PSRC}/impl/coro.cpp
-    ${PSRC}/impl/synchronizer.cpp
     ${PSRC}/impl/coroContainer.cpp
     ${PSRC}/impl/thread.cpp
     ${PSRC}/impl/sizeofImplGen.cpp
     ${PSRC}/impl/task.cpp
 )
 
+source_group(src/impl FILES ${SRC_IMPL})
+
+############################################################
+set_source_files_properties(${PSRC}/impl/sizeofImplGen.cpp PROPERTIES HEADER_FILE_ONLY ON)
+
+############################################################
+set(SRC_IMPL_CTX
+    ${PSRC}/impl/ctx/coro.hpp
+    ${PSRC}/impl/ctx/root.hpp
+    ${PSRC}/impl/ctx/root.cpp
+    ${PSRC}/impl/ctx/coro.cpp
+)
+
 if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)
-    list(APPEND SRC_IMPL ${PSRC}/impl/contextEngine_winfiber.cpp)
+    list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_winfiber.cpp)
 endif()
 if(ASYNCSCHEDULER_CONTEXTENGINE_UCONTEXT)
-    list(APPEND SRC_IMPL ${PSRC}/impl/contextEngine_ucontext.cpp)
+    list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_ucontext.cpp)
 endif()
 if(ASYNCSCHEDULER_CONTEXTENGINE_BOOSTCONTEXT)
-    list(APPEND SRC_IMPL ${PSRC}/impl/contextEngine_boostcontext.cpp)
+    list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_boostcontext.cpp)
 endif()
 
 source_group(src/impl FILES ${SRC_IMPL})
 
-set_source_files_properties(${PSRC}/impl/sizeofImplGen.cpp PROPERTIES HEADER_FILE_ONLY ON)
 
 
 
@@ -234,8 +242,6 @@ add_custom_command(OUTPUT ${PINC}/sizeofImpl.hpp
                     DEPENDS
                         ${PSRC}/impl/sizeofImplGen.cpp
                         ${PSRC}/impl/scheduler.hpp
-                        ${PSRC}/impl/event.hpp
-                        ${PSRC}/impl/mutex.hpp
                     VERBATIM)
                     
 #set_source_files_properties(
@@ -251,8 +257,8 @@ add_custom_command(OUTPUT ${PINC}/sizeofImpl.hpp
 
 ############################################################
 add_library(${PROJECT} STATIC
-    ${INC} ${INC_IMPL}
-    ${SRC} ${SRC_IMPL}
+    ${INC} ${INC_IMPL} ${INC_IMPL_CTX}
+    ${SRC} ${SRC_IMPL} ${SRC_IMPL_CTX}
     ${SRC_PCH}
     ${PINC}/sizeofImpl.hpp)
 

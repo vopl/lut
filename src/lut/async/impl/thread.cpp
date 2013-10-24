@@ -58,8 +58,8 @@ namespace lut { namespace async { namespace impl
         //work
         {
             assert(!_rootContext);
-            Context context;
-            _rootContext = &context;
+            ctx::Root rootContext;
+            _rootContext = &rootContext;
 
 
             if(_stateEvt)
@@ -117,7 +117,7 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    Context *Thread::getRootContext()
+    ctx::Root *Thread::getRootContext()
     {
         return _rootContext;
     }
@@ -129,25 +129,25 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Thread::storeEmptyCoro(Coro *coro)
+    void Thread::storeEmptyCoro(ctx::Coro *coro)
     {
         assert(!_storedEmptyCoro);
         _storedEmptyCoro = coro;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Thread::storeReadyCoro(Coro *coro)
+    void Thread::storeReadyCoro(ctx::Coro *coro)
     {
         assert(!_storedReadyCoro);
         _storedReadyCoro = coro;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    Coro *Thread::fetchEmptyCoro()
+    ctx::Coro *Thread::fetchEmptyCoro()
     {
         if(_storedEmptyCoro)
         {
-            Coro *coro = _storedEmptyCoro;
+            ctx::Coro *coro = _storedEmptyCoro;
             _storedEmptyCoro = nullptr;
             return coro;
         }
@@ -156,11 +156,11 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    Coro *Thread::fetchReadyCoro()
+    ctx::Coro *Thread::fetchReadyCoro()
     {
         if(_storedReadyCoro)
         {
-            Coro *coro = _storedReadyCoro;
+            ctx::Coro *coro = _storedReadyCoro;
             _storedReadyCoro = nullptr;
             return coro;
         }
@@ -169,13 +169,13 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Thread::setCurrentCoro(Coro *coro)
+    void Thread::setCurrentCoro(ctx::Coro *coro)
     {
         _currentCoro = coro;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    Coro *Thread::getCurrentCoro()
+    ctx::Coro *Thread::getCurrentCoro()
     {
         return _currentCoro;
     }

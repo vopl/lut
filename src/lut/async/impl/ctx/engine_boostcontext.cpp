@@ -1,18 +1,18 @@
 #include "lut/async/stable.hpp"
-#include "lut/async/impl/contextEngine_boostcontext.hpp"
+#include "lut/async/impl/ctx/engine_boostcontext.hpp"
 
 #include <cstddef>
 
-namespace lut { namespace async { namespace impl
+namespace lut { namespace async { namespace impl { namespace ctx
 {
     ////////////////////////////////////////////////////////////////////////////////
-    ContextEngine::ContextEngine()
+    Engine::Engine()
     {
 
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void ContextEngine::constructRoot()
+    void Engine::constructRoot()
     {
         _coroArg = 0;
         _ctx = reinterpret_cast<boost::context::fcontext_t *>(&_buffer);
@@ -20,17 +20,17 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void ContextEngine::destructRoot()
+    void Engine::destructRoot()
     {
         //empty ok
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void ContextEngine::constructCoro(size_t sizeWithStack, void(*f)(intptr_t), intptr_t arg)
+    void Engine::constructCoro(size_t sizeWithStack, void(*f)(intptr_t), intptr_t arg)
     {
         _coroArg = arg;
 
-        size_t stackSize = sizeWithStack-offsetof(ContextEngine, _buffer);
+        size_t stackSize = sizeWithStack-offsetof(Engine, _buffer);
 
         _ctx = boost::context::make_fcontext(
                     (char *)&_buffer+stackSize,
@@ -39,14 +39,14 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void ContextEngine::destructCoro()
+    void Engine::destructCoro()
     {
         // empty ok
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void ContextEngine::switchTo(ContextEngine *to)
+    void Engine::switchTo(Engine *to)
     {
         boost::context::jump_fcontext(_ctx, to->_ctx, to->_coroArg, false);
     }
-}}}
+}}}}

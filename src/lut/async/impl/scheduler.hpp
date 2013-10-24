@@ -2,8 +2,8 @@
 #define _LUT_ASYNC_IMPL_SCHEDULER_HPP_
 
 #include "lut/async/threadState.hpp"
-#include "lut/async/impl/context.hpp"
-#include "lut/async/impl/coro.hpp"
+#include "lut/async/impl/ctx/root.hpp"
+#include "lut/async/impl/ctx/coro.hpp"
 #include "lut/async/impl/coroContainer.hpp"
 #include "lut/async/impl/task.hpp"
 
@@ -33,14 +33,14 @@ namespace lut { namespace async { namespace impl
         void yield();
 
     public:
-        void coroEntry_stayEmptyAndDeactivate(Coro *coro, Thread *thread);
-        void coroEntry_stayReadyAndDeactivate(Coro *coro, Thread *thread);
+        void coroEntry_stayEmptyAndDeactivate(ctx::Coro *coro, Thread *thread);
+        void coroEntry_stayReadyAndDeactivate(ctx::Coro *coro, Thread *thread);
 
 
     public:
         void enqueuePerThreadCoros(Thread *thread);
 
-        Coro *fetchReadyCoro4Thread(Thread *thread);
+        ctx::Coro *fetchReadyCoro4Thread(Thread *thread);
 
     private://threads
         std::mutex _threadsMtx;

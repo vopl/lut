@@ -1,14 +1,16 @@
-#ifndef _LUT_ASYNC_IMPL_CORO_HPP_
-#define _LUT_ASYNC_IMPL_CORO_HPP_
+#ifndef _LUT_ASYNC_IMPL_CORO_CTX_HPP_
+#define _LUT_ASYNC_IMPL_CORO_CTX_HPP_
 
-#include "lut/async/impl/context.hpp"
+#include "lut/async/impl/ctx/root.hpp"
 #include "lut/async/impl/task.hpp"
 
 namespace lut { namespace async { namespace impl
 {
-
     class CoroContainer;
+}}}
 
+namespace lut { namespace async { namespace impl { namespace ctx
+{
     class Coro
     {
         Coro &operator=(const Coro &) = delete;
@@ -21,7 +23,7 @@ namespace lut { namespace async { namespace impl
 
         void setCode(Task &&code);
 
-        void switchTo(Context *to);
+        void switchTo(Root *to);
         void switchTo(Coro *to);
 
     private:
@@ -32,13 +34,13 @@ namespace lut { namespace async { namespace impl
         Task _task;
 
     private:
-        friend class CoroContainer;
+        friend class lut::async::impl::CoroContainer;
         Coro *_nextForContainer;
 
     private://last
-        friend class Context;
-        ContextEngine _engine;
+        friend class Root;
+        Engine _engine;
     };
-}}}
+}}}}
 
 #endif

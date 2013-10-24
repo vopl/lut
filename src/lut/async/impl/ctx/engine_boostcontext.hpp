@@ -1,15 +1,15 @@
-#ifndef _LUT_ASYNC_IMPL_CONTEXTENGINE_BOOSTCONTEXT_HPP_
-#define _LUT_ASYNC_IMPL_CONTEXTENGINE_BOOSTCONTEXT_HPP_
+#ifndef _LUT_ASYNC_IMPL_CTX_ENGINE_BOOSTCONTEXT_HPP_
+#define _LUT_ASYNC_IMPL_CTX_ENGINE_BOOSTCONTEXT_HPP_
 
 #include <cstdint>
 #include <boost/context/all.hpp>
 
-namespace lut { namespace async { namespace impl
+namespace lut { namespace async { namespace impl { namespace ctx
 {
-    class ContextEngine
+    class Engine
     {
     public:
-        ContextEngine();
+        Engine();
 
         void constructRoot();
         void destructRoot();
@@ -17,7 +17,7 @@ namespace lut { namespace async { namespace impl
         void constructCoro(size_t sizeWithStack, void(*f)(intptr_t), intptr_t arg);
         void destructCoro();
 
-        void switchTo(ContextEngine *to);
+        void switchTo(Engine *to);
 
     private:
         boost::context::fcontext_t *_ctx;
@@ -25,6 +25,6 @@ namespace lut { namespace async { namespace impl
 
         char _buffer[sizeof(boost::context::fcontext_t)];
     };
-}}}
+}}}}
 
 #endif

@@ -1,9 +1,9 @@
 #include "lut/async/stable.hpp"
-#include "lut/async/impl/coro.hpp"
+#include "lut/async/impl/ctx/coro.hpp"
 #include "lut/async/impl/scheduler.hpp"
 #include "lut/async/impl/thread.hpp"
 
-namespace lut { namespace async { namespace impl
+namespace lut { namespace async { namespace impl { namespace ctx
 {
     Coro *Coro::make(size_t stackSize)
     {
@@ -12,7 +12,7 @@ namespace lut { namespace async { namespace impl
         new(coro) Coro;
 
         coro->_engine.constructCoro(
-                    sizeof(ContextEngine) + stackSize,
+                    sizeof(Engine) + stackSize,
                     &Coro::s_contextProc,
                     reinterpret_cast<intptr_t>(coro));
 
@@ -40,7 +40,7 @@ namespace lut { namespace async { namespace impl
         assert(!_task.empty());
     }
 
-    void Coro::switchTo(Context *to)
+    void Coro::switchTo(Root *to)
     {
         _engine.switchTo(&to->_engine);
     }
@@ -92,4 +92,4 @@ namespace lut { namespace async { namespace impl
             }
         }
     }
-}}}
+}}}}

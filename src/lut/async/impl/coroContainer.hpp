@@ -6,7 +6,10 @@
 
 namespace lut { namespace async { namespace impl
 {
-    class Coro;
+    namespace ctx
+    {
+        class Coro;
+    }
 
     class CoroContainer
     {
@@ -14,8 +17,8 @@ namespace lut { namespace async { namespace impl
         CoroContainer();
         ~CoroContainer();
 
-        void enqueue(Coro *coro);
-        Coro *dequeue();
+        void enqueue(ctx::Coro *coro);
+        ctx::Coro *dequeue();
 
         size_t sizeRelaxed() const;
         bool emptyRelaxed() const;
@@ -30,8 +33,8 @@ namespace lut { namespace async { namespace impl
         char pad1[256];
         std::atomic_bool    _lock;
         std::atomic<size_t> _size;
-        Coro*               _head;
-        Coro*               _tail;
+        ctx::Coro*          _head;
+        ctx::Coro*          _tail;
         char pad4[256];
     };
 }}}

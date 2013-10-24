@@ -14,7 +14,7 @@ namespace lut { namespace async { namespace impl
     ////////////////////////////////////////////////////////////////////////////////
     Scheduler::~Scheduler()
     {
-        while(Coro *empty = _coroListEmpty.dequeue())
+        while(ctx::Coro *empty = _coroListEmpty.dequeue())
         {
             delete empty;
         }
@@ -64,7 +64,7 @@ namespace lut { namespace async { namespace impl
     {
         assert(Thread::getCurrent() == thread);
 
-        Coro *coro = fetchReadyCoro4Thread(thread);
+        ctx::Coro *coro = fetchReadyCoro4Thread(thread);
         assert(coro || thread->isReleaseRequested());
 
         assert(Thread::getCurrent() == thread);
@@ -112,10 +112,10 @@ namespace lut { namespace async { namespace impl
     ////////////////////////////////////////////////////////////////////////////////
     void Scheduler::spawn(Task &&code)
     {
-        Coro *coro = _coroListEmpty.dequeue();
+        ctx::Coro *coro = _coroListEmpty.dequeue();
         if(!coro)
         {
-            coro = Coro::make();
+            coro = ctx::Coro::make();
         }
 
         coro->setCode(std::forward<Task>(code));
@@ -127,7 +127,7 @@ namespace lut { namespace async { namespace impl
     void Scheduler::yield()
     {
         Thread *thread = Thread::getCurrent();
-        Coro *coro = thread->getCurrentCoro();
+        ctx::Coro *coro = thread->getCurrentCoro();
         assert(coro);
         if(coro)
         {
@@ -137,14 +137,14 @@ namespace lut { namespace async { namespace impl
 
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::coroEntry_stayEmptyAndDeactivate(Coro *coro, Thread *thread)
+    void Scheduler::coroEntry_stayEmptyAndDeactivate(ctx::Coro *coro, Thread *thread)
     {
         assert(Thread::getCurrent() == thread);
         assert(thread->getCurrentCoro() == coro);
 
         thread->storeEmptyCoro(coro);
 
-        Coro *next = fetchReadyCoro4Thread(thread);
+        ctx::Coro *next = fetchReadyCoro4Thread(thread);
 
         if(next)
         {
@@ -165,7 +165,7 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::coroEntry_stayReadyAndDeactivate(Coro *coro, Thread *thread)
+    void Scheduler::coroEntry_stayReadyAndDeactivate(ctx::Coro *coro, Thread *thread)
     {
         assert(Thread::getCurrent() == thread);
         assert(thread->getCurrentCoro() == coro);
@@ -185,7 +185,7 @@ namespace lut { namespace async { namespace impl
             return;
         }
 
-        Coro *next = _coroListReady.dequeue();
+        ctx::Coro *next = _coroListReady.dequeue();
 
         if(next)
         {
@@ -208,18 +208,18 @@ namespace lut { namespace async { namespace impl
     ////////////////////////////////////////////////////////////////////////////////
     void Scheduler::enqueuePerThreadCoros(Thread *thread)
     {
-        if(Coro *empty = thread->fetchEmptyCoro())
+        if(ctx::Coro *empty = thread->fetchEmptyCoro())
         {
             _coroListEmpty.enqueue(empty);
         }
-        if(Coro *ready = thread->fetchReadyCoro())
+        if(ctx::Coro *ready = thread->fetchReadyCoro())
         {
             _coroListReady.enqueue(ready);
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    Coro *Scheduler::fetchReadyCoro4Thread(Thread *thread)
+    ctx::Coro *Scheduler::fetchReadyCoro4Thread(Thread *thread)
     {
         assert(Thread::getCurrent() == thread);
 
@@ -230,7 +230,7 @@ namespace lut { namespace async { namespace impl
                 return nullptr;
             }
 
-            Coro *coro = _coroListReady.dequeue();
+            ctx::Coro *coro = _coroListReady.dequeue();
             if(coro)
             {
                 return coro;
