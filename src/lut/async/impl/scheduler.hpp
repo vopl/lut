@@ -38,12 +38,9 @@ namespace lut { namespace async { namespace impl
 
 
     public:
-        void enqueuePerThreadCoros(Thread *thread, bool threadWantExit = false);
+        void enqueuePerThreadCoros(Thread *thread);
 
-    private:
         Coro *fetchReadyCoro4Thread(Thread *thread);
-
-        bool relocateReadyCoros(Thread *thread);
 
     private://threads
         std::mutex _threadsMtx;

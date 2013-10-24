@@ -84,8 +84,7 @@ namespace lut { namespace async { namespace impl
             //nothing, done work
         }
 
-        enqueuePerThreadCoros(thread, true);
-        _coroListReady.gripFrom(thread->_coroListReady);
+        enqueuePerThreadCoros(thread);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -121,15 +120,7 @@ namespace lut { namespace async { namespace impl
 
         coro->setCode(std::forward<Task>(code));
 
-        Thread *thread = Thread::getCurrent();
-        if(thread)
-        {
-            thread->_coroListReady.enqueue(coro);
-        }
-        else
-        {
-            _coroListReady.enqueue(coro);
-        }
+        _coroListReady.enqueue(coro);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -194,7 +185,7 @@ namespace lut { namespace async { namespace impl
             return;
         }
 
-        Coro *next = thread->_coroListReady.dequeue();
+        Coro *next = _coroListReady.dequeue();
 
         if(next)
         {
@@ -215,7 +206,7 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::enqueuePerThreadCoros(Thread *thread, bool threadWantExit)
+    void Scheduler::enqueuePerThreadCoros(Thread *thread)
     {
         if(Coro *empty = thread->fetchEmptyCoro())
         {
@@ -223,14 +214,7 @@ namespace lut { namespace async { namespace impl
         }
         if(Coro *ready = thread->fetchReadyCoro())
         {
-            if(threadWantExit)
-            {
-                _coroListReady.enqueue(ready);
-            }
-            else
-            {
-                thread->_coroListReady.enqueue(ready);
-            }
+            _coroListReady.enqueue(ready);
         }
     }
 
@@ -246,58 +230,16 @@ namespace lut { namespace async { namespace impl
                 return nullptr;
             }
 
-            Coro *coro = thread->_coroListReady.dequeue();
+            Coro *coro = _coroListReady.dequeue();
             if(coro)
             {
                 return coro;
             }
 
-            if(_coroListReady.sizeRelaxed())
-            {
-                thread->_coroListReady.gripFrom(_coroListReady);
-                coro = thread->_coroListReady.dequeue();
-                if(coro)
-                {
-                    return coro;
-                }
-            }
-
-            //lock relocator
-
-            if(relocateReadyCoros(thread))
-            {
-                //unlock relocator
-                Coro *coro = thread->_coroListReady.dequeue();
-                if(coro)
-                {
-                    return coro;
-                }
-            }
-            else
-            {
-                if(thread->isReleaseRequested())
-                {
-                    //unlock relocator
-                    return nullptr;
-                }
-
-                //unlock relocator and sleep
-            }
+            //TODO sleep
         }
 
         assert(!"never here");
         return nullptr;
     }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    bool Scheduler::relocateReadyCoros(Thread *thread)
-    {
-        assert(Thread::getCurrent() == thread);
-        assert(thread->_coroListReady.emptyRelaxed());
-
-        using ThreadWithSize = std::pair<Thread *, size_t>;
-
-        assert(!"not impl");
-    }
-
 }}}

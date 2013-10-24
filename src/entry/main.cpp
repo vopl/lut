@@ -36,7 +36,7 @@ int lmain()
     for(size_t i(0); i<20; i++)
     {
         cnt.fetch_add(1);
-        sched.spawn(f, &sched, 1000*1000*10);
+        sched.spawn(f, &sched, 100000);
     }
 
     while(cnt.load(std::memory_order_relaxed))

@@ -54,10 +54,6 @@ namespace lut { namespace async { namespace impl
         Coro                        *_storedReadyCoro;
 
         Coro                        *_currentCoro;
-
-    private:
-        friend class Scheduler;
-        CoroContainer               _coroListReady;
     };
 }}}
 
