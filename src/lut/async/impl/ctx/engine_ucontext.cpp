@@ -1,12 +1,12 @@
 #include "lut/async/stable.hpp"
-#include "lut/async/impl/contextEngine_ucontext.hpp"
+#include "lut/async/impl/ctx/engine_ucontext.hpp"
 
 #include <cstdlib>
 
-namespace lut { namespace async { namespace impl
+namespace lut { namespace async { namespace impl { namespace ctx
 {
     ////////////////////////////////////////////////////////////////////////////////
-    void ContextEngine::constructRoot()
+    void Engine::constructRoot()
     {
         if(getcontext(this))
         {
@@ -17,7 +17,7 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void ContextEngine::destructRoot()
+    void Engine::destructRoot()
     {
         //empty ok
     }
@@ -35,7 +35,7 @@ namespace lut { namespace async { namespace impl
         }
     }
 #endif
-    void ContextEngine::constructCoro(size_t sizeWithStack, void(*f)(intptr_t), intptr_t arg)
+    void Engine::constructCoro(size_t sizeWithStack, void(*f)(intptr_t), intptr_t arg)
     {
         if(getcontext(this))
         {
@@ -45,8 +45,8 @@ namespace lut { namespace async { namespace impl
         }
 
         uc_link = NULL;
-        uc_stack.ss_sp = reinterpret_cast<char*>(this) + sizeof(ContextEngine);
-        uc_stack.ss_size = sizeWithStack - sizeof(ContextEngine);
+        uc_stack.ss_sp = reinterpret_cast<char*>(this) + sizeof(Engine);
+        uc_stack.ss_size = sizeWithStack - sizeof(Engine);
 
 #if PVOID_SIZE == INT_SIZE
         static_assert(sizeof(int) == sizeof(arg), "sizeof(int) == sizeof(task)");
@@ -74,14 +74,14 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void ContextEngine::destructCoro()
+    void Engine::destructCoro()
     {
         //empry ok
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void ContextEngine::switchTo(ContextEngine *to)
+    void Engine::switchTo(Engine *to)
     {
         swapcontext(this, to);
     }
-}}}
+}}}}

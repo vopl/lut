@@ -1,14 +1,14 @@
-#ifndef _LUT_ASYNC_IMPL_CONTEXTENGINE_UCONTEXT_HPP_
-#define _LUT_ASYNC_IMPL_CONTEXTENGINE_UCONTEXT_HPP_
+#ifndef _LUT_ASYNC_IMPL_CTX_ENGINE_UCONTEXT_HPP_
+#define _LUT_ASYNC_IMPL_CTX_ENGINE_UCONTEXT_HPP_
 
 #include "lut/async/config.h"
 
 #include <ucontext.h>
 #include <cstdint>
 
-namespace lut { namespace async { namespace impl
+namespace lut { namespace async { namespace impl { namespace ctx
 {
-    class ContextEngine
+    class Engine
         : ucontext_t
     {
     public:
@@ -18,8 +18,8 @@ namespace lut { namespace async { namespace impl
         void constructCoro(size_t sizeWithStack, void(*f)(intptr_t), intptr_t arg);
         void destructCoro();
 
-        void switchTo(ContextEngine *to);
+        void switchTo(Engine *to);
     };
-}}}
+}}}}
 
 #endif
