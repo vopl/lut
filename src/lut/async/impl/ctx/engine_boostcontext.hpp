@@ -7,6 +7,7 @@
 namespace lut { namespace async { namespace impl { namespace ctx
 {
     class Engine
+            : private boost::context::fcontext_t
     {
     public:
         Engine();
@@ -14,16 +15,13 @@ namespace lut { namespace async { namespace impl { namespace ctx
         void constructRoot();
         void destructRoot();
 
-        void constructCoro(size_t sizeWithStack, void(*f)(intptr_t), intptr_t arg);
+        void constructCoro(char *stackBegin, void(*f)(intptr_t), intptr_t arg);
         void destructCoro();
 
         void switchTo(Engine *to);
 
     private:
-        boost::context::fcontext_t *_ctx;
         intptr_t _coroArg;
-
-        char _buffer[sizeof(boost::context::fcontext_t)];
     };
 }}}}
 

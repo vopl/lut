@@ -35,7 +35,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         }
     }
 #endif
-    void Engine::constructCoro(size_t sizeWithStack, void(*f)(intptr_t), intptr_t arg)
+    void Engine::constructCoro(char *stackBegin, void(*f)(intptr_t), intptr_t arg)
     {
         if(getcontext(this))
         {
@@ -45,8 +45,8 @@ namespace lut { namespace async { namespace impl { namespace ctx
         }
 
         uc_link = NULL;
-        uc_stack.ss_sp = reinterpret_cast<char*>(this) + sizeof(Engine);
-        uc_stack.ss_size = sizeWithStack - sizeof(Engine);
+        uc_stack.ss_sp = stackBegin;
+        uc_stack.ss_size = (char *)this - stackBegin;
 
 #if PVOID_SIZE == INT_SIZE
         static_assert(sizeof(int) == sizeof(arg), "sizeof(int) == sizeof(task)");

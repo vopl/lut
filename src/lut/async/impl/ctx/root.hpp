@@ -17,20 +17,13 @@
 
 namespace lut { namespace async { namespace impl { namespace ctx
 {
-    class Coro;
     class Root
+        : public Engine
     {
         Root &operator=(const Root &) = delete;
     public:
         Root();
         ~Root();
-
-        void switchTo(Root *to);
-        void switchTo(Coro *to);
-
-    private:
-        friend class Coro;
-        Engine _engine;
     };
 }}}}
 

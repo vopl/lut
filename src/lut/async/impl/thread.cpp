@@ -4,7 +4,7 @@
 namespace lut { namespace async { namespace impl
 {
     ////////////////////////////////////////////////////////////////////////////////
-    thread_local Thread *Thread::_current(nullptr);
+    __thread Thread *Thread::_current(nullptr);
 
     ////////////////////////////////////////////////////////////////////////////////
     Thread::Thread(Scheduler *scheduler, ThreadState *stateEvt)

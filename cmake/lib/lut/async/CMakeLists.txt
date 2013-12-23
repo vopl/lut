@@ -197,6 +197,15 @@ endif()
 source_group(src/impl FILES ${SRC_IMPL})
 
 
+############################################################
+set(SRC_IMPL_STACK
+    ${PSRC}/impl/sm/allocator.hpp
+    ${PSRC}/impl/sm/index.hpp
+    ${PSRC}/impl/sm/stack.hpp
+    ${PSRC}/impl/sm/utils.hpp
+    ${PSRC}/impl/sm/vm.hpp
+    ${PSRC}/impl/sm/vm.cpp
+)
 
 
 ############################################################
@@ -257,8 +266,8 @@ add_custom_command(OUTPUT ${PINC}/sizeofImpl.hpp
 
 ############################################################
 add_library(${PROJECT} STATIC
-    ${INC} ${INC_IMPL} ${INC_IMPL_CTX}
-    ${SRC} ${SRC_IMPL} ${SRC_IMPL_CTX}
+    ${INC} ${INC_IMPL} ${INC_IMPL_CTX} ${INC_IMPL_STACK}
+    ${SRC} ${SRC_IMPL} ${SRC_IMPL_CTX} ${SRC_IMPL_STACK}
     ${SRC_PCH}
     ${PINC}/sizeofImpl.hpp)
 

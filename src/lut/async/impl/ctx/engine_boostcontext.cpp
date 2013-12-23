@@ -15,8 +15,6 @@ namespace lut { namespace async { namespace impl { namespace ctx
     void Engine::constructRoot()
     {
         _coroArg = 0;
-        _ctx = reinterpret_cast<boost::context::fcontext_t *>(&_buffer);
-        new(_ctx) boost::context::fcontext_t;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -26,16 +24,19 @@ namespace lut { namespace async { namespace impl { namespace ctx
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Engine::constructCoro(size_t sizeWithStack, void(*f)(intptr_t), intptr_t arg)
+    void Engine::constructCoro(char *stackBegin, void(*f)(intptr_t), intptr_t arg)
     {
         _coroArg = arg;
 
-        size_t stackSize = sizeWithStack-offsetof(Engine, _buffer);
+        char *stackEnd = (char *)this + sizeof(boost::context::fcontext_t);
 
-        _ctx = boost::context::make_fcontext(
-                    (char *)&_buffer+stackSize,
-                    stackSize,
+        boost::context::fcontext_t *ctx = boost::context::make_fcontext(
+                    stackEnd,
+                    stackEnd - stackBegin,
                     f);
+
+        assert(this == ctx);
+        (void)ctx;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -47,6 +48,6 @@ namespace lut { namespace async { namespace impl { namespace ctx
     ////////////////////////////////////////////////////////////////////////////////
     void Engine::switchTo(Engine *to)
     {
-        boost::context::jump_fcontext(_ctx, to->_ctx, to->_coroArg, false);
+        boost::context::jump_fcontext(this, to, to->_coroArg, false);
     }
 }}}}

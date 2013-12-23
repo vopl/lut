@@ -16,7 +16,7 @@ namespace lut { namespace async { namespace impl
     {
         while(ctx::Coro *empty = _coroListEmpty.dequeue())
         {
-            delete empty;
+            empty->free();
         }
 
 //        while(Coro *ready = _coroListReady.dequeue())
@@ -115,8 +115,9 @@ namespace lut { namespace async { namespace impl
         ctx::Coro *coro = _coroListEmpty.dequeue();
         if(!coro)
         {
-            coro = ctx::Coro::make();
+            coro = ctx::Coro::alloc(true);
         }
+        assert(coro || !"process failure");
 
         coro->setCode(std::forward<Task>(code));
 

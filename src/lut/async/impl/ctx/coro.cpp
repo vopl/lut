@@ -1,36 +1,65 @@
 #include "lut/async/stable.hpp"
 #include "lut/async/impl/ctx/coro.hpp"
-#include "lut/async/impl/scheduler.hpp"
+#include "lut/async/impl/sm/allocator.hpp"
 #include "lut/async/impl/thread.hpp"
 
 namespace lut { namespace async { namespace impl { namespace ctx
 {
-    Coro *Coro::make(size_t stackSize)
+    namespace sm = lut::async::impl::sm;
+    namespace
     {
-        Coro *coro = (Coro *)malloc(sizeof(Coro) + stackSize);
+        typedef sm::Allocator<
+            5,//size_t levelBittness,
+            4,//size_t deepth,
+            4096,//size_t pageSize,
+            1024*1024*8/4096,//size_t maxStackPages,
+            1,//size_t initialMappedPages=1,
+            1024,//size_t unmapBoundBytes=1024,
+            true,//bool useGuardPage=true,
+            8//size_t bittnessConcurrency=8
+        > StackAllocator;
+        StackAllocator g_stackAllocator;
+    }
 
-        new(coro) Coro;
+    Coro *Coro::alloc(bool quietFail)
+    {
+        const sm::Stack *stack = g_stackAllocator.alloc(quietFail);
+        if(!stack)
+        {
+            return nullptr;
+        }
 
-        coro->_engine.constructCoro(
-                    sizeof(Engine) + stackSize,
-                    &Coro::s_contextProc,
-                    reinterpret_cast<intptr_t>(coro));
+        Coro *coro = (Coro *)
+                ((intptr_t)(stack->_userspaceBound - sizeof(Coro)) & ~0xf);
+
+        new(coro) Coro(stack);
 
         return coro;
     }
 
-    Coro::Coro()
+    Coro::Coro(const lut::async::impl::sm::Stack *stack)
+        : _stack(stack)
     {
+        constructCoro(
+                    _stack->_guardBound,
+                    &Coro::s_contextProc,
+                    reinterpret_cast<intptr_t>(this));
     }
 
-    void Coro::operator delete(void *p)
+    void Coro::free()
     {
-        free(p);
+        const sm::Stack *stack = _stack;
+        this->~Coro();
+
+        bool b = g_stackAllocator.free(stack);
+        assert(b);
+        (void)b;
     }
 
     Coro::~Coro()
     {
-        _engine.destructCoro();
+        destructCoro();
+        //_stack = NULL;
     }
 
     void Coro::setCode(Task &&code)
@@ -40,14 +69,10 @@ namespace lut { namespace async { namespace impl { namespace ctx
         assert(!_task.empty());
     }
 
-    void Coro::switchTo(Root *to)
+    void Coro::switchTo(Engine *to)
     {
-        _engine.switchTo(&to->_engine);
-    }
-
-    void Coro::switchTo(Coro *to)
-    {
-        _engine.switchTo(&to->_engine);
+        g_stackAllocator.compact(_stack);
+        Engine::switchTo(to);
     }
 
     void Coro::s_contextProc(intptr_t self)

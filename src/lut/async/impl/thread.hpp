@@ -47,7 +47,7 @@ namespace lut { namespace async { namespace impl
 
         std::atomic_bool            _releaseRequest;
 
-        static thread_local Thread  *_current;
+        static __thread Thread  *_current;
         ctx::Root                   *_rootContext;
 
         ctx::Coro                   *_storedEmptyCoro;
