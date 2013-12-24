@@ -17,46 +17,18 @@
 
 std::atomic<size_t> cnt(0);
 
-void ctlc(int sig, siginfo_t * info, void * context)
-{
-    printf("in handler\n");
-    exit(0);
-}
-
 int lmain()
 {
 
-    std::thread t([&]{
-
-//        struct sigaction act;
-//        memset(&act, 0, sizeof(act));
-//        act.sa_flags = SA_SIGINFO;
-//        act.sa_sigaction = ctlc;
-//        sigaction(SIGSEGV, &act, NULL);
-
-        printf("in thread\n");
-
-        *(int *)0x12345 = 220;
-    });
-
-    t.join();
-
-    return 0;
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
     lut::async::Scheduler sched;
 
-    lut::async::ThreadPool tp(sched, 1);
+    lut::async::ThreadPool tp(sched, 4);
 
 
     auto f = [&](lut::async::Scheduler *sched, size_t iters){
-
-        struct sigaction act;
-        memset(&act, 0, sizeof(act));
-        act.sa_flags = SA_SIGINFO;
-        act.sa_sigaction = ctlc;
-        sigaction(SIGSEGV, &act, NULL);
 
         char *c = (char *)alloca(4096);
         c[0] = 220;

@@ -1,6 +1,7 @@
 #include "lut/async/stable.hpp"
 #include "lut/async/impl/scheduler.hpp"
 #include "lut/async/impl/thread.hpp"
+#include "lut/async/impl/stackAllocator.hpp"
 
 namespace lut { namespace async { namespace impl
 {
@@ -52,6 +53,11 @@ namespace lut { namespace async { namespace impl
     {
         assert(Thread::getCurrent() == thread);
 
+        if(!StackAllocator::instance().threadInit())
+        {
+            return false;
+        }
+
         std::lock_guard<std::mutex> l(_threadsMtx);
 
         _threads.push_back(thread);
@@ -102,6 +108,8 @@ namespace lut { namespace async { namespace impl
             if(*iter == thread)
             {
                 _threads.erase(iter);
+
+                StackAllocator::instance().threadDeinit();
                 return true;
             }
         }

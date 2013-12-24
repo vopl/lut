@@ -5,13 +5,10 @@
 
 namespace lut { namespace async { namespace impl { namespace sm { namespace vm
 {
-    struct User
-    {
-        virtual bool vmHandleAccess(void *addr) = 0;
-    };
+    typedef bool (*TVmAccessHandler)(void *addr);
 
-    bool startup(User *user);
-    bool shutdown(User *user);
+    bool threadInit(TVmAccessHandler accessHandler);
+    bool threadDeinit(TVmAccessHandler accessHandler);
 
     void *alloc(size_t size);
     bool free(void *addr, size_t size);

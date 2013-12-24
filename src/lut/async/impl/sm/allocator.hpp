@@ -17,22 +17,32 @@ namespace lut { namespace async { namespace impl { namespace sm
         bool useGuardPage=true,
         size_t bittnessConcurrency=8>
     class Allocator
-            : public vm::User
     {
-    public:
+    private:
         Allocator();
+
+    public:
+        static Allocator &instance();
         ~Allocator();
 
+    public:
+        bool threadInit();
+        bool threadDeinit();
+
+    public:
         const Stack *alloc(bool quietFail = false);
         bool free(const Stack *stack);
 
         bool compact(const Stack *stackOrNull = NULL);
 
     private:
-        virtual bool vmHandleAccess(void *addr);
+        bool vmAccessHandler(void *addr);
+        static bool s_vmAccessHandler(void *addr);
 
     private:
         Index<levelBittness, deepth, bittnessConcurrency> _index;
+
+        static Allocator _instance;
 
         char *_vspaceBegin;
         char *_vspaceEnd;
@@ -57,12 +67,6 @@ namespace lut { namespace async { namespace impl { namespace sm
         : _vspaceBegin(nullptr)
         , _vspaceEnd(nullptr)
     {
-        if(!vm::startup(this))
-        {
-            fprintf(stderr, "unable to startup vm\n");
-            return;
-        }
-
         _vspaceBegin = (char *)vm::alloc(_index.volume*pageSize*maxStackPages);
 
         if(!_vspaceBegin)
@@ -76,16 +80,35 @@ namespace lut { namespace async { namespace impl { namespace sm
 
     ///////////////////////////////////////////////////////////
     template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency> &Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::instance()
+    {
+        return _instance;
+    }
+
+    ///////////////////////////////////////////////////////////
+    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
     Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::~Allocator()
     {
-        vm::shutdown(this);
-
         if(_vspaceBegin)
         {
             vm::free(_vspaceBegin, _index.volume*pageSize);
             _vspaceBegin = nullptr;
             _vspaceEnd = nullptr;
         }
+    }
+
+    ///////////////////////////////////////////////////////////
+    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    bool Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::threadInit()
+    {
+        return vm::threadInit(&Allocator::s_vmAccessHandler);
+    }
+
+    ///////////////////////////////////////////////////////////
+    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    bool Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::threadDeinit()
+    {
+        return vm::threadDeinit(&Allocator::s_vmAccessHandler);
     }
 
     ///////////////////////////////////////////////////////////
@@ -158,6 +181,7 @@ namespace lut { namespace async { namespace impl { namespace sm
         return false;
     }
 
+    ///////////////////////////////////////////////////////////
     template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
     bool Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::compact(const Stack *stackOrNull)
     {
@@ -207,8 +231,9 @@ namespace lut { namespace async { namespace impl { namespace sm
         return false;
     }
 
+    ///////////////////////////////////////////////////////////
     template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
-    bool Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::vmHandleAccess(void *addr)
+    bool Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::vmAccessHandler(void *addr)
     {
         if(addr < _vspaceBegin || addr >= _vspaceEnd)
         {
@@ -244,6 +269,17 @@ namespace lut { namespace async { namespace impl { namespace sm
 
         return false;
     }
+
+    ///////////////////////////////////////////////////////////
+    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    bool Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::s_vmAccessHandler(void *addr)
+    {
+        return instance().vmAccessHandler(addr);
+    }
+
+    ///////////////////////////////////////////////////////////
+    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency> Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::_instance;
 
 }}}}
 

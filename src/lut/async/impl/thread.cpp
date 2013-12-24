@@ -61,7 +61,6 @@ namespace lut { namespace async { namespace impl
             ctx::Root rootContext;
             _rootContext = &rootContext;
 
-
             if(_stateEvt)
             {
                 _stateEvt->set(ThreadStateValue::inWork);

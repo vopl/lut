@@ -1,29 +1,13 @@
 #include "lut/async/stable.hpp"
 #include "lut/async/impl/ctx/coro.hpp"
-#include "lut/async/impl/sm/allocator.hpp"
+#include "lut/async/impl/stackAllocator.hpp"
 #include "lut/async/impl/thread.hpp"
 
 namespace lut { namespace async { namespace impl { namespace ctx
 {
-    namespace sm = lut::async::impl::sm;
-    namespace
-    {
-        typedef sm::Allocator<
-            5,//size_t levelBittness,
-            4,//size_t deepth,
-            4096,//size_t pageSize,
-            1024*1024*8/4096,//size_t maxStackPages,
-            1,//size_t initialMappedPages=1,
-            1024,//size_t unmapBoundBytes=1024,
-            true,//bool useGuardPage=true,
-            8//size_t bittnessConcurrency=8
-        > StackAllocator;
-        StackAllocator g_stackAllocator;
-    }
-
     Coro *Coro::alloc(bool quietFail)
     {
-        const sm::Stack *stack = g_stackAllocator.alloc(quietFail);
+        const sm::Stack *stack = StackAllocator::instance().alloc(quietFail);
         if(!stack)
         {
             return nullptr;
@@ -51,7 +35,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         const sm::Stack *stack = _stack;
         this->~Coro();
 
-        bool b = g_stackAllocator.free(stack);
+        bool b = StackAllocator::instance().free(stack);
         assert(b);
         (void)b;
     }
@@ -71,7 +55,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
 
     void Coro::switchTo(Engine *to)
     {
-        g_stackAllocator.compact(_stack);
+        StackAllocator::instance().compact(_stack);
         Engine::switchTo(to);
     }
 

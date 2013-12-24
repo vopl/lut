@@ -5,6 +5,7 @@
 #include <signal.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /*
  * системное ограничение на количество сегментов vm для процесса,
@@ -20,50 +21,92 @@ namespace lut { namespace async { namespace impl { namespace sm { namespace vm
 {
     namespace
     {
-        static User * g_installedUser = NULL;
-        static struct sigaction g_segvOldAction;
+        struct PerThreadState
+        {
+            TVmAccessHandler _accessHandler;
+
+            void *_altStackArea;
+            struct sigaltstack _oldAltStack;
+            struct sigaction _oldAction;
+
+            PerThreadState()
+                : _accessHandler()
+                , _altStackArea()
+                , _oldAction()
+            {
+            }
+
+            ~PerThreadState()
+            {
+                if(_altStackArea)
+                {
+                    ::free(_altStackArea);
+                    _altStackArea = NULL;
+                }
+            }
+        };
+        __thread PerThreadState *t_perThreadState = nullptr;
 
         void segvHandler(int signal_number, siginfo_t *info, void *ptr)
         {
-            fprintf(stderr, "SIGSEGV for %p\n", info->si_addr);
-            fflush(stderr);
+            PerThreadState *perThreadState = t_perThreadState;
 
-            if(g_installedUser && g_installedUser->vmHandleAccess(info->si_addr))
+            if(perThreadState)
             {
-                return;
+                if(perThreadState->_accessHandler(info->si_addr))
+                {
+                    return;
+                }
+
+                fprintf(stderr, "call SIGSEGV default handler for %p\n", info->si_addr);
+                if(perThreadState->_oldAction.sa_flags & SA_SIGINFO)
+                {
+                    return perThreadState->_oldAction.sa_sigaction(signal_number, info, ptr);
+                }
+                else
+                {
+                    return perThreadState->_oldAction.sa_handler(signal_number);
+                }
             }
 
-            fprintf(stderr, "call SIGSEGV default handler for %p\n", info->si_addr);
-
-            if(g_segvOldAction.sa_flags & SA_SIGINFO)
-            {
-                return g_segvOldAction.sa_sigaction(signal_number, info, ptr);
-            }
-            else
-            {
-                return g_segvOldAction.sa_handler(signal_number);
-            }
+            fprintf(stderr, "unable to handle SIGSEGV\n");
+            return;
         }
     }
 
 
-    bool startup(User *user)
+    bool threadInit(TVmAccessHandler accessHandler)
     {
-        if(g_installedUser)
+        if(t_perThreadState)
         {
-            fprintf(stderr, "vm::startup: secondary call\n");
+            fprintf(stderr, "vm::threadInit: secondary call\n");
             return false;
         }
-        g_installedUser = user;
+        t_perThreadState = new PerThreadState;
+        t_perThreadState->_accessHandler = accessHandler;
+
+        t_perThreadState->_altStackArea = malloc(SIGSTKSZ);
+        struct sigaltstack altstack;
+        altstack.ss_size = SIGSTKSZ;
+        altstack.ss_sp = t_perThreadState->_altStackArea;
+        altstack.ss_flags = 0;
+        if(sigaltstack(&altstack, &t_perThreadState->_oldAltStack))
+        {
+            delete t_perThreadState;
+            t_perThreadState = nullptr;
+            perror("sigaltstack");
+            return false;
+        }
 
         struct sigaction sa;
         memset(&sa, 0, sizeof (sa));
         sa.sa_sigaction = &segvHandler;
-        sa.sa_flags = SA_SIGINFO | SA_NODEFER | SA_ONSTACK;
+        sa.sa_flags = SA_SIGINFO | SA_ONSTACK;
         sigfillset (&sa.sa_mask);
-        if(sigaction(SIGSEGV, &sa, &g_segvOldAction))
+        if(sigaction(SIGSEGV, &sa, &t_perThreadState->_oldAction))
         {
-            g_installedUser = nullptr;
+            delete t_perThreadState;
+            t_perThreadState = nullptr;
             perror("sigaction");
             return false;
         }
@@ -72,20 +115,32 @@ namespace lut { namespace async { namespace impl { namespace sm { namespace vm
 
     }
 
-    bool shutdown(User *user)
+    bool threadDeinit(TVmAccessHandler accessHandler)
     {
-        if(g_installedUser != user)
+        if(!t_perThreadState)
         {
-            fprintf(stderr, "vm::startup: urong user\n");
+            fprintf(stderr, "vm::threadDeinit: already deinited\n");
             return false;
         }
-        g_installedUser = nullptr;
 
-        if(sigaction(SIGSEGV, &g_segvOldAction, NULL))
+        if(t_perThreadState->_accessHandler != accessHandler)
+        {
+            fprintf(stderr, "vm::threadDeinit: urong accessHandler\n");
+            return false;
+        }
+
+        if(sigaction(SIGSEGV, &t_perThreadState->_oldAction, NULL))
         {
             perror("sigaction");
         }
 
+        if(sigaltstack(&t_perThreadState->_oldAltStack, NULL))
+        {
+            perror("sigaltstack");
+        }
+
+        delete t_perThreadState;
+        t_perThreadState = nullptr;
         return true;
     }
 

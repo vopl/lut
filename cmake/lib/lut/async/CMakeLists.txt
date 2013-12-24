@@ -137,17 +137,6 @@ source_group(include/impl FILES ${INC_IMPL})
 ############################################################
 set(INC_IMPL_CTX
 )
-
-if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)
-    list(APPEND INC_IMPL_CTX ${PSRC}/impl/ctx/engine_winfiber.hpp)
-endif()
-if(ASYNCSCHEDULER_CONTEXTENGINE_UCONTEXT)
-    list(APPEND INC_IMPL_CTX ${PSRC}/impl/ctx/engine_ucontext.hpp)
-endif()
-if(ASYNCSCHEDULER_CONTEXTENGINE_BOOSTCONTEXT)
-    list(APPEND INC_IMPL_CTX ${PSRC}/impl/ctx/engine_boostcontext.hpp)
-endif()
-
 source_group(include/impl/ctx FILES ${INC_IMPL_CTX})
 
 ############################################################
@@ -169,6 +158,7 @@ set(SRC_IMPL
     ${PSRC}/impl/thread.cpp
     ${PSRC}/impl/sizeofImplGen.cpp
     ${PSRC}/impl/task.cpp
+    ${PSRC}/impl/stackAllocator.hpp
 )
 
 source_group(src/impl FILES ${SRC_IMPL})
@@ -178,19 +168,22 @@ set_source_files_properties(${PSRC}/impl/sizeofImplGen.cpp PROPERTIES HEADER_FIL
 
 ############################################################
 set(SRC_IMPL_CTX
-    ${PSRC}/impl/ctx/coro.hpp
     ${PSRC}/impl/ctx/root.hpp
     ${PSRC}/impl/ctx/root.cpp
+    ${PSRC}/impl/ctx/coro.hpp
     ${PSRC}/impl/ctx/coro.cpp
 )
 
 if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)
+    list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_winfiber.hpp)
     list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_winfiber.cpp)
 endif()
 if(ASYNCSCHEDULER_CONTEXTENGINE_UCONTEXT)
+    list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_ucontext.hpp)
     list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_ucontext.cpp)
 endif()
 if(ASYNCSCHEDULER_CONTEXTENGINE_BOOSTCONTEXT)
+    list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_boostcontext.hpp)
     list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_boostcontext.cpp)
 endif()
 
