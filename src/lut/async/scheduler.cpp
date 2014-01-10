@@ -17,22 +17,22 @@ namespace lut { namespace async
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    ThreadUtilizationResult Scheduler::threadUtilize(ThreadState *stateEvt)
+    ThreadUtilizationResult Scheduler::utilizeThisThread(ThreadState *stateEvt)
     {
         impl::Thread thread(&impl(), stateEvt);
         return thread.utilize();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    ThreadReleaseResult Scheduler::threadRelease()
+    ThreadReleaseResult Scheduler::releaseThisThread()
     {
-        return impl().threadRelease(std::this_thread::get_id());
+        return impl().releaseThread(std::this_thread::get_id());
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    ThreadReleaseResult Scheduler::threadRelease(std::thread::native_handle_type id)
+    ThreadReleaseResult Scheduler::releaseThread(std::thread::native_handle_type id)
     {
-        return impl().threadRelease(std::thread::id(id));
+        return impl().releaseThread(std::thread::id(id));
     }
 
     ////////////////////////////////////////////////////////////////////////////////

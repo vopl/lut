@@ -14,7 +14,7 @@ namespace lut { namespace async
             std::thread &thread = _threads[idx];
             ThreadState *stateEvt = &_states[idx];
             thread = std::thread([this,stateEvt]{
-                ThreadUtilizationResult etur = _scheduler.threadUtilize(stateEvt);
+                ThreadUtilizationResult etur = _scheduler.utilizeThisThread(stateEvt);
                 (void)etur;
                 assert(ThreadUtilizationResult::releaseRequest == etur);
             });
@@ -31,7 +31,7 @@ namespace lut { namespace async
 
             _states[idx].waitNot(ThreadStateValue::init);
 
-            ThreadReleaseResult etrr = _scheduler.threadRelease(thread.native_handle());
+            ThreadReleaseResult etrr = _scheduler.releaseThread(thread.native_handle());
             (void)etrr;
             assert(ThreadReleaseResult::ok == etrr);
         }

@@ -29,7 +29,7 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    ThreadReleaseResult Scheduler::threadRelease(const std::thread::id &id)
+    ThreadReleaseResult Scheduler::releaseThread(const std::thread::id &id)
     {
         std::lock_guard<std::mutex> l(_threadsMtx);
         TVThreads::iterator iter = _threads.begin();

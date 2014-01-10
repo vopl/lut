@@ -21,7 +21,7 @@ namespace lut { namespace async { namespace impl
         Scheduler();
         ~Scheduler();
 
-        ThreadReleaseResult threadRelease(const std::thread::id &id);
+        ThreadReleaseResult releaseThread(const std::thread::id &id);
 
     public:
         bool threadEntry_init(Thread *thread);

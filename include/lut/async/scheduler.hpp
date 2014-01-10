@@ -25,9 +25,9 @@ namespace lut { namespace async
         ~Scheduler();
 
     public://threads
-        ThreadUtilizationResult threadUtilize(ThreadState *stateEvt = NULL);
-        ThreadReleaseResult threadRelease();
-        ThreadReleaseResult threadRelease(std::thread::native_handle_type id);
+        ThreadUtilizationResult utilizeThisThread(ThreadState *stateEvt = NULL);
+        ThreadReleaseResult releaseThisThread();
+        ThreadReleaseResult releaseThread(std::thread::native_handle_type id);
 
     public://code
         template<class F, class... Args>
