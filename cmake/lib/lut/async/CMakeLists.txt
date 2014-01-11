@@ -32,7 +32,7 @@ endif()
 
 ############################################################
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost COMPONENTS context)
+find_package(Boost COMPONENTS context system)
 
 if(Boost_CONTEXT_FOUND)
     set(HAVE_BOOSTCONTEXT ON)
@@ -118,13 +118,6 @@ set(INC
     ${PINC}/threadPool.hpp
     ${PINC}/scheduler.hpp
     ${PINC}/hiddenImpl.hpp
-    ${PINC}/conditionVariable.hpp
-    ${PINC}/event.hpp
-    ${PINC}/mutex.hpp
-    ${PINC}/recursiveMutex.hpp
-    ${PINC}/semaphore.hpp
-    ${PINC}/singleEvent.hpp
-    ${PINC}/wait.hpp
 )
 source_group(include FILES ${INC})
 
@@ -152,10 +145,12 @@ source_group(src FILES ${SRC})
 set(SRC_IMPL
     ${PSRC}/impl/scheduler.hpp
     ${PSRC}/impl/thread.hpp
+    ${PSRC}/impl/worker.hpp
     ${PSRC}/impl/coroContainer.hpp
     ${PSRC}/impl/scheduler.cpp
     ${PSRC}/impl/coroContainer.cpp
     ${PSRC}/impl/thread.cpp
+    ${PSRC}/impl/worker.cpp
     ${PSRC}/impl/sizeofImplGen.cpp
     ${PSRC}/impl/task.cpp
     ${PSRC}/impl/stackAllocator.hpp
@@ -268,6 +263,7 @@ if(ASYNCSCHEDULER_CONTEXTENGINE_BOOSTCONTEXT)
     target_link_libraries(${PROJECT} ${Boost_CONTEXT_LIBRARY})
 endif()
 
+target_link_libraries(${PROJECT} ${Boost_SYSTEM_LIBRARY})
 
 
 

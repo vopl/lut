@@ -24,7 +24,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         static Coro *alloc(bool quietFail = false);
         void free();
 
-        void setCode(Task &&code);
+        void setCode(Task *code);
 
     public:
         void switchTo(Engine *to);
@@ -35,7 +35,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
 
     private:
         const lut::async::impl::sm::Stack *_stack;
-        Task _task;
+        Task *_task;
 
     private:
         friend class lut::async::impl::CoroContainer;

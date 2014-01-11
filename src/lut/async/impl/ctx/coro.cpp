@@ -46,11 +46,11 @@ namespace lut { namespace async { namespace impl { namespace ctx
         //_stack = NULL;
     }
 
-    void Coro::setCode(Task &&code)
+    void Coro::setCode(Task *code)
     {
-        assert(_task.empty());
-        code.moveTo(std::forward<Task>(_task));
-        assert(!_task.empty());
+        assert(!_task);
+        _task = code;
+        assert(_task);
     }
 
     void Coro::switchTo(Engine *to)
@@ -73,11 +73,11 @@ namespace lut { namespace async { namespace impl { namespace ctx
 
         for(;;)
         {
-            assert(!_task.empty());
+            assert(_task);
 
             try
             {
-                _task.exec();
+                _task->exec();
             }
             catch(const std::exception &e)
             {
@@ -90,9 +90,10 @@ namespace lut { namespace async { namespace impl { namespace ctx
                 abort();
             }
 
-            assert(!_task.empty());
+            assert(_task);
             {
-                _task.clear();
+                _task->free();
+                _task = nullptr;
             }
 
             {

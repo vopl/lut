@@ -36,7 +36,7 @@ namespace lut { namespace async
         void yield();
 
     private:
-        void spawn(impl::Task &&task);
+        void spawn(impl::Task *task);
     };
 
 
@@ -44,7 +44,7 @@ namespace lut { namespace async
     template<class F, class... Args>
     void Scheduler::spawn(F&& f, Args&&... args)
     {
-        spawn(impl::Task(std::forward<F>(f), std::forward<Args>(args)...));
+        spawn(impl::Task::alloc(std::forward<F>(f), std::forward<Args>(args)...));
     }
 
 }}

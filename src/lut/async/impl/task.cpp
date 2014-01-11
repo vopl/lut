@@ -5,81 +5,13 @@ namespace lut { namespace async { namespace impl
 {
     ////////////////////////////////////////////////////////////////////////////////
     Task::Task()
-        : _size()
+        : _nextForWorkerContainer()
     {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     Task::~Task()
     {
-        clear();
+        assert(!_nextForWorkerContainer);
     }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    void Task::moveTo(Task &&task)
-    {
-        assert(!empty());
-        assert(task.empty());
-        task._size = _size;
-        if(isInternalPlaced())
-        {
-            callHolderBase()->moveTo(task.callHolderBase());
-        }
-        else
-        {
-            task._data._callHolderPointer = _data._callHolderPointer;
-        }
-        _size = 0;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    bool Task::empty() const
-    {
-        return _size ? false : true;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    void Task::clear()
-    {
-        if(!empty())
-        {
-            if(isInternalPlaced())
-            {
-                callHolderBase()->~CallHolderBase();
-            }
-            else
-            {
-                delete callHolderBase();
-            }
-            _size = 0;
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    void Task::exec()
-    {
-        assert(!empty());
-        callHolderBase()->call();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    bool Task::isInternalPlaced()
-    {
-        return _size <= sizeof(_data._buffer4CallHolder);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    Task::CallHolderBase *Task::callHolderBase()
-    {
-        assert(!empty());
-        if(isInternalPlaced())
-        {
-            return (CallHolderBase *)&_data._buffer4CallHolder;
-        }
-        else
-        {
-            return _data._callHolderPointer;
-        }
-    }
-
 }}}

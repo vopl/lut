@@ -3,9 +3,6 @@
 #include "lut/async/stable.hpp"
 #include "lut/async/scheduler.hpp"
 #include "lut/async/threadPool.hpp"
-#include "lut/async/event.hpp"
-#include "lut/async/mutex.hpp"
-#include "lut/async/wait.hpp"
 
 #include <signal.h>
 #include <string.h>
@@ -25,7 +22,7 @@ int lmain()
 
     lut::async::Scheduler sched;
 
-    lut::async::ThreadPool tp(sched, 4);
+    lut::async::ThreadPool tp(sched, 1);
 
 
     auto f = [&](lut::async::Scheduler *sched, size_t iters){

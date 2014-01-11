@@ -29,7 +29,7 @@ namespace lut { namespace async { namespace impl
         bool threadEntry_deinit(Thread *thread);
 
     public:
-        void spawn(Task &&code);
+        void spawn(Task *code);
         void yield();
 
     public:

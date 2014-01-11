@@ -118,7 +118,7 @@ namespace lut { namespace async { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::spawn(Task &&code)
+    void Scheduler::spawn(Task *code)
     {
         ctx::Coro *coro = _coroListEmpty.dequeue();
         if(!coro)
@@ -127,7 +127,7 @@ namespace lut { namespace async { namespace impl
         }
         assert(coro || !"process failure");
 
-        coro->setCode(std::forward<Task>(code));
+        coro->setCode(code);
 
         _coroListReady.enqueue(coro);
     }

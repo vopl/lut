@@ -2,97 +2,131 @@
 #define _LUT_ASYNC_IMPL_TASK_HPP_
 
 #include <functional>
+#include <boost/pool/pool.hpp>
 
 namespace lut { namespace async { namespace impl
 {
+    template <class Element>
+    class WorkerContainer;
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
     class Task
     {
         Task(const Task &) = delete;
         void operator=(const Task &) = delete;
 
-    public:
+    protected:
         Task();
-        template<class F, class... Args>
-        Task(F &&f, Args &&...args);
-
         ~Task();
 
-        void moveTo(Task &&task);
-        bool empty() const;
-        void clear();
+    public:
+        template<class F, class... Args> static Task *alloc(F &&f, Args &&...args);
 
-        void exec();
+        virtual void free() = 0;
+        virtual void exec() = 0;
 
     private:
-
-        struct CallHolderBase
-        {
-            virtual ~CallHolderBase() {}
-            virtual void call() = 0;
-            virtual void moveTo(CallHolderBase *) = 0;
-        };
-
-        template <class F, class... Args>
-        class CallHolder
-            : public Task::CallHolderBase
-        {
-        public:
-            CallHolder(F &&f, Args &&...args)
-                : _bind(std::forward<F>(f), std::forward<Args>(args)...)
-            {
-            }
-
-            CallHolder(CallHolder &&from)
-                : _bind(std::forward<Bind>(from._bind))
-            {
-            }
-
-            virtual ~CallHolder() override
-            {
-            }
-
-            virtual void call() override
-            {
-                _bind();
-            }
-
-            virtual void moveTo(CallHolderBase *p) override
-            {
-                new(p) CallHolder(std::forward<CallHolder>(*this));
-            }
-
-        private:
-            using Bind = decltype(std::bind(std::declval<F>(), std::declval<Args>()...));
-            Bind _bind;
-        };
-
-        union
-        {
-            char _buffer4CallHolder[60];
-            CallHolderBase *_callHolderPointer;
-        } _data;
-        uint32_t _size;//0, <=60, >60
-
-        bool isInternalPlaced();
-        CallHolderBase *callHolderBase();
+        friend class lut::async::impl::WorkerContainer<Task>;
+        Task *_nextForWorkerContainer;
     };
 
-    ////////////////////////////////////////////////////////////////////////////////
-    template<class F, class... Args>
-    Task::Task(F &&f, Args &&...args)
-    {
-        using CallHolder = CallHolder<F, Args...>;
 
-        _size = sizeof(CallHolder);
-        if(isInternalPlaced())
-        {
-            new(callHolderBase()) CallHolder(std::forward<F>(f), std::forward<Args>(args)...);
-        }
-        else
-        {
-            _data._callHolderPointer = new CallHolder(std::forward<F>(f), std::forward<Args>(args)...);
-        }
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
+    template <size_t size>
+    class TaskInstancePool
+    {
+    public:
+        static void *alloc();
+        static void free(void *p);
+
+    private:
+        static boost::pool<> _pool;
+    };
+
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
+    template<class F, class... Args>
+    class TaskInstance
+        : public Task
+    {
+    public:
+        TaskInstance(F &&f, Args &&...args);
+        ~TaskInstance();
+
+        virtual void free() override;
+        virtual void exec() override;
+
+    private:
+        using Bind = decltype(std::bind(std::declval<F>(), std::declval<Args>()...));
+        Bind _bind;
+    };
+
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
+    template<class F, class... Args> Task *Task::alloc(F &&f, Args &&...args)
+    {
+        using TaskInstance = TaskInstance<F, Args...>;
+        using Pool = TaskInstancePool<sizeof(TaskInstance)>;
+
+        return new(Pool::alloc()) TaskInstance(std::forward<F>(f), std::forward<Args>(args)...);
     }
+
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
+    template <size_t size>
+    void *TaskInstancePool<size>::alloc()
+    {
+        return _pool.malloc();
+    }
+
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
+    template <size_t size>
+    void TaskInstancePool<size>::free(void *p)
+    {
+        return _pool.free(p);
+    }
+
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
+    template <size_t size>
+    boost::pool<> TaskInstancePool<size>::_pool(size);
+
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
+    template<class F, class... Args>
+    TaskInstance<F, Args...>::TaskInstance(F &&f, Args &&...args)
+        : _bind(std::forward<F>(f), std::forward<Args>(args)...)
+    {
+    }
+
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
+    template<class F, class... Args>
+    TaskInstance<F, Args...>::~TaskInstance()
+    {
+
+    }
+
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
+    template<class F, class... Args>
+    void TaskInstance<F, Args...>::free()
+    {
+        this->~TaskInstance();
+
+        using Pool = TaskInstancePool<sizeof(TaskInstance)>;
+        Pool::free(this);
+    }
+
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
+    template<class F, class... Args>
+    void TaskInstance<F, Args...>::exec()
+    {
+        _bind();
+    }
+
 
 }}}
 
