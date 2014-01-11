@@ -23,18 +23,56 @@ namespace lut { namespace async { namespace impl { namespace ctx
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-#if PVOID_SIZE == INT_SIZE*2
     namespace
     {
-        void coroProcForIntDiv2(int iproc1, int iproc2, int iarg1, int iarg2)
-        {
-            int64_t iproc = ((unsigned int)iproc1) | (((int64_t)iproc2)<<32);
-            int64_t iarg = ((unsigned int)iarg1) | (((int64_t)iarg2)<<32);
+        template<size_t ptrSizeDivIntSize = sizeof(void*)/sizeof(int)>
+        struct ContextMaker;
 
-            reinterpret_cast<void(*)(intptr_t)>(iproc)(iarg);
-        }
+        template<>
+        struct ContextMaker<1>
+        {
+            static void make(ucontext_t *ucp, void(*f)(intptr_t), intptr_t arg)
+            {
+                return makecontext(ucp, (void(*)())f, 1, arg);
+            }
+        };
+
+        template<>
+        struct ContextMaker<2>
+        {
+            static void make(ucontext_t *ucp, void(*f)(intptr_t), intptr_t arg)
+            {
+                const uintptr_t intSize = (sizeof(int)*8);
+                const uintptr_t intMask = (((uintptr_t)1) << intSize) - 1;
+
+                uintptr_t iproc = reinterpret_cast<uintptr_t>(f);
+                int iproc1 = (unsigned)((iproc>>intSize*0) & intMask);
+                int iproc2 = (unsigned)((iproc>>intSize*1) & intMask);
+
+                uintptr_t iarg = static_cast<uintptr_t>(arg);
+                int iarg1 = (unsigned)((iarg>>intSize*0) & intMask);
+                int iarg2 = (unsigned)((iarg>>intSize*1) & intMask);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpmf-conversions"
+                return makecontext(ucp, (void(*)())&ContextMaker::procBridge, 4,
+                                   iproc1, iproc2,
+                                   iarg1, iarg2);
+#pragma GCC diagnostic pop
+            }
+
+            static void procBridge(int iproc1, int iproc2, int iarg1, int iarg2)
+            {
+                const uintptr_t intSize = (sizeof(int)*8);
+
+                uintptr_t iproc = ((unsigned)iproc1) | (((uintptr_t)iproc2)<<intSize);
+                uintptr_t iarg = ((unsigned)iarg1) | (((uintptr_t)iarg2)<<intSize);
+
+                reinterpret_cast<void(*)(intptr_t)>(iproc)(iarg);
+            }
+        };
     }
-#endif
+
     void Engine::constructCoro(char *stackBegin, void(*f)(intptr_t), intptr_t arg)
     {
         if(getcontext(this))
@@ -48,29 +86,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         uc_stack.ss_sp = stackBegin;
         uc_stack.ss_size = (char *)this - stackBegin;
 
-#if PVOID_SIZE == INT_SIZE
-        static_assert(sizeof(int) == sizeof(arg), "sizeof(int) == sizeof(task)");
-        makecontext(this, (void(*)(void))f, 1, arg);
-#elif PVOID_SIZE == INT_SIZE*2
-        static_assert(sizeof(uint64_t) == sizeof(arg), "sizeof(uint64_t) == sizeof(task)");
-
-        int64_t iarg = reinterpret_cast<int64_t>(arg);
-        int iarg1 = (unsigned int)(iarg&0xffffffff);
-        int iarg2 = (unsigned int)((iarg>>32)&0xffffffff);
-
-        int64_t iproc = reinterpret_cast<int64_t>(f);
-        int iproc1 = (unsigned int)(iproc&0xffffffff);
-        int iproc2 = (unsigned int)((iproc>>32)&0xffffffff);
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpmf-conversions"
-        makecontext(this, (void (*)(void))&coroProcForIntDiv2, 4, iproc1, iproc2, iarg1, iarg2);
-#pragma GCC diagnostic pop
-
-#else
-        error PVOID_SIZE not equal INT_SIZE or INT_SIZE*2
-#endif
-
+        ContextMaker<>::make(this, f, arg);
     }
 
     ////////////////////////////////////////////////////////////////////////////////

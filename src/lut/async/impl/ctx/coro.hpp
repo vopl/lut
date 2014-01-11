@@ -5,11 +5,6 @@
 #include "lut/async/impl/task.hpp"
 #include "lut/async/impl/sm/stack.hpp"
 
-namespace lut { namespace async { namespace impl
-{
-    class CoroContainer;
-}}}
-
 namespace lut { namespace async { namespace impl { namespace ctx
 {
     class Coro
@@ -36,10 +31,6 @@ namespace lut { namespace async { namespace impl { namespace ctx
     private:
         const lut::async::impl::sm::Stack *_stack;
         Task *_task;
-
-    private:
-        friend class lut::async::impl::CoroContainer;
-        Coro *_nextForContainer;
     };
 }}}}
 

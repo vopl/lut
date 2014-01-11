@@ -1,7 +1,6 @@
 #include "lut/async/stable.hpp"
 #include "lut/async/impl/ctx/coro.hpp"
-#include "lut/async/impl/stackAllocator.hpp"
-#include "lut/async/impl/thread.hpp"
+#include "lut/async/impl/ctx/stackAllocator.hpp"
 
 namespace lut { namespace async { namespace impl { namespace ctx
 {
@@ -66,11 +65,6 @@ namespace lut { namespace async { namespace impl { namespace ctx
 
     void Coro::contextProc()
     {
-        {
-            Thread *thread = Thread::getCurrent();
-            thread->getScheduler()->enqueuePerThreadCoros(thread);
-        }
-
         for(;;)
         {
             assert(_task);
@@ -94,11 +88,6 @@ namespace lut { namespace async { namespace impl { namespace ctx
             {
                 _task->free();
                 _task = nullptr;
-            }
-
-            {
-                Thread *thread = Thread::getCurrent();
-                thread->getScheduler()->coroEntry_stayEmptyAndDeactivate(this, thread);
             }
         }
     }

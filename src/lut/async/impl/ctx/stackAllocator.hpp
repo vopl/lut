@@ -1,9 +1,9 @@
-#ifndef _LUT_ASYNC_IMPL_STACKALLOCATOR_HPP_
-#define _LUT_ASYNC_IMPL_STACKALLOCATOR_HPP_
+#ifndef _LUT_ASYNC_IMPL_CTX_STACKALLOCATOR_HPP_
+#define _LUT_ASYNC_IMPL_CTX_STACKALLOCATOR_HPP_
 
 #include "lut/async/impl/sm/allocator.hpp"
 
-namespace lut { namespace async { namespace impl
+namespace lut { namespace async { namespace impl { namespace ctx
 {
     using StackAllocator = lut::async::impl::sm::Allocator<
         5,//size_t levelBittness,
@@ -16,6 +16,6 @@ namespace lut { namespace async { namespace impl
         8//size_t bittnessConcurrency=8
     >;
 
-}}}
+}}}}
 
 #endif

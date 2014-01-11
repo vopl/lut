@@ -7,14 +7,16 @@ set(PSRC ${SRCDIR}/lut/async)
 
 
 ############################################################
-include(CheckFunctionExists)
-include(CheckLibraryExists)
 include(CheckIncludeFiles)
-include(CheckTypeSize)
 
-############################################################
-check_type_size("void *" PVOID_SIZE)
-check_type_size("int" INT_SIZE)
+
+
+
+
+
+
+
+
 
 ############################################################
 check_include_files(ucontext.h HAVE_UCONTEXT)
@@ -112,6 +114,25 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${PINC}/config.h)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ############################################################
 set(INC
     ${PINC}/threadState.hpp
@@ -120,19 +141,6 @@ set(INC
     ${PINC}/hiddenImpl.hpp
 )
 source_group(include FILES ${INC})
-
-############################################################
-set(INC_IMPL
-    ${PINC}/impl/task.hpp
-    ${PINC}/impl/taskInstance.hpp
-)
-source_group(include/impl FILES ${INC_IMPL})
-
-############################################################
-set(INC_IMPL_CTX
-)
-source_group(include/impl/ctx FILES ${INC_IMPL_CTX})
-
 ############################################################
 set(SRC
     ${PSRC}/stable.hpp
@@ -142,34 +150,50 @@ set(SRC
 )
 source_group(src FILES ${SRC})
 
+
+
+
+
+
+
+
+
+
+
+
+
+############################################################
+set(INC_IMPL
+    ${PINC}/impl/task.hpp
+    ${PINC}/impl/taskInstance.hpp
+)
+source_group(include/impl FILES ${INC_IMPL})
 ############################################################
 set(SRC_IMPL
     ${PSRC}/impl/scheduler.hpp
-    ${PSRC}/impl/thread.hpp
-    ${PSRC}/impl/worker.hpp
-    ${PSRC}/impl/coroContainer.hpp
     ${PSRC}/impl/scheduler.cpp
-    ${PSRC}/impl/coroContainer.cpp
-    ${PSRC}/impl/thread.cpp
-    ${PSRC}/impl/worker.cpp
     ${PSRC}/impl/sizeofImplGen.cpp
     ${PSRC}/impl/task.cpp
-    ${PSRC}/impl/stackAllocator.hpp
 )
-
 source_group(src/impl FILES ${SRC_IMPL})
 
-############################################################
-set_source_files_properties(${PSRC}/impl/sizeofImplGen.cpp PROPERTIES HEADER_FILE_ONLY ON)
 
+
+
+
+
+############################################################
+set(INC_IMPL_CTX
+)
+source_group(include/impl/ctx FILES ${INC_IMPL_CTX})
 ############################################################
 set(SRC_IMPL_CTX
     ${PSRC}/impl/ctx/root.hpp
     ${PSRC}/impl/ctx/root.cpp
     ${PSRC}/impl/ctx/coro.hpp
     ${PSRC}/impl/ctx/coro.cpp
+    ${PSRC}/impl/ctx/stackAllocator.hpp
 )
-
 if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)
     list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_winfiber.hpp)
     list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_winfiber.cpp)
@@ -182,12 +206,19 @@ if(ASYNCSCHEDULER_CONTEXTENGINE_BOOSTCONTEXT)
     list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_boostcontext.hpp)
     list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_boostcontext.cpp)
 endif()
+source_group(src/impl/ctx FILES ${SRC_IMPL_CTX})
 
-source_group(src/impl FILES ${SRC_IMPL})
+
+
+
 
 
 ############################################################
-set(SRC_IMPL_STACK
+set(INC_IMPL_SM
+)
+source_group(include/impl/sm FILES ${INC_IMPL_SM})
+############################################################
+set(SRC_IMPL_SM
     ${PSRC}/impl/sm/allocator.hpp
     ${PSRC}/impl/sm/index.hpp
     ${PSRC}/impl/sm/stack.hpp
@@ -195,6 +226,29 @@ set(SRC_IMPL_STACK
     ${PSRC}/impl/sm/vm.hpp
     ${PSRC}/impl/sm/vm.cpp
 )
+source_group(src/impl/sm FILES ${SRC_IMPL_SM})
+
+
+
+
+
+############################################################
+set(SRC_IMPL_WORKER
+)
+source_group(include/impl/worker FILES ${INC_IMPL_WORKER})
+############################################################
+set(SRC_IMPL_WORKER
+    ${PSRC}/impl/worker/thread.hpp
+    ${PSRC}/impl/worker/thread.cpp
+    ${PSRC}/impl/worker/effort.hpp
+    ${PSRC}/impl/worker/effort.cpp
+)
+source_group(src/impl/worker FILES ${SRC_IMPL_WORKER})
+
+
+
+
+
 
 
 ############################################################
@@ -242,6 +296,7 @@ add_custom_command(OUTPUT ${PINC}/sizeofImpl.hpp
                         ${PSRC}/impl/scheduler.hpp
                     VERBATIM)
                     
+set_source_files_properties(${PSRC}/impl/sizeofImplGen.cpp PROPERTIES HEADER_FILE_ONLY ON)
 #set_source_files_properties(
 #    ${PINC}/scheduler.hpp
 #    ${PINC}/codeManager.hpp
@@ -255,8 +310,8 @@ add_custom_command(OUTPUT ${PINC}/sizeofImpl.hpp
 
 ############################################################
 add_library(${PROJECT} STATIC
-    ${INC} ${INC_IMPL} ${INC_IMPL_CTX} ${INC_IMPL_STACK}
-    ${SRC} ${SRC_IMPL} ${SRC_IMPL_CTX} ${SRC_IMPL_STACK}
+    ${INC} ${INC_IMPL} ${INC_IMPL_CTX} ${INC_IMPL_SM} ${SRC_IMPL_WORKER}
+    ${SRC} ${SRC_IMPL} ${SRC_IMPL_CTX} ${SRC_IMPL_SM} ${SRC_IMPL_WORKER}
     ${SRC_PCH}
     ${PINC}/sizeofImpl.hpp)
 

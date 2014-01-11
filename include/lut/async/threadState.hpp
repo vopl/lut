@@ -20,10 +20,10 @@ namespace lut { namespace async
     };
 
 
-    namespace impl
+    namespace impl { namespace worker
     {
         class Thread;
-    }
+    }}
 
     enum class ThreadStateValue
     {
@@ -46,7 +46,7 @@ namespace lut { namespace async
         void waitNot(ThreadStateValue v);
 
     private:
-        friend class impl::Thread;
+        friend class impl::worker::Thread;
         void set(ThreadStateValue v);
 
     private:

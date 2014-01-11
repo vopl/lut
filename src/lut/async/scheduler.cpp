@@ -1,7 +1,7 @@
 #include "lut/async/stable.hpp"
 #include "lut/async/scheduler.hpp"
 #include "lut/async/impl/scheduler.hpp"
-#include "lut/async/impl/thread.hpp"
+#include "lut/async/impl/worker/thread.hpp"
 
 namespace lut { namespace async
 {
@@ -19,7 +19,7 @@ namespace lut { namespace async
     ////////////////////////////////////////////////////////////////////////////////
     ThreadUtilizationResult Scheduler::utilizeThisThread(ThreadState *stateEvt)
     {
-        impl::Thread thread(&impl(), stateEvt);
+        impl::worker::Thread thread(&impl(), stateEvt);
         return thread.utilize();
     }
 

@@ -3,9 +3,6 @@
 
 namespace lut { namespace async { namespace impl
 {
-    template <class Element>
-    class WorkerContainer;
-
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
     class Task
     {
@@ -19,10 +16,6 @@ namespace lut { namespace async { namespace impl
     public:
         virtual void free() = 0;
         virtual void exec() = 0;
-
-    private:
-        friend class lut::async::impl::WorkerContainer<Task>;
-        Task *_nextForWorkerContainer;
     };
 
 }}}
