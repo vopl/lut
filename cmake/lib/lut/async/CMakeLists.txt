@@ -124,6 +124,7 @@ source_group(include FILES ${INC})
 ############################################################
 set(INC_IMPL
     ${PINC}/impl/task.hpp
+    ${PINC}/impl/taskInstance.hpp
 )
 source_group(include/impl FILES ${INC_IMPL})
 
