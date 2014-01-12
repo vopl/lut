@@ -19,7 +19,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         static Coro *alloc(bool quietFail = false);
         void free();
 
-        void setCode(Task *code);
+        void setCode(Task *task);
 
     public:
         void switchTo(Engine *to);

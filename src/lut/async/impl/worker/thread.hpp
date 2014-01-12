@@ -17,12 +17,23 @@ namespace lut { namespace async { namespace impl
 namespace lut { namespace async { namespace impl { namespace worker
 {
     class Thread
+        : public Effort
     {
     public:
         Thread(Scheduler *scheduler, ThreadState *stateEvt);
         ~Thread();
 
         ThreadUtilizationResult utilize();
+
+        static Thread *getCurrent();
+
+        void wakeUp();
+
+    public:
+        void yield();
+
+    private:
+        void workLoop();
 
     private:
         std::thread::id             _id;
@@ -35,7 +46,10 @@ namespace lut { namespace async { namespace impl { namespace worker
         static __thread Thread      *_current;
         ctx::Root                   *_rootContext;
 
-        Effort                      _effort;
+    private:
+        std::mutex                  _mtx;
+        std::condition_variable     _cv;
+
     };
 }}}}
 

@@ -242,6 +242,7 @@ set(SRC_IMPL_WORKER
     ${PSRC}/impl/worker/thread.cpp
     ${PSRC}/impl/worker/effort.hpp
     ${PSRC}/impl/worker/effort.cpp
+    ${PSRC}/impl/worker/effortContainer.hpp
 )
 source_group(src/impl/worker FILES ${SRC_IMPL_WORKER})
 

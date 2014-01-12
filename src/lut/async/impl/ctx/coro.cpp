@@ -45,10 +45,10 @@ namespace lut { namespace async { namespace impl { namespace ctx
         //_stack = NULL;
     }
 
-    void Coro::setCode(Task *code)
+    void Coro::setCode(Task *task)
     {
         assert(!_task);
-        _task = code;
+        _task = task;
         assert(_task);
     }
 

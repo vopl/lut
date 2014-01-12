@@ -3,6 +3,7 @@
 
 #include "lut/async/impl/ctx/coro.hpp"
 #include "lut/async/impl/task.hpp"
+#include "lut/async/impl/worker/effortContainer.hpp"
 
 namespace lut { namespace async { namespace impl { namespace worker
 {
@@ -12,10 +13,22 @@ namespace lut { namespace async { namespace impl { namespace worker
         Effort();
         ~Effort();
 
+        bool haveTasks();
+        void moveTasksTo(Effort *target);
+
+        bool haveReadyCoros();
+        void moveReadyCorosTo(Effort *target);
+
+
+
+        void enqueueTask(Task *task);
+
+        ctx::Coro *dequeueReadyCoro();
+
     private:
-//        CoroContainer               _corosEmpty;
-//        CoroContainer               _corosReady;
-//        TaskContainer               _tasksReady;
+        EffortContainer<ctx::Coro*>  _emptyCoros;
+        EffortContainer<ctx::Coro*>  _readyCoros;
+        EffortContainer<Task*>       _tasks;
     };
 }}}}
 

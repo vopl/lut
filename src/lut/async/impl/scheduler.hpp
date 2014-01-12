@@ -11,8 +11,6 @@
 
 namespace lut { namespace async { namespace impl
 {
-    class Thread;
-
     class Scheduler
     {
     public:
@@ -22,17 +20,24 @@ namespace lut { namespace async { namespace impl
         ThreadReleaseResult releaseThread(const std::thread::id &id);
 
     public:
-        bool threadEntry_init(Thread *thread);
-        bool threadEntry_deinit(Thread *thread);
+        bool threadEntry_init(worker::Thread *thread);
+        bool threadEntry_deinit(worker::Thread *thread);
+
+        bool threadEntry_provideWork(worker::Thread *thread);
+        void threadEntry_workContinued(worker::Thread *thread);
 
     public:
-        void spawn(Task *code);
+        void spawn(Task *task);
         void yield();
 
     private://threads
         std::mutex _threadsMtx;
         typedef std::vector<worker::Thread *> TVThreads;
         TVThreads _threads;
+
+    private://threads in wait
+        std::mutex _threadsWaitMtx;
+        TVThreads _threadsWait;
 
     private:
         worker::Effort      _effort;
