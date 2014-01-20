@@ -44,7 +44,7 @@ namespace lut { namespace async
     template<class F, class... Args>
     void Scheduler::spawn(F&& f, Args&&... args)
     {
-        impl::Task *task = impl::TaskInstance<F, Args...>::alloc(std::forward<F>(f), std::forward<Args>(args)...);
+        impl::Task *task = impl::TaskInstance<0, F, Args...>::alloc(std::forward<F>(f), std::forward<Args>(args)...);
         spawn(task);
     }
 

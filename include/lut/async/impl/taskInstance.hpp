@@ -2,7 +2,7 @@
 #define _LUT_ASYNC_IMPL_TASKINSTANCE_HPP_
 
 #include "lut/async/impl/task.hpp"
-#include <functional>
+#include <cstddef>
 #include <boost/pool/pool.hpp>
 
 namespace lut { namespace async { namespace impl
@@ -23,25 +23,27 @@ namespace lut { namespace async { namespace impl
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template<class F, class... Args>
+    template<size_t LocksAmount, class F, class... Args>
     class TaskInstance
         : public Task
     {
     public:
         static TaskInstance *alloc(F &&f, Args &&...args);
 
-        virtual void free() override;
-        virtual void exec() override;
+        void free() override;
+        void call() override;
 
     private:
         TaskInstance(F &&f, Args &&...args);
         ~TaskInstance();
 
     private:
-        using Bind = decltype(std::bind(std::declval<F>(), std::declval<Args>()...));
-        Bind _bind;
-    };
+        using Call = decltype(std::bind(std::declval<F>(), std::declval<Args>()...));
+        Call &getCall();
 
+        static const size_t sizeofClass = sizeof(Task) - sizeof(_locks) + sizeof(LockPtr)*LocksAmount + sizeof(Call);
+        using Pool = TaskInstancePool<sizeofClass>;
+    };
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <size_t size>
@@ -64,47 +66,61 @@ namespace lut { namespace async { namespace impl
     boost::pool<> TaskInstancePool<size>::_pool(size);
 
 
-
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template<class F, class... Args>
-    TaskInstance<F, Args...> *TaskInstance<F, Args...>::alloc(F &&f, Args &&...args)
+    template<size_t LocksAmount, class F, class... Args>
+    TaskInstance<LocksAmount, F, Args...> *TaskInstance<LocksAmount, F, Args...>::alloc(F &&f, Args &&...args)
     {
-        using Pool = TaskInstancePool<sizeof(TaskInstance)>;
+        static_assert(sizeof(Task) == sizeof(TaskInstance), "task and instance sizes must be equal");
         return new(Pool::alloc()) TaskInstance(std::forward<F>(f), std::forward<Args>(args)...);
     }
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template<class F, class... Args>
-    void TaskInstance<F, Args...>::free()
+    template<size_t LocksAmount, class F, class... Args>
+    void TaskInstance<LocksAmount, F, Args...>::free()
     {
         this->~TaskInstance();
 
-        using Pool = TaskInstancePool<sizeof(TaskInstance)>;
         Pool::free(this);
     }
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template<class F, class... Args>
-    void TaskInstance<F, Args...>::exec()
+    template<size_t LocksAmount, class F, class... Args>
+    void TaskInstance<LocksAmount, F, Args...>::call()
     {
-        _bind();
+        getCall()();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template<class F, class... Args>
-    TaskInstance<F, Args...>::TaskInstance(F &&f, Args &&...args)
-        : _bind(std::forward<F>(f), std::forward<Args>(args)...)
+    template<size_t LocksAmount, class F, class... Args>
+    TaskInstance<LocksAmount, F, Args...>::TaskInstance(F &&f, Args &&...args)
+        : Task()
     {
+        new(&getCall()) Call(std::forward<F>(f), std::forward<Args>(args)...);
     }
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template<class F, class... Args>
-    TaskInstance<F, Args...>::~TaskInstance()
+    template<size_t LocksAmount, class F, class... Args>
+    TaskInstance<LocksAmount, F, Args...>::~TaskInstance()
     {
+    }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template<size_t LocksAmount, class F, class... Args>
+    typename TaskInstance<LocksAmount, F, Args...>::Call &TaskInstance<LocksAmount, F, Args...>::getCall()
+    {
+        using LockPtr = LockPtr;
+        union
+        {
+            LockPtr *plock;
+            char *pchar;
+            Call *pcall;
+        } addr;
+        addr.plock = _locks;
+        addr.pchar += sizeof(LockPtr)*LocksAmount;
+        return *addr.pcall;
     }
 
 }}}

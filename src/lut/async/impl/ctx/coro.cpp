@@ -71,7 +71,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
 
             try
             {
-                _task->exec();
+                _task->call();
             }
             catch(const std::exception &e)
             {
