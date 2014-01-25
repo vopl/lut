@@ -42,9 +42,9 @@ namespace lut { namespace async
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Scheduler::spawn(impl::Task *task)
+    void Scheduler::spawn(details::Task *task)
     {
-        return impl().spawn(task);
+        return impl().spawn(task->pimpl());
     }
 
 }}

@@ -1,5 +1,9 @@
 #include "lut/async/stable.hpp"
+
+#define GENERATE_SIZEOFIMPL 1
+
 #include "lut/async/impl/scheduler.hpp"
+#include "lut/async/impl/task.hpp"
 
 #include <iostream>
 using namespace std;
@@ -26,8 +30,9 @@ int main()
 #define ONE(name) \
            "    namespace impl { class " #name "; } \n" \
            "    template <> struct sizeofImpl<impl::" #name "> { static const std::size_t _value =  " << sizeof(lut::async::impl::name) << ";};\n\n"
-           ONE(Scheduler)
 
+           ONE(Scheduler)
+           ONE(Task)
 
            "}}\n"
            "\n"

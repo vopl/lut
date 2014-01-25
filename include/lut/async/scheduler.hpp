@@ -2,7 +2,7 @@
 #define _LUT_ASYNC_SCHEDULER_HPP_
 
 #include "lut/async/threadState.hpp"
-#include "lut/async/impl/taskInstance.hpp"
+#include "lut/async/details/taskInstance.hpp"
 #include "lut/async/hiddenImpl.hpp"
 
 #include <thread>
@@ -36,7 +36,7 @@ namespace lut { namespace async
         void yield();
 
     private:
-        void spawn(impl::Task *task);
+        void spawn(details::Task *task);
     };
 
 
@@ -44,7 +44,7 @@ namespace lut { namespace async
     template<class F, class... Args>
     void Scheduler::spawn(F&& f, Args&&... args)
     {
-        impl::Task *task = impl::TaskInstance<0, F, Args...>::alloc(std::forward<F>(f), std::forward<Args>(args)...);
+        details::Task *task = details::TaskInstance<F, Args...>::alloc(std::forward<F>(f), std::forward<Args>(args)...);
         spawn(task);
     }
 

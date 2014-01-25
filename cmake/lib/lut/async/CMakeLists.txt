@@ -158,14 +158,21 @@ source_group(src FILES ${SRC})
 
 
 
-
-
+############################################################
+set(INC_DETAILS
+    ${PINC}/details/task.hpp
+    ${PINC}/details/taskInstance.hpp
+)
+source_group(include/details FILES ${INC_DETAILS})
+############################################################
+set(SRC_DETAILS
+    ${PSRC}/details/task.cpp
+)
+source_group(src/details FILES ${SRC_DETAILS})
 
 
 ############################################################
 set(INC_IMPL
-    ${PINC}/impl/task.hpp
-    ${PINC}/impl/taskInstance.hpp
 )
 source_group(include/impl FILES ${INC_IMPL})
 ############################################################
@@ -173,6 +180,7 @@ set(SRC_IMPL
     ${PSRC}/impl/scheduler.hpp
     ${PSRC}/impl/scheduler.cpp
     ${PSRC}/impl/sizeofImplGen.cpp
+    ${PSRC}/impl/task.hpp
     ${PSRC}/impl/task.cpp
 )
 source_group(src/impl FILES ${SRC_IMPL})
@@ -293,8 +301,10 @@ add_custom_command(OUTPUT ${PINC}/sizeofImpl.hpp
                     COMMAND ${CMAKE_CXX_COMPILER} ${cxx_args}
                     COMMAND ./sizeofImplGen > ${PINC}/sizeofImpl.hpp
                     DEPENDS
+                        ${PINC}/hiddenImpl.hpp
                         ${PSRC}/impl/sizeofImplGen.cpp
                         ${PSRC}/impl/scheduler.hpp
+                        ${PSRC}/impl/task.hpp
                     VERBATIM)
                     
 set_source_files_properties(${PSRC}/impl/sizeofImplGen.cpp PROPERTIES HEADER_FILE_ONLY ON)
@@ -311,8 +321,8 @@ set_source_files_properties(${PSRC}/impl/sizeofImplGen.cpp PROPERTIES HEADER_FIL
 
 ############################################################
 add_library(${PROJECT} STATIC
-    ${INC} ${INC_IMPL} ${INC_IMPL_CTX} ${INC_IMPL_SM} ${SRC_IMPL_WORKER}
-    ${SRC} ${SRC_IMPL} ${SRC_IMPL_CTX} ${SRC_IMPL_SM} ${SRC_IMPL_WORKER}
+    ${INC} ${INC_DETAILS} ${INC_DETAILS_IMPL} ${INC_IMPL} ${INC_IMPL_CTX} ${INC_IMPL_SM} ${SRC_IMPL_WORKER}
+    ${SRC} ${SRC_DETAILS} ${SRC_DETAILS_IMPL} ${SRC_IMPL} ${SRC_IMPL_CTX} ${SRC_IMPL_SM} ${SRC_IMPL_WORKER}
     ${SRC_PCH}
     ${PINC}/sizeofImpl.hpp)
 

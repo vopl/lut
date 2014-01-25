@@ -2,6 +2,7 @@
 #define _LUT_ASYNC_IMPL_SCHEDULER_HPP_
 
 #include "lut/async/threadState.hpp"
+#include "lut/async/impl/task.hpp"
 #include "lut/async/impl/worker/thread.hpp"
 #include "lut/async/impl/worker/effort.hpp"
 
