@@ -4,9 +4,17 @@
 namespace lut { namespace async { namespace impl { namespace mm
 {
     AllocatorThread::AllocatorThread()
+        : _vspaceBegin(reinterpret_cast<char *>(this))
+        , _vspaceStacksBegin(_vspaceBegin + vspaceHeaderSize())
+        , _vspaceStacksEnd(_vspaceStacksBegin + vspaceStacksSize())
+        , _vspaceBuffersBegin(_vspaceStacksEnd)
+        , _vspaceBuffersEnd(_vspaceBuffersBegin + vspaceBuffersSize())
+        , _vspaceEnd(_vspaceBegin + vspaceSize())
     {
         assert(!_instance);
         _instance = this;
+
+        assert(_vspaceBuffersEnd == _vspaceEnd);
     }
 
     AllocatorThread &AllocatorThread::instance()
@@ -22,7 +30,10 @@ namespace lut { namespace async { namespace impl { namespace mm
 
     std::size_t AllocatorThread::vspaceSize()
     {
-        return vspaceHeaderSize() + 4096;
+        return
+                vspaceHeaderSize() +
+                vspaceStacksSize() +
+                vspaceBuffersSize();
     }
 
     std::size_t AllocatorThread::vspaceHeaderSize()
@@ -31,6 +42,16 @@ namespace lut { namespace async { namespace impl { namespace mm
                 sizeof(AllocatorThread) % _config.pageSize() ?
                     (sizeof(AllocatorThread) / _config.pageSize() + 1) * _config.pageSize() :
                     sizeof(AllocatorThread);
+    }
+
+    std::size_t AllocatorThread::vspaceStacksSize()
+    {
+        return _config.stackPages() * _config.stacksAmount() * _config.pageSize();
+    }
+
+    std::size_t AllocatorThread::vspaceBuffersSize()
+    {
+        return _config.blockPages() * _config.blocksAmount() * _config.pageSize();
     }
 
     char *AllocatorThread::vspaceBegin() const

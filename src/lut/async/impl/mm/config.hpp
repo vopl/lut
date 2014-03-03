@@ -39,12 +39,12 @@ namespace lut { namespace async { namespace impl { namespace mm
 
     struct ConfigHeap
     {
-        std::size_t superblocksAmount() const
+        std::size_t blocksAmount() const
         {
             return 1024*1024;
         }
 
-        std::size_t superblockPages() const
+        std::size_t blockPages() const
         {
             return 64;
         }

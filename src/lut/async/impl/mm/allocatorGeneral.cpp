@@ -71,7 +71,7 @@ namespace lut { namespace async { namespace impl { namespace mm
             atIndex = 0;
             for(; atIndex<_header->_threadsUseMask.size(); ++atIndex)
             {
-                if(_header->_threadsUseMask.test(atIndex))
+                if(!_header->_threadsUseMask.test(atIndex))
                 {
                     break;
                 }

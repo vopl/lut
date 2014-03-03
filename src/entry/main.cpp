@@ -22,7 +22,7 @@ int lmain()
 
     lut::async::Scheduler sched;
 
-    //lut::async::ThreadPool tp(sched, 1);
+    lut::async::ThreadPool tp(sched, 1);
 
 
     auto f = [&](lut::async::Scheduler *sched, size_t iters){

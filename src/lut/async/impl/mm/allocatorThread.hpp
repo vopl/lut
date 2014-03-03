@@ -16,6 +16,8 @@ namespace lut { namespace async { namespace impl { namespace mm
     public:
         static std::size_t vspaceSize();
         static std::size_t vspaceHeaderSize();
+        static std::size_t vspaceStacksSize();
+        static std::size_t vspaceBuffersSize();
         char *vspaceBegin() const;
         char *vspaceEnd() const;
 
@@ -38,6 +40,13 @@ namespace lut { namespace async { namespace impl { namespace mm
         static const Config &_config;
 
         char *_vspaceBegin;
+
+        char *_vspaceStacksBegin;
+        char *_vspaceStacksEnd;
+
+        char *_vspaceBuffersBegin;
+        char *_vspaceBuffersEnd;
+
         char *_vspaceEnd;
 
     };
