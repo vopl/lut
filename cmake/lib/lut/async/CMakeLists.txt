@@ -253,6 +253,7 @@ set(SRC_IMPL_MM
     ${PSRC}/impl/mm/stack.hpp
     ${PSRC}/impl/mm/vm.hpp
     ${PSRC}/impl/mm/vm.cpp
+    ${PSRC}/impl/mm/bitIndex.hpp
 )
 source_group(src/impl/mm FILES ${SRC_IMPL_MM})
 

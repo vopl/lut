@@ -34,6 +34,11 @@ namespace lut { namespace async { namespace impl { namespace mm
         {
             return 1024;
         }
+
+        std::size_t stackIndexBittness() const
+        {
+            return 5;
+        }
     };
 
 
@@ -47,6 +52,11 @@ namespace lut { namespace async { namespace impl { namespace mm
         std::size_t blockPages() const
         {
             return 64;
+        }
+
+        std::size_t blockIndexBittness() const
+        {
+            return 5;
         }
     };
 
