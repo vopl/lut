@@ -31,7 +31,7 @@ namespace lut { namespace async { namespace details
         static TaskInstance *alloc(F &&f, Args &&...args);
 
     private:
-        static void action(Task *task, ActionKind ak);
+        static void actionExecutor(Task *task, ActionKind ak);
 
     private:
         TaskInstance(F &&f, Args &&...args);
@@ -74,7 +74,7 @@ namespace lut { namespace async { namespace details
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template<class F, class... Args>
-    void TaskInstance<F, Args...>::action(Task *task, ActionKind ak)
+    void TaskInstance<F, Args...>::actionExecutor(Task *task, ActionKind ak)
     {
         TaskInstance *self = static_cast<TaskInstance*>(task);
 
@@ -92,14 +92,14 @@ namespace lut { namespace async { namespace details
                 return;
             }
         default:
-            assert("unknown ck");
+            assert("unknown ak");
         }
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template<class F, class... Args>
     TaskInstance<F, Args...>::TaskInstance(F &&f, Args &&...args)
-        : Task(&TaskInstance::action)
+        : Task(&TaskInstance::actionExecutor)
         , _call(std::forward<F>(f), std::forward<Args>(args)...)
     {
     }

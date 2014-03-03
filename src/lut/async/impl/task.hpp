@@ -15,7 +15,7 @@ namespace lut { namespace async { namespace impl
     class Task
     {
     public:
-        Task(details::Task *face, details::Task::Action faceAction);
+        Task(details::Task *face, details::Task::ActionExecutor faceActionExecutor);
         ~Task();
 
     public:
@@ -24,7 +24,7 @@ namespace lut { namespace async { namespace impl
 
     private:
         details::Task *_face;
-        details::Task::Action _faceAction;
+        details::Task::ActionExecutor _faceActionExecutor;
 
         ctx::Coro *_coro;
         uint8_t _priority:4;

@@ -25,10 +25,10 @@ namespace lut { namespace async { namespace details
             Free,
             Call
         };
-        using Action = void (*)(Task *task, ActionKind ck);
+        using ActionExecutor = void (*)(Task *task, ActionKind ck);
 
     protected:
-        Task(Action action);
+        Task(ActionExecutor actionExecutor);
         ~Task();
 
     public:
