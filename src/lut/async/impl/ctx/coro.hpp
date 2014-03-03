@@ -3,7 +3,7 @@
 
 #include "lut/async/impl/ctx/root.hpp"
 #include "lut/async/impl/task.hpp"
-#include "lut/async/impl/sm/stack.hpp"
+#include "lut/async/impl/mm/stack.hpp"
 
 namespace lut { namespace async { namespace impl { namespace ctx
 {
@@ -12,11 +12,11 @@ namespace lut { namespace async { namespace impl { namespace ctx
     {
         Coro &operator=(const Coro &) = delete;
 
-        Coro(const lut::async::impl::sm::Stack *stack);
+        Coro(const lut::async::impl::mm::Stack *stack);
         ~Coro();
 
     public:
-        static Coro *alloc(bool quietFail = false);
+        static Coro *alloc();
         void free();
 
         void setCode(Task *task);
@@ -29,7 +29,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         void contextProc();
 
     private:
-        const lut::async::impl::sm::Stack *_stack;
+        const lut::async::impl::mm::Stack *_stack;
         Task *_task;
     };
 }}}}
