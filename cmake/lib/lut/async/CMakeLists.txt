@@ -245,6 +245,7 @@ source_group(include/impl/mm FILES ${INC_IMPL_MM})
 ############################################################
 set(SRC_IMPL_MM
     ${PSRC}/impl/mm/config.hpp
+    ${PSRC}/impl/mm/config.cpp
     ${PSRC}/impl/mm/allocatorGeneral.hpp
     ${PSRC}/impl/mm/allocatorGeneral.cpp
     ${PSRC}/impl/mm/allocatorThread.hpp

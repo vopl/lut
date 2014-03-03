@@ -8,12 +8,16 @@ namespace lut { namespace async { namespace impl { namespace mm
 {
     class AllocatorThread
     {
-    private:
-        AllocatorThread();
-
     public:
+        AllocatorThread();
         static AllocatorThread &instance();
         ~AllocatorThread();
+
+    public:
+        static std::size_t vspaceSize();
+        static std::size_t vspaceHeaderSize();
+        char *vspaceBegin() const;
+        char *vspaceEnd() const;
 
     public:
         const Stack *stackAlloc();
@@ -26,11 +30,12 @@ namespace lut { namespace async { namespace impl { namespace mm
         template <size_t size> bool bufferFree(void *buffer);
         template <size_t size> bool bufferFreeFromOtherThread(void *buffer);
 
-    private:
+    public:
         bool vmAccessHandler(void *addr);
 
     private:
         static __thread AllocatorThread *_instance;
+        static const Config &_config;
 
         char *_vspaceBegin;
         char *_vspaceEnd;

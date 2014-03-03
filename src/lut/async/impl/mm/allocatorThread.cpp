@@ -5,17 +5,42 @@ namespace lut { namespace async { namespace impl { namespace mm
 {
     AllocatorThread::AllocatorThread()
     {
-        assert(0);
+        assert(!_instance);
+        _instance = this;
     }
 
     AllocatorThread &AllocatorThread::instance()
     {
-        assert(0);
+        return *_instance;
     }
 
     AllocatorThread::~AllocatorThread()
     {
-        assert(0);
+        assert(this == _instance);
+        _instance = nullptr;
+    }
+
+    std::size_t AllocatorThread::vspaceSize()
+    {
+        return vspaceHeaderSize() + 4096;
+    }
+
+    std::size_t AllocatorThread::vspaceHeaderSize()
+    {
+        return
+                sizeof(AllocatorThread) % _config.pageSize() ?
+                    (sizeof(AllocatorThread) / _config.pageSize() + 1) * _config.pageSize() :
+                    sizeof(AllocatorThread);
+    }
+
+    char *AllocatorThread::vspaceBegin() const
+    {
+        return _vspaceBegin;
+    }
+
+    char *AllocatorThread::vspaceEnd() const
+    {
+        return _vspaceEnd;
     }
 
     const Stack *AllocatorThread::stackAlloc()
@@ -42,6 +67,9 @@ namespace lut { namespace async { namespace impl { namespace mm
     {
         assert(0);
     }
+
+    __thread AllocatorThread *AllocatorThread::_instance{nullptr};
+    const Config &AllocatorThread::_config{Config::instance()};
 
 
 }}}}
