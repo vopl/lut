@@ -15,7 +15,7 @@ namespace lut { namespace async { namespace impl { namespace mm
 
     public:
         static std::size_t vspaceSize();
-        static std::size_t vspaceHeaderSize();
+        static constexpr std::size_t vspaceHeaderSize();
         static std::size_t vspaceStacksSize();
         static std::size_t vspaceBuffersSize();
         char *vspaceBegin() const;

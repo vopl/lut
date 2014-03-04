@@ -8,10 +8,7 @@ namespace lut { namespace async { namespace impl { namespace mm
 
     struct ConfigMemory
     {
-        std::size_t pageSize() const
-        {
-            return 4096;
-        }
+        static const std::size_t _pageSize {4096};
     };
 
     struct ConfigStack
@@ -34,11 +31,6 @@ namespace lut { namespace async { namespace impl { namespace mm
         {
             return 1024;
         }
-
-        std::size_t stackIndexBittness() const
-        {
-            return 5;
-        }
     };
 
 
@@ -53,19 +45,11 @@ namespace lut { namespace async { namespace impl { namespace mm
         {
             return 64;
         }
-
-        std::size_t blockIndexBittness() const
-        {
-            return 5;
-        }
     };
 
     struct ConfigThreads
     {
-        std::size_t maxThreadsAmount() const
-        {
-            return 16;
-        }
+        static const std::size_t _maxThreadsAmount {16};
     };
 
     struct Config

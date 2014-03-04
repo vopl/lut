@@ -10,11 +10,6 @@ namespace lut { namespace async { namespace impl { namespace mm
         : _vspaceBegin(nullptr)
         , _vspaceEnd(nullptr)
     {
-        if(_config.maxThreadsAmount() > sizeof(Header::_threadsUseMask)*8)
-        {
-            throw std::runtime_error("config.maxThreadsAmount too big");
-        }
-
         _vspaceBegin = (char *)vm::alloc(vspaceSize());
 
         if(!_vspaceBegin)
@@ -63,7 +58,7 @@ namespace lut { namespace async { namespace impl { namespace mm
         {
             std::unique_lock<std::mutex> l(_mtx);
 
-            if(_header->_threadsUseMask.count() >= _config.maxThreadsAmount())
+            if(_header->_threadsUseMask.count() >= Config::_maxThreadsAmount)
             {
                 return false;
             }
@@ -168,15 +163,15 @@ namespace lut { namespace async { namespace impl { namespace mm
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     std::size_t AllocatorGeneral::vspaceSize()
     {
-        return vspaceHeaderSize() + AllocatorThread::vspaceSize() * _config.maxThreadsAmount();
+        return vspaceHeaderSize() + AllocatorThread::vspaceSize() * Config::_maxThreadsAmount;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    std::size_t AllocatorGeneral::vspaceHeaderSize()
+    std::size_t constexpr AllocatorGeneral::vspaceHeaderSize()
     {
         return
-                sizeof(Header) % _config.pageSize() ?
-                    (sizeof(Header) / _config.pageSize() + 1) * _config.pageSize() :
+                sizeof(Header) % Config::_pageSize ?
+                    (sizeof(Header) / Config::_pageSize + 1) * Config::_pageSize :
                     sizeof(Header);
     }
 
@@ -214,7 +209,7 @@ namespace lut { namespace async { namespace impl { namespace mm
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     std::size_t AllocatorGeneral::allocatorThreadIndex(const void *addr)
     {
-        if(addr < _header->_threadsArea || addr > _header->_threadsArea + _config.maxThreadsAmount()*AllocatorThread::vspaceSize())
+        if(addr < _header->_threadsArea || addr > _header->_threadsArea + Config::_maxThreadsAmount*AllocatorThread::vspaceSize())
         {
             return _badIndex;
         }

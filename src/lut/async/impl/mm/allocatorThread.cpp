@@ -36,22 +36,22 @@ namespace lut { namespace async { namespace impl { namespace mm
                 vspaceBuffersSize();
     }
 
-    std::size_t AllocatorThread::vspaceHeaderSize()
+    std::size_t constexpr AllocatorThread::vspaceHeaderSize()
     {
         return
-                sizeof(AllocatorThread) % _config.pageSize() ?
-                    (sizeof(AllocatorThread) / _config.pageSize() + 1) * _config.pageSize() :
+                sizeof(AllocatorThread) % Config::_pageSize ?
+                    (sizeof(AllocatorThread) / Config::_pageSize + 1) * Config::_pageSize :
                     sizeof(AllocatorThread);
     }
 
     std::size_t AllocatorThread::vspaceStacksSize()
     {
-        return _config.stackPages() * _config.stacksAmount() * _config.pageSize();
+        return _config.stackPages() * _config.stacksAmount() * Config::_pageSize;
     }
 
     std::size_t AllocatorThread::vspaceBuffersSize()
     {
-        return _config.blockPages() * _config.blocksAmount() * _config.pageSize();
+        return _config.blockPages() * _config.blocksAmount() * Config::_pageSize;
     }
 
     char *AllocatorThread::vspaceBegin() const

@@ -37,7 +37,7 @@ namespace lut { namespace async { namespace impl { namespace mm
 
     private:
         static std::size_t vspaceSize();
-        static std::size_t vspaceHeaderSize();
+        static constexpr std::size_t vspaceHeaderSize();
         char *vspaceBegin() const;
         char *vspaceEnd() const;
 
@@ -62,6 +62,8 @@ namespace lut { namespace async { namespace impl { namespace mm
         struct Header
         {
             std::bitset<4096>   _threadsUseMask;
+            static_assert(Config::_maxThreadsAmount <= decltype(_threadsUseMask)().size(), "_threadsUseMask too small");
+
             char *_threadsArea;
         };
 
