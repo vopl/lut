@@ -1,6 +1,8 @@
 #ifndef _LUT_MM_IMPL_BITINDEX_HPP_
 #define _LUT_MM_IMPL_BITINDEX_HPP_
 
+#include "lut/mm/impl/utils.hpp"
+
 #include <type_traits>
 #include <cstddef>
 #include <cassert>
@@ -11,11 +13,11 @@ namespace lut { namespace mm { namespace impl
     static const AddressInIndex badAddressInIndex = (AddressInIndex)-1;
 
     ////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth>
+    template <size_t levelBittness, size_t depth, size_t amount>
     class BitIndex;
 
     ////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth>
+    template <size_t levelBittness, size_t depth, size_t amount>
     class BitIndex
     {
     public:
@@ -28,28 +30,22 @@ namespace lut { namespace mm { namespace impl
         bool isAllocated(AddressInIndex address);
 
     public:
-        using SubIndex = BitIndex<levelBittness, deepth-1>;
-        static const size_t bittness = levelBittness + SubIndex::bittness;
+        static const size_t bittness = levelBittness * depth;
         static const size_t volume = 1 << bittness;
-        static const size_t minMemoryRequired = offsetof(BitIndex, _sublevelsArea);
-
-    private:
         static const size_t sublevelsAmount = 1 << levelBittness;
 
+        using SubIndex = BitIndex<levelBittness, depth-1, amount/sublevelsAmount>;
+    private:
+
         using Counter = typename utils::IntegralSelector<bittness>::type;
-        using CounterAndVolumeLimit = std::pair<Counter, Counter>;
-        CounterAndVolumeLimit _counters[sublevelsAmount];
+        Counter _counters[sublevelsAmount];
 
-        size_t _volumeLimit;
-        size_t _protectedAmount;
-
-        //SubIndex _sublevels[sublevelsAmount];
-        char _sublevelsArea[sizeof(SubIndex) * volume];
+        SubIndex _sublevels[sublevelsAmount];
     };
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness>
-    class BitIndex<levelBittness, 1>
+    template <size_t levelBittness, size_t amount>
+    class BitIndex<levelBittness, 1, amount>
     {
     public:
         BitIndex(size_t volumeLimit, size_t protectedAmount);
@@ -63,7 +59,6 @@ namespace lut { namespace mm { namespace impl
     public:
         static const size_t bittness = levelBittness;
         static const size_t volume = 1 << bittness;
-        static const size_t minMemoryRequired = sizeof(BitHolder);
 
     private:
         using BitHolder = typename utils::IntegralSelector<volume>::type;
@@ -82,8 +77,8 @@ namespace lut { namespace mm { namespace impl
 
     ////////////////////////////////////////////////////////////////
     //N
-    template <size_t levelBittness, size_t deepth>
-    AddressInIndex BitIndex<levelBittness, deepth>::alloc()
+    template <size_t levelBittness, size_t depth, size_t amount>
+    AddressInIndex BitIndex<levelBittness, depth, amount>::alloc()
     {
         for(size_t sli(0); sli<sublevelsAmount; sli++)
         {
@@ -100,8 +95,8 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth>
-    bool BitIndex<levelBittness, deepth>::free(size_t address)
+    template <size_t levelBittness, size_t depth, size_t amount>
+    bool BitIndex<levelBittness, depth, amount>::free(size_t address)
     {
         assert(address < volume);
 
@@ -119,8 +114,8 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth>
-    bool BitIndex<levelBittness, deepth>::isAllocated(size_t address)
+    template <size_t levelBittness, size_t depth, size_t amount>
+    bool BitIndex<levelBittness, depth, amount>::isAllocated(size_t address)
     {
         assert(address < volume);
 
@@ -141,12 +136,12 @@ namespace lut { namespace mm { namespace impl
 
     ////////////////////////////////////////////////////////////////
     //1
-    template <size_t levelBittness>
-    size_t BitIndex<levelBittness, 1>::alloc()
+    template <size_t levelBittness, size_t amount>
+    size_t BitIndex<levelBittness, 1, amount>::alloc()
     {
         for(;;)
         {
-            size_t sli = utils::ffz(_bitHolder.load(), volume);
+            size_t sli = utils::ffz(_bitHolder, volume);
             if(sli >= volume)
             {
                 break;
@@ -165,8 +160,8 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness>
-    bool BitIndex<levelBittness, 1>::free(AddressInIndex address)
+    template <size_t levelBittness, size_t amount>
+    bool BitIndex<levelBittness, 1, amount>::free(AddressInIndex address)
     {
         assert(address < volume);
 
@@ -176,8 +171,8 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness>
-    bool BitIndex<levelBittness, 1>::isAllocated(AddressInIndex address)
+    template <size_t levelBittness, size_t amount>
+    bool BitIndex<levelBittness, 1, amount>::isAllocated(AddressInIndex address)
     {
         assert(address < volume);
 

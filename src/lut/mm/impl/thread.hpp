@@ -4,8 +4,9 @@
 #include "lut/mm/impl/stack.hpp"
 #include "lut/mm/impl/config.hpp"
 
-#include "lut/mm/impl/stacksContainer.hpp"
-#include "lut/mm/impl/buffersContainer.hpp"
+#include "lut/mm/impl/blocksContainer.hpp"
+#include "lut/mm/impl/stack.hpp"
+#include "lut/mm/impl/buffer.hpp"
 
 namespace lut { namespace mm { namespace impl
 {
@@ -17,10 +18,10 @@ namespace lut { namespace mm { namespace impl
         ~Thread();
 
     public:
-        const Stack *stackAlloc();
-        bool stackFree(const Stack *stack);
-        bool stackFreeFromOverThread(const Stack *stack);
-        bool stackCompact(const Stack *stack);
+        const lut::mm::Stack *stackAlloc();
+        void stackFree(const lut::mm::Stack *stack);
+        void stackFreeFromOverThread(const lut::mm::Stack *stack);
+        void stackCompact(const lut::mm::Stack *stack);
 
     public:
         template <size_t size> void *bufferAlloc();
@@ -32,10 +33,32 @@ namespace lut { namespace mm { namespace impl
 
     private:
         static __thread Thread *_instance;
-        static const Config &_config;
 
-        StacksContainer     _stacks;
-        BuffersContainer    _buffers;
+    private:
+        struct Header
+        {
+
+        };
+
+        using HeaderArea = std::aligned_storage<sizeof(Header), Config::_pageSize>::type;
+
+        HeaderArea _headerArea;
+
+        Header &header();
+
+    private:
+        using StacksContainer = BlocksContainer<Stack, Config::_stacksAmount>;
+        using StacksContainerArea = std::aligned_storage<sizeof(StacksContainer), Config::_pageSize>::type;
+
+        StacksContainerArea _stacksContainerArea;
+        StacksContainer &stacksContainer();
+
+    private:
+        using BuffersContainer = BlocksContainer<Buffer, Config::_buffersAmount>;
+        using BuffersContainerArea = std::aligned_storage<sizeof(BuffersContainer), Config::_pageSize>::type;
+
+        BuffersContainerArea _buffersContainerArea;
+        BuffersContainer &buffersContainer();
     };
 
 

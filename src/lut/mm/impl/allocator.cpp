@@ -98,19 +98,19 @@ namespace lut { namespace mm { namespace impl
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    const Stack *Allocator::stackAlloc()
+    const lut::mm::Stack *Allocator::stackAlloc()
     {
         return Thread::instance().stackAlloc();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    bool Allocator::stackFree(const Stack *stack)
+    void Allocator::stackFree(const lut::mm::Stack *stack)
     {
         Thread *t = thread(stack);
         assert(t);
         if(!t)
         {
-            return false;
+            return;
         }
 
         if(t == &Thread::instance())
@@ -121,13 +121,13 @@ namespace lut { namespace mm { namespace impl
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    bool Allocator::stackCompact(const Stack *stack)
+    void Allocator::stackCompact(const lut::mm::Stack *stack)
     {
         Thread *t = thread(stack);
         assert(t);
         if(!t)
         {
-            return false;
+            return;
         }
 
         return t->stackCompact(stack);
@@ -206,9 +206,6 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Allocator *Allocator::_instance;
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    const Config &Allocator::_config{Config::instance()};
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Allocator::Instantiator Allocator::_instantiator {};

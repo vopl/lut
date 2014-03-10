@@ -1,13 +1,26 @@
-#ifndef _LUT_MM_IMPL_STACK_HPP_
-#define _LUT_MM_IMPL_STACK_HPP_
+#ifndef _LUT_MM_IMPL_STACKINSTANCE_HPP_
+#define _LUT_MM_IMPL_STACKINSTANCE_HPP_
+
+#include "lut/mm/impl/stack.hpp"
+#include "lut/mm/impl/config.hpp"
+#include "lut/mm/stack.hpp"
 
 namespace lut { namespace mm { namespace impl
 {
-    struct Stack
+    class Stack
     {
-        char *_guardBound;
-        char *_mappedBound;
-        char *_userspaceBound;
+    public:
+        Stack();
+        ~Stack();
+
+        void compact();
+
+        static const lut::mm::Stack *impl2Face(Stack *impl);
+        static Stack *face2Impl(const lut::mm::Stack *face);
+
+    private:
+        char _stub[Config::_pageSize];
+
     };
 }}}
 

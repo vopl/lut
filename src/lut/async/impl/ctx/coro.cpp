@@ -6,7 +6,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
 {
     Coro *Coro::alloc()
     {
-        const lut::mm::impl::Stack *stack = StackAllocator::instance().stackAlloc();
+        const lut::mm::Stack *stack = StackAllocator::instance().stackAlloc();
         if(!stack)
         {
             return nullptr;
@@ -20,7 +20,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         return coro;
     }
 
-    Coro::Coro(const lut::mm::impl::Stack *stack)
+    Coro::Coro(const lut::mm::Stack *stack)
         : _stack(stack)
     {
         constructCoro(
@@ -31,12 +31,10 @@ namespace lut { namespace async { namespace impl { namespace ctx
 
     void Coro::free()
     {
-        const lut::mm::impl::Stack *stack = _stack;
+        const lut::mm::Stack *stack = _stack;
         this->~Coro();
 
-        bool b = StackAllocator::instance().stackFree(stack);
-        assert(b);
-        (void)b;
+        StackAllocator::instance().stackFree(stack);
     }
 
     Coro::~Coro()

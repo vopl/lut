@@ -24,16 +24,16 @@ namespace lut { namespace mm { namespace impl
         bool threadDeinit();
 
     public:
-        const Stack *stackAlloc();
-        bool stackFree(const Stack *stack);
-        bool stackCompact(const Stack *stack);
+        const lut::mm::Stack *stackAlloc();
+        void stackFree(const lut::mm::Stack *stack);
+        void stackCompact(const lut::mm::Stack *stack);
 
     public:
         template <size_t size>
         void *bufferAlloc();
 
         template <size_t size>
-        bool bufferFree(void *buffer);
+        void bufferFree(void *buffer);
 
     private:
         bool vmAccessHandler(void *addr);
@@ -67,15 +67,15 @@ namespace lut { namespace mm { namespace impl
     private:
         static Allocator *_instance;
         static Instantiator _instantiator;
-        static const Config &_config;
 
         static const size_t _badIndex = -1;
 
 
+    private:
         using HeaderArea = std::aligned_storage<sizeof(Header), Config::_pageSize>::type;
         HeaderArea _headerArea;
 
-        static_assert(sizeof(Thread) == (sizeof(Thread) & (~(Config::_pageSize-1))), "Thread must be page mutipled");
+    private:
         using ThreadsArea = std::aligned_storage<sizeof(Thread)*Config::_maxThreadsAmount, Config::_pageSize>::type;
         ThreadsArea _threadsArea;
     };
@@ -90,7 +90,7 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <size_t size>
-    bool Allocator::bufferFree(void *buffer)
+    void Allocator::bufferFree(void *buffer)
     {
         Thread *at = thread(buffer);
         assert(at);

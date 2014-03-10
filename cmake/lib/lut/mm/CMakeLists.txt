@@ -19,29 +19,38 @@ endif()
 
 
 
+############################################################
+set(INC
+    ${PINC}/stack.hpp
+)
+source_group(include/mm FILES ${INC})
+############################################################
+set(SRC
+)
+source_group(src/mm FILES ${SRC})
 
 
 ############################################################
 set(INC_IMPL
 )
-source_group(include/mm/impl FILES ${INC_IMPL_MM})
+source_group(include/mm/impl FILES ${INC_IMPL})
 ############################################################
 set(SRC_IMPL
     ${PSRC}/impl/config.hpp
-    ${PSRC}/impl/config.cpp
     ${PSRC}/impl/allocator.hpp
     ${PSRC}/impl/allocator.cpp
     ${PSRC}/impl/thread.hpp
     ${PSRC}/impl/thread.cpp
-    ${PSRC}/impl/stacksContainer.hpp
-    ${PSRC}/impl/buffersContainer.hpp
+    ${PSRC}/impl/blocksContainer.hpp
     ${PSRC}/impl/stack.hpp
-    ${PSRC}/impl/stackInstance.hpp
+    ${PSRC}/impl/stack.cpp
+    ${PSRC}/impl/buffer.hpp
+    ${PSRC}/impl/buffer.cpp
     ${PSRC}/impl/vm.hpp
     ${PSRC}/impl/vm.cpp
     ${PSRC}/impl/bitIndex.hpp
 )
-source_group(src/mm/impl FILES ${SRC_IMPL_MM})
+source_group(src/mm/impl FILES ${SRC_IMPL})
 
 
 

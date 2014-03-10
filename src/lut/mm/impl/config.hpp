@@ -25,15 +25,8 @@ namespace lut { namespace mm { namespace impl
 
     struct ConfigHeap
     {
-        std::size_t blocksAmount() const
-        {
-            return 1024*1024;
-        }
-
-        std::size_t blockPages() const
-        {
-            return 64;
-        }
+        static const std::size_t    _bufferPages {64};
+        static const std::size_t    _buffersAmount {1024*1024};
     };
 
     struct ConfigThreads
@@ -47,10 +40,6 @@ namespace lut { namespace mm { namespace impl
         , public ConfigHeap
         , public ConfigThreads
     {
-        static const Config &instance();
-
-    private:
-        static const Config _instance;
     };
 
 }}}

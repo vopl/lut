@@ -12,7 +12,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
     {
         Coro &operator=(const Coro &) = delete;
 
-        Coro(const lut::mm::impl::Stack *stack);
+        Coro(const lut::mm::Stack *stack);
         ~Coro();
 
     public:
@@ -29,7 +29,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         void contextProc();
 
     private:
-        const lut::mm::impl::Stack *_stack;
+        const lut::mm::Stack *_stack;
         Task *_task;
     };
 }}}}
