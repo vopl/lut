@@ -1,4 +1,4 @@
-#include "lut/async/impl/mm/vm.hpp"
+#include "lut/mm/impl/vm.hpp"
 
 #include <unistd.h>
 #include <sys/mman.h>
@@ -17,7 +17,7 @@
  *
 */
 
-namespace lut { namespace async { namespace impl { namespace mm { namespace vm
+namespace lut { namespace mm { namespace impl { namespace vm
 {
     namespace
     {
@@ -187,4 +187,4 @@ namespace lut { namespace async { namespace impl { namespace mm { namespace vm
         return true;
     }
 
-}}}}}
+}}}}

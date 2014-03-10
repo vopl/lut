@@ -1,36 +1,25 @@
-#ifndef _LUT_ASYNC_IMPL_MM_CONFIG_HPP_
-#define _LUT_ASYNC_IMPL_MM_CONFIG_HPP_
+#ifndef _LUT_MM_IMPL_CONFIG_HPP_
+#define _LUT_MM_IMPL_CONFIG_HPP_
 
 #include <cstddef>
 
-namespace lut { namespace async { namespace impl { namespace mm
+namespace lut { namespace mm { namespace impl
 {
 
     struct ConfigMemory
     {
-        static const std::size_t _pageSize {4096};
+        static const std::size_t    _pageSize {4096};
     };
 
     struct ConfigStack
     {
-        std::size_t stacksAmount() const
-        {
-            return 1024*1024;
-        }
+        static const std::size_t    _stackPages {256};
+        static const std::size_t    _stackGrowsDown {true};
+        static const bool           _stackUseGuardPage {true};
+        static const std::size_t    _stackAlwaysProtectedBytes {1024};
 
-        std::size_t stackPages() const
-        {
-            return 256;
-        }
-        bool        stackUseGuardPage() const
-        {
-            return true;
-        }
+        static const std::size_t    _stacksAmount {1024*1024};
 
-        std::size_t stackAlwaysProtectedBytes() const
-        {
-            return 1024;
-        }
     };
 
 
@@ -64,6 +53,6 @@ namespace lut { namespace async { namespace impl { namespace mm
         static const Config _instance;
     };
 
-}}}}
+}}}
 
 #endif

@@ -1,11 +1,11 @@
-#ifndef _LUT_ASYNC_IMPL_MM_BITINDEX_HPP_
-#define _LUT_ASYNC_IMPL_MM_BITINDEX_HPP_
+#ifndef _LUT_MM_IMPL_BITINDEX_HPP_
+#define _LUT_MM_IMPL_BITINDEX_HPP_
 
 #include <type_traits>
 #include <cstddef>
 #include <cassert>
 
-namespace lut { namespace async { namespace impl { namespace mm
+namespace lut { namespace mm { namespace impl
 {
     using AddressInIndex = size_t;
     static const AddressInIndex badAddressInIndex = (AddressInIndex)-1;
@@ -184,6 +184,6 @@ namespace lut { namespace async { namespace impl { namespace mm
         BitHolder mask = 1 << address;
         return (_bitHolder & mask) ? true : false;
     }
-}}}}
+}}}
 
 #endif

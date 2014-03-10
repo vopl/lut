@@ -238,25 +238,6 @@ source_group(src/impl/sm FILES ${SRC_IMPL_SM})
 
 
 
-############################################################
-set(INC_IMPL_MM
-)
-source_group(include/impl/mm FILES ${INC_IMPL_MM})
-############################################################
-set(SRC_IMPL_MM
-    ${PSRC}/impl/mm/config.hpp
-    ${PSRC}/impl/mm/config.cpp
-    ${PSRC}/impl/mm/allocatorGeneral.hpp
-    ${PSRC}/impl/mm/allocatorGeneral.cpp
-    ${PSRC}/impl/mm/allocatorThread.hpp
-    ${PSRC}/impl/mm/allocatorThread.cpp
-    ${PSRC}/impl/mm/stack.hpp
-    ${PSRC}/impl/mm/vm.hpp
-    ${PSRC}/impl/mm/vm.cpp
-    ${PSRC}/impl/mm/bitIndex.hpp
-)
-source_group(src/impl/mm FILES ${SRC_IMPL_MM})
-
 
 
 
@@ -347,11 +328,13 @@ add_library(${PROJECT} STATIC
     ${INC_IMPL}             ${SRC_IMPL}
     ${INC_IMPL_CTX}         ${SRC_IMPL_CTX}
     ${INC_IMPL_SM}          ${SRC_IMPL_SM}
-    ${INC_IMPL_MM}          ${SRC_IMPL_MM}
     ${SRC_IMPL_WORKER}      ${SRC_IMPL_WORKER}
 
     ${SRC_PCH}
     ${PINC}/sizeofImpl.hpp)
+
+target_link_libraries(${PROJECT}
+    lut-mm)
 
 if(ASYNCSCHEDULER_CONTEXTENGINE_BOOSTCONTEXT)
     target_link_libraries(${PROJECT} ${Boost_CONTEXT_LIBRARY})

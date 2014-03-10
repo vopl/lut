@@ -18,6 +18,7 @@ include_directories(${PSRC})
 add_executable(entry ${INC} ${SRC} ${SRC_PCH})
 
 target_link_libraries(entry 
+    lut-mm
     lut-async)
 
 #if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)

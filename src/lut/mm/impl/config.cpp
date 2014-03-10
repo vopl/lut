@@ -1,6 +1,6 @@
-#include "lut/async/impl/mm/config.hpp"
+#include "lut/mm/impl/config.hpp"
 
-namespace lut { namespace async { namespace impl { namespace mm
+namespace lut { namespace mm { namespace impl
 {
 
     const Config &Config::instance()
@@ -10,4 +10,4 @@ namespace lut { namespace async { namespace impl { namespace mm
 
     const Config Config::_instance;
 
-}}}}
+}}}
