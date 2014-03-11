@@ -19,7 +19,8 @@ namespace lut { namespace mm { namespace impl
         static Stack *face2Impl(const lut::mm::Stack *face);
 
     private:
-        char _stub[Config::_pageSize];
+
+        char _area[Config::_stackPages * Config::_pageSize];
 
     };
 }}}
