@@ -3,15 +3,15 @@
 
 namespace lut { namespace mm { namespace impl { namespace utils
 {
-    template<size_t bittness>
-    struct IntegralSelector
+    template<size_t bittness4Value>
+    struct Integral4Bittness
     {
 
         using type =
-            typename std::conditional<bittness <= 8, u_int8_t,
-                typename std::conditional<bittness <= 16, u_int16_t,
-                    typename std::conditional<bittness <= 32, u_int32_t,
-                        typename std::conditional<bittness <= 64, u_int64_t,
+            typename std::conditional<bittness4Value <= 8, u_int8_t,
+                typename std::conditional<bittness4Value <= 16, u_int16_t,
+                    typename std::conditional<bittness4Value <= 32, u_int32_t,
+                        typename std::conditional<bittness4Value <= 64, u_int64_t,
                             void //need decrease bittness
                         >::type
                     >::type
@@ -37,9 +37,9 @@ namespace lut { namespace mm { namespace impl { namespace utils
     }
 
 
-    constexpr size_t bittness(size_t value)
+    constexpr size_t bittness4Value(size_t value)
     {
-        return value ? bittness(value/2)+1 : 0;
+        return value ? bittness4Value(value>>1)+1 : 0;
     }
 }}}}
 #endif

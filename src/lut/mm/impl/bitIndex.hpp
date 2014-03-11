@@ -1,184 +1,116 @@
 #ifndef _LUT_MM_IMPL_BITINDEX_HPP_
 #define _LUT_MM_IMPL_BITINDEX_HPP_
 
-#include "lut/mm/impl/utils.hpp"
-
-#include <type_traits>
-#include <cstddef>
-#include <cassert>
+#include "lut/mm/impl/bitIndexLevel.hpp"
+#include "lut/mm/impl/config.hpp"
+#include "lut/mm/impl/vm.hpp"
 
 namespace lut { namespace mm { namespace impl
 {
-    using AddressInIndex = size_t;
-    static const AddressInIndex badAddressInIndex = (AddressInIndex)-1;
 
     ////////////////////////////////////////////////
-    template <size_t levelBittness, size_t depth, size_t amount>
-    class BitIndex;
-
-    ////////////////////////////////////////////////
-    template <size_t levelBittness, size_t depth, size_t amount>
+    template <size_t maxVolume>
     class BitIndex
     {
     public:
-        BitIndex(size_t volumeLimit, size_t protectedAmount);
+        BitIndex();
         ~BitIndex();
 
     public:
         AddressInIndex alloc();
-        bool free(AddressInIndex address);
+        void free(AddressInIndex address);
         bool isAllocated(AddressInIndex address);
 
-    public:
-        static const size_t bittness = levelBittness * depth;
-        static const size_t volume = 1 << bittness;
-        static const size_t sublevelsAmount = 1 << levelBittness;
-
-        using SubIndex = BitIndex<levelBittness, depth-1, amount/sublevelsAmount>;
     private:
-
-        using Counter = typename utils::IntegralSelector<bittness>::type;
-        Counter _counters[sublevelsAmount];
-
-        SubIndex _sublevels[sublevelsAmount];
-    };
-
-    ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t amount>
-    class BitIndex<levelBittness, 1, amount>
-    {
-    public:
-        BitIndex(size_t volumeLimit, size_t protectedAmount);
-        ~BitIndex();
-
-    public:
-        AddressInIndex alloc();
-        bool free(AddressInIndex address);
-        bool isAllocated(AddressInIndex address);
-
-    public:
-        static const size_t bittness = levelBittness;
-        static const size_t volume = 1 << bittness;
+        void updateProtection();
 
     private:
-        using BitHolder = typename utils::IntegralSelector<volume>::type;
-        BitHolder _bitHolder;
+        static const std::size_t _bitIndexLevelBittness = 5;
+        static const std::size_t _maxVolumeBittness = utils::bittness4Value(maxVolume-1);
+
+        static const std::size_t _bitIndexLevelDepth =
+                std::conditional<
+                    (1 << (_maxVolumeBittness / _bitIndexLevelBittness * _bitIndexLevelBittness)) >= maxVolume,
+                    std::integral_constant<std::size_t, _maxVolumeBittness / _bitIndexLevelBittness>,
+                    std::integral_constant<std::size_t, _maxVolumeBittness / _bitIndexLevelBittness + 1> >::type::value;
+
+
+        using SubLevel = BitIndexLevel<_bitIndexLevelBittness, _bitIndexLevelDepth, maxVolume>;
+
+        size_t _protectedLayout;
+        SubLevel _subLevel;
     };
 
-
-
-
-
-
-
-
-
-
-
-    ////////////////////////////////////////////////////////////////
-    //N
-    template <size_t levelBittness, size_t depth, size_t amount>
-    AddressInIndex BitIndex<levelBittness, depth, amount>::alloc()
+    ////////////////////////////////////////////////////////////////////////////////
+    template <size_t maxVolume>
+    BitIndex<maxVolume>::BitIndex()
+        : _protectedLayout(vm::protect(this, Config::_pageSize, true) ? Config::_pageSize : 0)
     {
-        for(size_t sli(0); sli<sublevelsAmount; sli++)
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    template <size_t maxVolume>
+    BitIndex<maxVolume>::~BitIndex()
+    {
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    template <size_t maxVolume>
+    AddressInIndex BitIndex<maxVolume>::alloc()
+    {
+        bool layoutChanged = false;
+        AddressInIndex res = _subLevel.alloc(layoutChanged);
+        if(layoutChanged)
         {
-            if((_counters[sli] += 1) < SubIndex::volume)
-            {
-                AddressInIndex res = _sublevels[sli].alloc();
-                assert((AddressInIndex)-1 != res);
-                return res | (sli << SubIndex::bittness);
-            }
-            _counters[sli] -= 1;
+            updateProtection();
+        }
+        return res;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    template <size_t maxVolume>
+    void BitIndex<maxVolume>::free(AddressInIndex address)
+    {
+        bool layoutChanged = false;
+        _subLevel.free(address, layoutChanged);
+        if(layoutChanged)
+        {
+            updateProtection();
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    template <size_t maxVolume>
+    bool BitIndex<maxVolume>::isAllocated(AddressInIndex address)
+    {
+        return _subLevel.isAllocated(address);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    template <size_t maxVolume>
+    void BitIndex<maxVolume>::updateProtection()
+    {
+        std::size_t usedLayout = offsetof(BitIndex, _subLevel) + _subLevel.usedLayout();
+        if(usedLayout % Config::_pageSize)
+        {
+            usedLayout = usedLayout - usedLayout % Config::_pageSize + Config::_pageSize;
         }
 
-        return -1;
-    }
-
-    ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t depth, size_t amount>
-    bool BitIndex<levelBittness, depth, amount>::free(size_t address)
-    {
-        assert(address < volume);
-
-        const size_t sli = address >> SubIndex::bittness;
-        const AddressInIndex subaddress = address & ((1 << SubIndex::bittness) -1);
-
-        assert(_counters[sli].load());
-        if(_sublevels[sli].free(subaddress))
+        char *base = reinterpret_cast<char *>(this);
+        if(usedLayout > _protectedLayout)
         {
-            _counters[sli].fetch_sub(1);
-            return true;
+            vm::protect(base+_protectedLayout, usedLayout - _protectedLayout, true);
+            _protectedLayout = usedLayout;
         }
-
-        return false;
-    }
-
-    ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t depth, size_t amount>
-    bool BitIndex<levelBittness, depth, amount>::isAllocated(size_t address)
-    {
-        assert(address < volume);
-
-        const size_t sli = address >> SubIndex::bittness;
-        const AddressInIndex subaddress = address & ((1 << SubIndex::bittness) -1);
-
-        return _sublevels[sli].isAllocated(subaddress);
-    }
-
-
-
-
-
-
-
-
-
-
-    ////////////////////////////////////////////////////////////////
-    //1
-    template <size_t levelBittness, size_t amount>
-    size_t BitIndex<levelBittness, 1, amount>::alloc()
-    {
-        for(;;)
+        else if(usedLayout < _protectedLayout)
         {
-            size_t sli = utils::ffz(_bitHolder, volume);
-            if(sli >= volume)
-            {
-                break;
-            }
-
-            BitHolder mask = ((BitHolder)1) << sli;
-            if((_bitHolder |= mask) & mask)
-            {
-                continue;
-            }
-
-            return sli;
+            vm::protect(base+usedLayout, _protectedLayout - usedLayout, false);
+            _protectedLayout = usedLayout;
         }
-
-        return -1;
     }
 
-    ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t amount>
-    bool BitIndex<levelBittness, 1, amount>::free(AddressInIndex address)
-    {
-        assert(address < volume);
-
-        BitHolder mask = 1 << address;
-        assert(_bitHolder & mask);
-        return ((_bitHolder &= (~mask)) & mask) ? true : false;
-    }
-
-    ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t amount>
-    bool BitIndex<levelBittness, 1, amount>::isAllocated(AddressInIndex address)
-    {
-        assert(address < volume);
-
-        BitHolder mask = 1 << address;
-        return (_bitHolder & mask) ? true : false;
-    }
 }}}
 
 #endif

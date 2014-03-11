@@ -49,6 +49,7 @@ set(SRC_IMPL
     ${PSRC}/impl/vm.hpp
     ${PSRC}/impl/vm.cpp
     ${PSRC}/impl/bitIndex.hpp
+    ${PSRC}/impl/bitIndexLevel.hpp
 )
 source_group(src/mm/impl FILES ${SRC_IMPL})
 

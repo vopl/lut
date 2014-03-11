@@ -14,8 +14,9 @@ namespace lut { namespace mm { namespace impl
     {
     public:
         Thread();
-        static Thread &instance();
         ~Thread();
+
+        static Thread &instance();
 
     public:
         const lut::mm::Stack *stackAlloc();
@@ -41,9 +42,7 @@ namespace lut { namespace mm { namespace impl
         };
 
         using HeaderArea = std::aligned_storage<sizeof(Header), Config::_pageSize>::type;
-
         HeaderArea _headerArea;
-
         Header &header();
 
     private:

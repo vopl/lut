@@ -10,19 +10,27 @@ namespace lut { namespace mm { namespace impl
 
         assert(!_instance);
         _instance = this;
+
+        new(&header()) Header;
+        new(&stacksContainer()) StacksContainer;
+        new(&buffersContainer()) BuffersContainer;
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    Thread::~Thread()
+    {
+        header().~Header();
+        stacksContainer().~StacksContainer();
+        buffersContainer().~BuffersContainer();
+
+        assert(this == _instance);
+        _instance = nullptr;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Thread &Thread::instance()
     {
         return *_instance;
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    Thread::~Thread()
-    {
-        assert(this == _instance);
-        _instance = nullptr;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

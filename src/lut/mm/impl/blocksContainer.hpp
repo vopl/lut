@@ -16,42 +16,86 @@ namespace lut { namespace mm { namespace impl
         static_assert(sizeof(Block) == sizeof(Block)/Config::_pageSize*Config::_pageSize, "sizeof Block must be pageSize aligned");
 
     public:
+        BlocksContainer();
+        ~BlocksContainer();
+
         Block *alloc();
         void free(Block *ptr);
 
     private:
+        using Index = BitIndex<amount>;
+        using IndexArea = typename std::aligned_storage<sizeof(Index), Config::_pageSize>::type;
 
-        static const std::size_t _bitIndexLevelBittness = 5;
-        static const std::size_t _bitIndexLevelDepth =
-                std::conditional<
-                    1 << (utils::bittness(amount) / _bitIndexLevelBittness) >= amount,
-                    std::integral_constant<std::size_t, utils::bittness(amount) / _bitIndexLevelBittness>,
-                    std::integral_constant<std::size_t, utils::bittness(amount) / _bitIndexLevelBittness + 1> >::type::value;
+        IndexArea _indexArea;
+        Index &index();
 
-        BitIndex<_bitIndexLevelBittness, _bitIndexLevelDepth, amount> _bitIndex;
+    private:
+        using BlocksArea = typename std::aligned_storage<sizeof(Block)*amount, Config::_pageSize>::type;
 
-
+        BlocksArea _blocksArea;
+        Block *blocks();
     };
 
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <typename Block, std::size_t amount>
+    BlocksContainer<Block, amount>::BlocksContainer()
+    {
+        new (&index()) Index;
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <typename Block, std::size_t amount>
+    BlocksContainer<Block, amount>::~BlocksContainer()
+    {
+        index().~Index();
+    }
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
     Block *BlocksContainer<Block, amount>::alloc()
     {
-        AddressInIndex addr = _bitIndex.alloc();
-        assert(0);
+        AddressInIndex addr = index().alloc();
+        Block *ptr = blocks() + addr;
+        new (ptr) Block;
+        return ptr;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
     void BlocksContainer<Block, amount>::free(Block *ptr)
     {
-        assert(0);
+        AddressInIndex addr = ptr - blocks();
+        index().free(addr);
+        ptr->~Block();
     }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <typename Block, std::size_t amount>
+    typename BlocksContainer<Block, amount>::Index &BlocksContainer<Block, amount>::index()
+    {
+        union
+        {
+            IndexArea *_ia;
+            Index *_i;
+        } u;
+        u._ia = &_indexArea;
+        return *u._i;
+    }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <typename Block, std::size_t amount>
+    Block *BlocksContainer<Block, amount>::blocks()
+    {
+        union
+        {
+            BlocksArea *_ba;
+            Block *_b;
+        } u;
+        u._ba = &_blocksArea;
+        return u._b;
+    }
 }}}
 
 #endif
