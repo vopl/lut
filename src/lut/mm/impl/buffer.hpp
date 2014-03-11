@@ -1,7 +1,7 @@
 #ifndef _LUT_MM_IMPL_BUFFER_HPP_
 #define _LUT_MM_IMPL_BUFFER_HPP_
 
-#include "lut/mm/impl/config.hpp"
+#include "lut/mm/config.hpp"
 
 namespace lut { namespace mm { namespace impl
 {

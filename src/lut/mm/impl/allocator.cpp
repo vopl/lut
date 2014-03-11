@@ -1,7 +1,7 @@
 #include "lut/async/stable.hpp"
 #include "lut/mm/impl/allocator.hpp"
 #include "lut/mm/impl/vm.hpp"
-#include "lut/mm/impl/config.hpp"
+#include "lut/mm/config.hpp"
 
 namespace lut { namespace mm { namespace impl
 {

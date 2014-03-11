@@ -2,7 +2,7 @@
 #define _LUT_MM_IMPL_THREAD_HPP_
 
 #include "lut/mm/impl/stack.hpp"
-#include "lut/mm/impl/config.hpp"
+#include "lut/mm/config.hpp"
 
 #include "lut/mm/impl/blocksContainer.hpp"
 #include "lut/mm/impl/stack.hpp"

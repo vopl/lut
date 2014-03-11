@@ -13,7 +13,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         }
 
         Coro *coro = (Coro *)
-                ((intptr_t)(stack->_userspaceBound - sizeof(Coro)) & ~0xf);
+                ((intptr_t)(stack->_userspaceBegin - sizeof(Coro)) & ~0xf);
 
         new(coro) Coro(stack);
 
@@ -24,7 +24,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         : _stack(stack)
     {
         constructCoro(
-                    _stack->_guardBound,
+                    _stack->_guardBegin,
                     &Coro::s_contextProc,
                     reinterpret_cast<intptr_t>(this));
     }

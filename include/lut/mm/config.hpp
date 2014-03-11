@@ -1,9 +1,9 @@
-#ifndef _LUT_MM_IMPL_CONFIG_HPP_
-#define _LUT_MM_IMPL_CONFIG_HPP_
+#ifndef _LUT_MM_CONFIG_HPP_
+#define _LUT_MM_CONFIG_HPP_
 
 #include <cstddef>
 
-namespace lut { namespace mm { namespace impl
+namespace lut { namespace mm
 {
 
     struct ConfigMemory
@@ -14,14 +14,12 @@ namespace lut { namespace mm { namespace impl
     struct ConfigStack
     {
         static const std::size_t    _stackPages {256};
-        static const std::size_t    _stackGrowsDown {true};
+        static const bool           _stackGrowsDown {true};
         static const bool           _stackUseGuardPage {true};
-        static const std::size_t    _stackAlwaysProtectedBytes {1024};
+        static const std::size_t    _stackKeepProtectedBytes {1024};
 
         static const std::size_t    _stacksAmount {1024*1024};
-
     };
-
 
     struct ConfigHeap
     {
@@ -31,7 +29,7 @@ namespace lut { namespace mm { namespace impl
 
     struct ConfigThreads
     {
-        static const std::size_t _maxThreadsAmount {16};
+        static const std::size_t    _maxThreadsAmount {16};
     };
 
     struct Config
@@ -42,6 +40,6 @@ namespace lut { namespace mm { namespace impl
     {
     };
 
-}}}
+}}
 
 #endif

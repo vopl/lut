@@ -2,7 +2,7 @@
 #define _LUT_MM_IMPL_BITINDEX_HPP_
 
 #include "lut/mm/impl/bitIndexLevel.hpp"
-#include "lut/mm/impl/config.hpp"
+#include "lut/mm/config.hpp"
 #include "lut/mm/impl/vm.hpp"
 
 namespace lut { namespace mm { namespace impl

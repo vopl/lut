@@ -1,14 +1,15 @@
-#ifndef _LUT_MM_IMPL_STACKINSTANCE_HPP_
-#define _LUT_MM_IMPL_STACKINSTANCE_HPP_
+#ifndef _LUT_MM_IMPL_STACK_HPP_
+#define _LUT_MM_IMPL_STACK_HPP_
 
-#include "lut/mm/impl/stack.hpp"
-#include "lut/mm/impl/config.hpp"
-#include "lut/mm/stack.hpp"
+#include "lut/mm/impl/stackLayout.hpp"
 
 namespace lut { namespace mm { namespace impl
 {
     class Stack
+        : public StackLayout<Config::_stackGrowsDown, Config::_stackUseGuardPage>
     {
+        using Layout = StackLayout<Config::_stackGrowsDown, Config::_stackUseGuardPage>;
+
     public:
         Stack();
         ~Stack();
@@ -19,9 +20,6 @@ namespace lut { namespace mm { namespace impl
         static Stack *face2Impl(const lut::mm::Stack *face);
 
     private:
-
-        char _area[Config::_stackPages * Config::_pageSize];
-
     };
 }}}
 

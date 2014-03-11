@@ -1,7 +1,7 @@
 #ifndef _LUT_MM_IMPL_BLOCKSCONTAINER_HPP_
 #define _LUT_MM_IMPL_BLOCKSCONTAINER_HPP_
 
-#include "lut/mm/impl/config.hpp"
+#include "lut/mm/config.hpp"
 #include "lut/mm/impl/bitIndex.hpp"
 #include "lut/mm/impl/utils.hpp"
 

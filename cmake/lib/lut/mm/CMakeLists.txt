@@ -21,6 +21,7 @@ endif()
 
 ############################################################
 set(INC
+    ${PINC}/config.hpp
     ${PINC}/stack.hpp
 )
 source_group(include/mm FILES ${INC})
@@ -36,12 +37,13 @@ set(INC_IMPL
 source_group(include/mm/impl FILES ${INC_IMPL})
 ############################################################
 set(SRC_IMPL
-    ${PSRC}/impl/config.hpp
     ${PSRC}/impl/allocator.hpp
     ${PSRC}/impl/allocator.cpp
     ${PSRC}/impl/thread.hpp
     ${PSRC}/impl/thread.cpp
     ${PSRC}/impl/blocksContainer.hpp
+    ${PSRC}/impl/stackState.hpp
+    ${PSRC}/impl/stackLayout.hpp
     ${PSRC}/impl/stack.hpp
     ${PSRC}/impl/stack.cpp
     ${PSRC}/impl/buffer.hpp
