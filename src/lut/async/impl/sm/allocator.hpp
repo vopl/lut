@@ -8,14 +8,14 @@
 namespace lut { namespace async { namespace impl { namespace sm
 {
     template <
-        size_t levelBittness,
-        size_t deepth,
-        size_t pageSize,
-        size_t maxStackPages,
-        size_t initialMappedPages=1,
-        size_t unmapBoundBytes=1024,
+        std::size_t levelBittness,
+        std::size_t deepth,
+        std::size_t pageSize,
+        std::size_t maxStackPages,
+        std::size_t initialMappedPages=1,
+        std::size_t unmapBoundBytes=1024,
         bool useGuardPage=true,
-        size_t bittnessConcurrency=8>
+        std::size_t bittnessConcurrency=8>
     class Allocator
     {
     private:
@@ -62,7 +62,7 @@ namespace lut { namespace async { namespace impl { namespace sm
 
 
     ///////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t pageSize, std::size_t maxStackPages, std::size_t initialMappedPages, std::size_t unmapBoundBytes, bool useGuardPage, std::size_t bittnessConcurrency>
     Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::Allocator()
         : _vspaceBegin(nullptr)
         , _vspaceEnd(nullptr)
@@ -79,14 +79,14 @@ namespace lut { namespace async { namespace impl { namespace sm
     }
 
     ///////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t pageSize, std::size_t maxStackPages, std::size_t initialMappedPages, std::size_t unmapBoundBytes, bool useGuardPage, std::size_t bittnessConcurrency>
     Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency> &Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::instance()
     {
         return _instance;
     }
 
     ///////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t pageSize, std::size_t maxStackPages, std::size_t initialMappedPages, std::size_t unmapBoundBytes, bool useGuardPage, std::size_t bittnessConcurrency>
     Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::~Allocator()
     {
         if(_vspaceBegin)
@@ -98,25 +98,25 @@ namespace lut { namespace async { namespace impl { namespace sm
     }
 
     ///////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t pageSize, std::size_t maxStackPages, std::size_t initialMappedPages, std::size_t unmapBoundBytes, bool useGuardPage, std::size_t bittnessConcurrency>
     bool Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::threadInit()
     {
         return vm::threadInit(&Allocator::s_vmAccessHandler);
     }
 
     ///////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t pageSize, std::size_t maxStackPages, std::size_t initialMappedPages, std::size_t unmapBoundBytes, bool useGuardPage, std::size_t bittnessConcurrency>
     bool Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::threadDeinit()
     {
         return vm::threadDeinit(&Allocator::s_vmAccessHandler);
     }
 
     ///////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t pageSize, std::size_t maxStackPages, std::size_t initialMappedPages, std::size_t unmapBoundBytes, bool useGuardPage, std::size_t bittnessConcurrency>
     const Stack *Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::alloc(bool quietFail)
     {
-        size_t iaddress = _index.alloc();
-        if((size_t)-1 == iaddress)
+        std::size_t iaddress = _index.alloc();
+        if((std::size_t)-1 == iaddress)
         {
             if(!quietFail)
             {
@@ -125,8 +125,8 @@ namespace lut { namespace async { namespace impl { namespace sm
             return nullptr;
         }
 
-        size_t size = maxStackPages*pageSize;
-        size_t initialMappedSize = std::max(initialMappedPages, (size_t)1) * pageSize;
+        std::size_t size = maxStackPages*pageSize;
+        std::size_t initialMappedSize = std::max(initialMappedPages, (std::size_t)1) * pageSize;
 
         char *begin = _vspaceBegin + iaddress*size;
         char *end = begin+size;
@@ -154,7 +154,7 @@ namespace lut { namespace async { namespace impl { namespace sm
     }
 
     ///////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t pageSize, std::size_t maxStackPages, std::size_t initialMappedPages, std::size_t unmapBoundBytes, bool useGuardPage, std::size_t bittnessConcurrency>
     bool Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::free(const Stack *stack)
     {
         if((char *)stack < _vspaceBegin || (char *)stack >= _vspaceEnd)
@@ -162,8 +162,8 @@ namespace lut { namespace async { namespace impl { namespace sm
             return false;
         }
 
-        size_t size = maxStackPages*pageSize;
-        size_t iaddress = ((char *)stack - _vspaceBegin) / size;
+        std::size_t size = maxStackPages*pageSize;
+        std::size_t iaddress = ((char *)stack - _vspaceBegin) / size;
 
         if(_index.free(iaddress))
         {
@@ -182,7 +182,7 @@ namespace lut { namespace async { namespace impl { namespace sm
     }
 
     ///////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t pageSize, std::size_t maxStackPages, std::size_t initialMappedPages, std::size_t unmapBoundBytes, bool useGuardPage, std::size_t bittnessConcurrency>
     bool Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::compact(const Stack *stackOrNull)
     {
         char *addr = stackOrNull ? (char *)stackOrNull : (char *)alloca(1);
@@ -192,8 +192,8 @@ namespace lut { namespace async { namespace impl { namespace sm
             return false;
         }
 
-        size_t size = maxStackPages*pageSize;
-        size_t iaddress = (addr - _vspaceBegin) / size;
+        std::size_t size = maxStackPages*pageSize;
+        std::size_t iaddress = (addr - _vspaceBegin) / size;
 
         if(_index.isAllocated(iaddress))
         {
@@ -202,13 +202,13 @@ namespace lut { namespace async { namespace impl { namespace sm
             Stack *stack = reinterpret_cast<Stack *>(end - sizeof(Stack));
             assert(!stackOrNull || stackOrNull == stack);
 
-            size_t initialMappedSize = std::max(initialMappedPages, (size_t)1) * pageSize;
+            std::size_t initialMappedSize = std::max(initialMappedPages, (std::size_t)1) * pageSize;
 
             addr -= unmapBoundBytes;
 
             if(addr >= stack->_guardBound && addr < end - initialMappedSize)
             {
-                char *newMappedBound = (char *)((intptr_t)addr & ~(pageSize-1));
+                char *newMappedBound = (char *)((std::intptr_t)addr & ~(pageSize-1));
 
                 if(newMappedBound > stack->_mappedBound)
                 {
@@ -232,7 +232,7 @@ namespace lut { namespace async { namespace impl { namespace sm
     }
 
     ///////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t pageSize, std::size_t maxStackPages, std::size_t initialMappedPages, std::size_t unmapBoundBytes, bool useGuardPage, std::size_t bittnessConcurrency>
     bool Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::vmAccessHandler(void *addr)
     {
         if(addr < _vspaceBegin || addr >= _vspaceEnd)
@@ -240,8 +240,8 @@ namespace lut { namespace async { namespace impl { namespace sm
             return false;
         }
 
-        size_t size = maxStackPages*pageSize;
-        size_t iaddress = ((char *)addr - _vspaceBegin) / size;
+        std::size_t size = maxStackPages*pageSize;
+        std::size_t iaddress = ((char *)addr - _vspaceBegin) / size;
 
         if(_index.isAllocated(iaddress))
         {
@@ -251,7 +251,7 @@ namespace lut { namespace async { namespace impl { namespace sm
 
             if(addr >= stack->_guardBound)
             {
-                char * newMappedBound = (char *)((intptr_t)addr & ~(pageSize-1));
+                char * newMappedBound = (char *)((std::intptr_t)addr & ~(pageSize-1));
                 if(vm::protect(newMappedBound, stack->_mappedBound - newMappedBound, true))
                 {
                     stack->_mappedBound = newMappedBound;
@@ -271,14 +271,14 @@ namespace lut { namespace async { namespace impl { namespace sm
     }
 
     ///////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t pageSize, std::size_t maxStackPages, std::size_t initialMappedPages, std::size_t unmapBoundBytes, bool useGuardPage, std::size_t bittnessConcurrency>
     bool Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::s_vmAccessHandler(void *addr)
     {
         return instance().vmAccessHandler(addr);
     }
 
     ///////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t pageSize, size_t maxStackPages, size_t initialMappedPages, size_t unmapBoundBytes, bool useGuardPage, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t pageSize, std::size_t maxStackPages, std::size_t initialMappedPages, std::size_t unmapBoundBytes, bool useGuardPage, std::size_t bittnessConcurrency>
     Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency> Allocator<levelBittness, deepth,  pageSize, maxStackPages, initialMappedPages, unmapBoundBytes, useGuardPage, bittnessConcurrency>::_instance;
 
 }}}}

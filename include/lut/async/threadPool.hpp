@@ -12,7 +12,7 @@ namespace lut { namespace async
     class ThreadPool
     {
     public:
-        ThreadPool(Scheduler &scheduler, size_t amount = std::thread::hardware_concurrency());
+        ThreadPool(Scheduler &scheduler, std::size_t amount = std::thread::hardware_concurrency());
         ~ThreadPool();
 
     private:

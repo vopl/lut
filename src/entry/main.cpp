@@ -12,7 +12,7 @@
 #include <vector>
 #include <atomic>
 
-std::atomic<size_t> cnt(0);
+std::atomic<std::size_t> cnt(0);
 
 int lmain()
 {
@@ -25,12 +25,12 @@ int lmain()
     lut::async::ThreadPool tp(sched, 1);
 
 
-    auto f = [&](lut::async::Scheduler *sched, size_t iters){
+    auto f = [&](lut::async::Scheduler *sched, std::size_t iters){
 
         char *c = (char *)alloca(4096);
         c[0] = 220;
 
-        for(size_t i(0); i<iters; i++)
+        for(std::size_t i(0); i<iters; i++)
         {
             sched->yield();
         }
@@ -38,7 +38,7 @@ int lmain()
         cnt.fetch_add(-1, std::memory_order_relaxed);
     };
 
-    for(size_t i(0); i<20; i++)
+    for(std::size_t i(0); i<20; i++)
     {
         cnt.fetch_add(1);
         sched.spawn(f, &sched, 100000);

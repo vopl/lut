@@ -6,7 +6,7 @@ namespace lut { namespace async
 {
     template<class T> struct sizeofImpl
     {
-        static const size_t _value = 1;
+        static const std::size_t _value = 1;
     };
 }}
 #else

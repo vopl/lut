@@ -29,10 +29,10 @@ namespace lut { namespace mm { namespace impl
         void stackCompact(const lut::mm::Stack *stack);
 
     public:
-        template <size_t size>
+        template <std::size_t size>
         void *bufferAlloc();
 
-        template <size_t size>
+        template <std::size_t size>
         void bufferFree(void *buffer);
 
     private:
@@ -51,9 +51,9 @@ namespace lut { namespace mm { namespace impl
 
         Header &header();
 
-        size_t threadIndex(const void *addr);
+        std::size_t threadIndex(const void *addr);
         Thread *thread(const void *addr);
-        Thread *thread(size_t index);
+        Thread *thread(std::size_t index);
 
     private:
         class Instantiator
@@ -68,7 +68,7 @@ namespace lut { namespace mm { namespace impl
         static Allocator *_instance;
         static Instantiator _instantiator;
 
-        static const size_t _badIndex = -1;
+        static const std::size_t _badIndex = -1;
 
 
     private:
@@ -82,14 +82,14 @@ namespace lut { namespace mm { namespace impl
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <size_t size>
+    template <std::size_t size>
     void *Allocator::bufferAlloc()
     {
         return Thread::instance().bufferAlloc<size>();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <size_t size>
+    template <std::size_t size>
     void Allocator::bufferFree(void *buffer)
     {
         Thread *at = thread(buffer);

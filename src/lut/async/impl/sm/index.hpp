@@ -10,25 +10,25 @@
 namespace lut { namespace async { namespace impl { namespace sm
 {
     ////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t bittnessConcurrency=8>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t bittnessConcurrency=8>
     class Index;
 
     ////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t bittnessConcurrency>
     class Index
     {
     public:
-        size_t alloc();
-        bool free(size_t address);
-        bool isAllocated(size_t address);
+        std::size_t alloc();
+        bool free(std::size_t address);
+        bool isAllocated(std::size_t address);
 
     public:
         using SubIndex = Index<levelBittness, deepth-1, bittnessConcurrency>;
-        static const size_t bittness = levelBittness + SubIndex::bittness;
-        static const size_t volume = 1 << bittness;
+        static const std::size_t bittness = levelBittness + SubIndex::bittness;
+        static const std::size_t volume = 1 << bittness;
 
     private:
-        static const size_t sublevelsAmount = 1 << levelBittness;
+        static const std::size_t sublevelsAmount = 1 << levelBittness;
 
         using Counter = typename utils::IntegralSelector<bittness+1, bittnessConcurrency>::type;
         using AtomicCounter = std::atomic<Counter>;
@@ -38,17 +38,17 @@ namespace lut { namespace async { namespace impl { namespace sm
     };
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t bittnessConcurrency>
+    template <std::size_t levelBittness, std::size_t bittnessConcurrency>
     class Index<levelBittness, 1, bittnessConcurrency>
     {
     public:
-        size_t alloc();
-        bool free(size_t address);
-        bool isAllocated(size_t address);
+        std::size_t alloc();
+        bool free(std::size_t address);
+        bool isAllocated(std::size_t address);
 
     public:
-        static const size_t bittness = levelBittness;
-        static const size_t volume = 1 << bittness;
+        static const std::size_t bittness = levelBittness;
+        static const std::size_t volume = 1 << bittness;
 
     private:
         using BitHolder = typename utils::IntegralSelector<volume>::type;
@@ -67,15 +67,15 @@ namespace lut { namespace async { namespace impl { namespace sm
 
     ////////////////////////////////////////////////////////////////
     //N
-    template <size_t levelBittness, size_t deepth, size_t bittnessConcurrency>
-    size_t Index<levelBittness, deepth, bittnessConcurrency>::alloc()
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t bittnessConcurrency>
+    std::size_t Index<levelBittness, deepth, bittnessConcurrency>::alloc()
     {
-        for(size_t sli(0); sli<sublevelsAmount; sli++)
+        for(std::size_t sli(0); sli<sublevelsAmount; sli++)
         {
             if(_counters[sli].fetch_add(1) < SubIndex::volume)
             {
-                size_t res = _sublevels[sli].alloc();
-                assert((size_t)-1 != res);
+                std::size_t res = _sublevels[sli].alloc();
+                assert((std::size_t)-1 != res);
                 return res | (sli << SubIndex::bittness);
             }
             _counters[sli].fetch_sub(1);
@@ -85,13 +85,13 @@ namespace lut { namespace async { namespace impl { namespace sm
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t bittnessConcurrency>
-    bool Index<levelBittness, deepth, bittnessConcurrency>::free(size_t address)
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t bittnessConcurrency>
+    bool Index<levelBittness, deepth, bittnessConcurrency>::free(std::size_t address)
     {
         assert(address < volume);
 
-        const size_t sli = address >> SubIndex::bittness;
-        const size_t subaddress = address & ((1 << SubIndex::bittness) -1);
+        const std::size_t sli = address >> SubIndex::bittness;
+        const std::size_t subaddress = address & ((1 << SubIndex::bittness) -1);
 
         assert(_counters[sli].load());
         if(_sublevels[sli].free(subaddress))
@@ -104,13 +104,13 @@ namespace lut { namespace async { namespace impl { namespace sm
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t deepth, size_t bittnessConcurrency>
-    bool Index<levelBittness, deepth, bittnessConcurrency>::isAllocated(size_t address)
+    template <std::size_t levelBittness, std::size_t deepth, std::size_t bittnessConcurrency>
+    bool Index<levelBittness, deepth, bittnessConcurrency>::isAllocated(std::size_t address)
     {
         assert(address < volume);
 
-        const size_t sli = address >> SubIndex::bittness;
-        const size_t subaddress = address & ((1 << SubIndex::bittness) -1);
+        const std::size_t sli = address >> SubIndex::bittness;
+        const std::size_t subaddress = address & ((1 << SubIndex::bittness) -1);
 
         return _sublevels[sli].isAllocated(subaddress);
     }
@@ -126,12 +126,12 @@ namespace lut { namespace async { namespace impl { namespace sm
 
     ////////////////////////////////////////////////////////////////
     //1
-    template <size_t levelBittness, size_t bittnessConcurrency>
-    size_t Index<levelBittness, 1, bittnessConcurrency>::alloc()
+    template <std::size_t levelBittness, std::size_t bittnessConcurrency>
+    std::size_t Index<levelBittness, 1, bittnessConcurrency>::alloc()
     {
         for(;;)
         {
-            size_t sli = utils::ffz(_bitHolder.load(), volume);
+            std::size_t sli = utils::ffz(_bitHolder.load(), volume);
             if(sli >= volume)
             {
                 break;
@@ -150,8 +150,8 @@ namespace lut { namespace async { namespace impl { namespace sm
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t bittnessConcurrency>
-    bool Index<levelBittness, 1, bittnessConcurrency>::free(size_t address)
+    template <std::size_t levelBittness, std::size_t bittnessConcurrency>
+    bool Index<levelBittness, 1, bittnessConcurrency>::free(std::size_t address)
     {
         assert(address < volume);
 
@@ -161,8 +161,8 @@ namespace lut { namespace async { namespace impl { namespace sm
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t bittnessConcurrency>
-    bool Index<levelBittness, 1, bittnessConcurrency>::isAllocated(size_t address)
+    template <std::size_t levelBittness, std::size_t bittnessConcurrency>
+    bool Index<levelBittness, 1, bittnessConcurrency>::isAllocated(std::size_t address)
     {
         assert(address < volume);
 

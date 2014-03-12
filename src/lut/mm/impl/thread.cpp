@@ -6,7 +6,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Thread::Thread()
     {
-        assert((uintptr_t)this == ((uintptr_t)this & (~(Config::_pageSize-1))));
+        assert((std::uintptr_t)this == ((std::uintptr_t)this & (~(Config::_pageSize-1))));
 
         assert(!_instance);
         _instance = this;
@@ -77,37 +77,19 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Thread::Header &Thread::header()
     {
-        union
-        {
-            HeaderArea *_ha;
-            Header *_h;
-        } u;
-        u._ha = &_headerArea;
-        return *u._h;
+        return *reinterpret_cast<Header *>(&_headerArea);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Thread::StacksContainer &Thread::stacksContainer()
     {
-        union
-        {
-            StacksContainerArea *_ha;
-            StacksContainer *_h;
-        } u;
-        u._ha = &_stacksContainerArea;
-        return *u._h;
+        return *reinterpret_cast<StacksContainer *>(&_stacksContainerArea);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Thread::BuffersContainer &Thread::buffersContainer()
     {
-        union
-        {
-            BuffersContainerArea *_ha;
-            BuffersContainer *_h;
-        } u;
-        u._ha = &_buffersContainerArea;
-        return *u._h;
+        return *reinterpret_cast<BuffersContainer *>(&_buffersContainerArea);
     }
 
 }}}

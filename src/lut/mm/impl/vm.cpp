@@ -25,12 +25,12 @@ namespace lut { namespace mm { namespace impl { namespace vm
         {
             TVmAccessHandler _accessHandler;
 
-            size_t _altStackSize;
+            std::size_t _altStackSize;
             void *_altStackArea;
             struct sigaltstack _oldAltStack;
             struct sigaction _oldAction;
 
-            PerThreadState(size_t altStackSize)
+            PerThreadState(std::size_t altStackSize)
                 : _accessHandler()
                 , _altStackSize(altStackSize)
                 , _altStackArea(malloc(altStackSize))
@@ -146,7 +146,7 @@ namespace lut { namespace mm { namespace impl { namespace vm
         return true;
     }
 
-    void *alloc(size_t size)
+    void *alloc(std::size_t size)
     {
         void *addr = mmap(
                             NULL,
@@ -165,9 +165,9 @@ namespace lut { namespace mm { namespace impl { namespace vm
         return addr;
     }
 
-    bool free(void *addr, size_t size)
+    bool free(const void *addr, std::size_t size)
     {
-        if(munmap(addr, size))
+        if(munmap(const_cast<void *>(addr), size))
         {
             perror("munmap");
             return false;
@@ -176,9 +176,9 @@ namespace lut { namespace mm { namespace impl { namespace vm
         return true;
     }
 
-    bool protect(void *addr, size_t size, bool access)
+    bool protect(const void *addr, std::size_t size, bool access)
     {
-        if(mprotect(addr, size, access ? (PROT_READ|PROT_WRITE) : PROT_NONE))
+        if(mprotect(const_cast<void *>(addr), size, access ? (PROT_READ|PROT_WRITE) : PROT_NONE))
         {
             perror("mprotect");
             return false;

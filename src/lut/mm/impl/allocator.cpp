@@ -155,13 +155,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Allocator::Header &Allocator::header()
     {
-        union
-        {
-            HeaderArea *_ha;
-            Header *_h;
-        } u;
-        u._ha = &_headerArea;
-        return *u._h;
+        return *reinterpret_cast<Header *>(&_headerArea);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -189,19 +183,10 @@ namespace lut { namespace mm { namespace impl
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    Thread *Allocator::thread(size_t index)
+    Thread *Allocator::thread(std::size_t index)
     {
         assert(_badIndex != index);
-
-        union
-        {
-            ThreadsArea *_ta;
-            Thread *_t;
-        } u;
-
-        u._ta = &_threadsArea;
-
-        return u._t + index;
+        return reinterpret_cast<Thread *>(&_threadsArea) + index;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

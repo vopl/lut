@@ -10,10 +10,10 @@ namespace lut { namespace mm { namespace impl { namespace vm
     bool threadInit(TVmAccessHandler accessHandler);
     bool threadDeinit(TVmAccessHandler accessHandler);
 
-    void *alloc(size_t size);
-    bool free(void *addr, size_t size);
+    void *alloc(std::size_t size);
+    bool free(const void *addr, std::size_t size);
 
-    bool protect(void *addr, size_t size, bool access);
+    bool protect(const void *addr, std::size_t size, bool access);
 }}}}
 
 #endif

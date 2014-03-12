@@ -25,12 +25,13 @@ namespace lut { namespace async { namespace impl { namespace ctx
         void switchTo(Engine *to);
 
     private:
-        static void s_contextProc(intptr_t self);
+        static void s_contextProc(std::intptr_t self);
         void contextProc();
 
     private:
-        const lut::mm::Stack *_stack;
-        Task *_task;
+        Engine                  _engine;
+        const lut::mm::Stack *  _stack;
+        Task *                  _task;
     };
 }}}}
 

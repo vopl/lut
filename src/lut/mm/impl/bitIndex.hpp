@@ -9,7 +9,7 @@ namespace lut { namespace mm { namespace impl
 {
 
     ////////////////////////////////////////////////
-    template <size_t maxVolume>
+    template <std::size_t maxVolume>
     class BitIndex
     {
     public:
@@ -37,12 +37,12 @@ namespace lut { namespace mm { namespace impl
 
         using SubLevel = BitIndexLevel<_bitIndexLevelBittness, _bitIndexLevelDepth, maxVolume>;
 
-        size_t _protectedLayout;
+        std::size_t _protectedLayout;
         SubLevel _subLevel;
     };
 
     ////////////////////////////////////////////////////////////////////////////////
-    template <size_t maxVolume>
+    template <std::size_t maxVolume>
     BitIndex<maxVolume>::BitIndex()
         : _protectedLayout(vm::protect(this, Config::_pageSize, true) ? Config::_pageSize : 0)
     {
@@ -50,14 +50,14 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    template <size_t maxVolume>
+    template <std::size_t maxVolume>
     BitIndex<maxVolume>::~BitIndex()
     {
 
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    template <size_t maxVolume>
+    template <std::size_t maxVolume>
     AddressInIndex BitIndex<maxVolume>::alloc()
     {
         bool layoutChanged = false;
@@ -70,7 +70,7 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    template <size_t maxVolume>
+    template <std::size_t maxVolume>
     void BitIndex<maxVolume>::free(AddressInIndex address)
     {
         bool layoutChanged = false;
@@ -82,14 +82,14 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    template <size_t maxVolume>
+    template <std::size_t maxVolume>
     bool BitIndex<maxVolume>::isAllocated(AddressInIndex address)
     {
         return _subLevel.isAllocated(address);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    template <size_t maxVolume>
+    template <std::size_t maxVolume>
     void BitIndex<maxVolume>::updateProtection()
     {
         std::size_t usedLayout = offsetof(BitIndex, _subLevel) + _subLevel.usedLayout();

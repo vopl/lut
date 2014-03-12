@@ -25,12 +25,12 @@ namespace lut { namespace async { namespace impl { namespace sm { namespace vm
         {
             TVmAccessHandler _accessHandler;
 
-            size_t _altStackSize;
+            std::size_t _altStackSize;
             void *_altStackArea;
             struct sigaltstack _oldAltStack;
             struct sigaction _oldAction;
 
-            PerThreadState(size_t altStackSize)
+            PerThreadState(std::size_t altStackSize)
                 : _accessHandler()
                 , _altStackSize(altStackSize)
                 , _altStackArea(malloc(altStackSize))
@@ -146,7 +146,7 @@ namespace lut { namespace async { namespace impl { namespace sm { namespace vm
         return true;
     }
 
-    void *alloc(size_t size)
+    void *alloc(std::size_t size)
     {
         void *addr = mmap(
                             NULL,
@@ -165,7 +165,7 @@ namespace lut { namespace async { namespace impl { namespace sm { namespace vm
         return addr;
     }
 
-    bool free(void *addr, size_t size)
+    bool free(void *addr, std::size_t size)
     {
         if(munmap(addr, size))
         {
@@ -176,7 +176,7 @@ namespace lut { namespace async { namespace impl { namespace sm { namespace vm
         return true;
     }
 
-    bool protect(void *addr, size_t size, bool access)
+    bool protect(void *addr, std::size_t size, bool access)
     {
         if(mprotect(addr, size, access ? (PROT_READ|PROT_WRITE) : PROT_NONE))
         {

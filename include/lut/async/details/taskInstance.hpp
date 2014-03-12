@@ -10,7 +10,7 @@ namespace lut { namespace async { namespace details
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <size_t size>
+    template <std::size_t size>
     class TaskInstancePool
     {
     public:
@@ -43,7 +43,7 @@ namespace lut { namespace async { namespace details
     };
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <size_t size>
+    template <std::size_t size>
     void *TaskInstancePool<size>::alloc()
     {
         return _pool.malloc();
@@ -51,7 +51,7 @@ namespace lut { namespace async { namespace details
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <size_t size>
+    template <std::size_t size>
     void TaskInstancePool<size>::free(void *p)
     {
         return _pool.free(p);
@@ -59,7 +59,7 @@ namespace lut { namespace async { namespace details
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <size_t size>
+    template <std::size_t size>
     boost::pool<> TaskInstancePool<size>::_pool(size);
 
 

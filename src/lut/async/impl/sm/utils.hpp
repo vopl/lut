@@ -3,11 +3,11 @@
 
 namespace lut { namespace async { namespace impl { namespace utils
 {
-    template<size_t bittness, size_t bittness2=bittness>
+    template<std::size_t bittness, std::size_t bittness2=bittness>
     struct IntegralSelector
     {
 
-        static const size_t max = bittness>bittness2 ? bittness : bittness2;
+        static const std::size_t max = bittness>bittness2 ? bittness : bittness2;
 
         using type =
             typename std::conditional<max <= 8, u_int8_t,
@@ -24,9 +24,9 @@ namespace lut { namespace async { namespace impl { namespace utils
 
 
     template <typename BitHolder>
-    size_t ffz(BitHolder bits, size_t volume = sizeof(BitHolder)*8)
+    std::size_t ffz(BitHolder bits, std::size_t volume = sizeof(BitHolder)*8)
     {
-        for(size_t sli(0); sli<volume; sli++)
+        for(std::size_t sli(0); sli<volume; sli++)
         {
             BitHolder mask = ((BitHolder)1) << sli;
             if(bits & mask)

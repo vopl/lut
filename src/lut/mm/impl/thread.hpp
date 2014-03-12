@@ -25,9 +25,9 @@ namespace lut { namespace mm { namespace impl
         void stackCompact(const lut::mm::Stack *stack);
 
     public:
-        template <size_t size> void *bufferAlloc();
-        template <size_t size> bool bufferFree(void *buffer);
-        template <size_t size> bool bufferFreeFromOtherThread(void *buffer);
+        template <std::size_t size> void *bufferAlloc();
+        template <std::size_t size> bool bufferFree(void *buffer);
+        template <std::size_t size> bool bufferFreeFromOtherThread(void *buffer);
 
     public:
         bool vmAccessHandler(void *addr);
@@ -62,17 +62,17 @@ namespace lut { namespace mm { namespace impl
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <size_t size> void *Thread::bufferAlloc()
+    template <std::size_t size> void *Thread::bufferAlloc()
     {
         assert(0);
     }
 
-    template <size_t size> bool Thread::bufferFree(void *buffer)
+    template <std::size_t size> bool Thread::bufferFree(void *buffer)
     {
         assert(0);
     }
 
-    template <size_t size> bool Thread::bufferFreeFromOtherThread(void *buffer)
+    template <std::size_t size> bool Thread::bufferFreeFromOtherThread(void *buffer)
     {
         assert(0);
     }

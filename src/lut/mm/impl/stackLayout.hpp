@@ -17,43 +17,87 @@ namespace lut { namespace mm { namespace impl
     template <>
     class StackLayout<false, false>
     {
+        template <bool, bool> friend class StackLayout;
+
     public:
         StackLayout()
         {
-            std::size_t mappedSize =
-                    (sizeof(_stackStateArea) % Config::_pageSize) ?
-                        (sizeof(_stackStateArea) / Config::_pageSize + 1) * Config::_pageSize :
-                        sizeof(_stackStateArea);
+            std::size_t mappedSize = sizeof(_stackStateArea) + Config::_stackKeepProtectedBytes;
+
+            if(mappedSize % Config::_pageSize)
+            {
+                mappedSize = (mappedSize / Config::_pageSize + 1) * Config::_pageSize;
+            }
+
+            char *area = reinterpret_cast<char *>(this);
 
             vm::protect(
-                        this,
+                        area,
                         mappedSize,
                         true);
 
             new (&stackState()) StackState;
 
-            stackState()._userspaceBegin = (char *)this + sizeof(_stackStateArea);
-            stackState()._mappedEnd = (char *)this + mappedSize;
-            stackState()._guardBegin = (char *)this + sizeof(StackLayout);
+            stackState()._userspaceBegin = area + offsetof(StackLayout, _userArea);
+            stackState()._userspaceMapped = area + mappedSize;
+            stackState()._userspaceEnd = area + offsetof(StackLayout, _userArea) + sizeof(UserArea);
         }
 
-        ~StackLayout();
+        ~StackLayout()
+        {
+            const char *area = reinterpret_cast<const char *>(this);
+            std::size_t mappedSize = stackState()._userspaceMapped - area;
+            assert(! (mappedSize % Config::_pageSize));
 
-        void protectTo(const void *addr);
+            stackState().~StackState();
 
-        static const lut::mm::Stack *impl2Face(StackLayout *impl);
-        static StackLayout *face2Impl(const lut::mm::Stack *face);
+            vm::protect(
+                        area,
+                        mappedSize,
+                        false);
+        }
+
+        static const lut::mm::Stack *impl2Face(StackLayout *impl)
+        {
+            return &impl->stackState();
+        }
+
+        static StackLayout *face2Impl(const lut::mm::Stack *face)
+        {
+            char *ss = reinterpret_cast<char *>(static_cast<StackState *>(const_cast<lut::mm::Stack *>(face)));
+            return reinterpret_cast<StackLayout *>(ss - offsetof(StackLayout, _stackStateArea));
+        }
+
+        void compact()
+        {
+            std::uintptr_t imappedEnd = reinterpret_cast<std::uintptr_t>(alloca(1)) + Config::_stackKeepProtectedBytes;
+
+            if(imappedEnd % Config::_pageSize)
+            {
+                imappedEnd = (imappedEnd / Config::_pageSize + 1) * Config::_pageSize;
+            }
+
+            char *mappedEnd = reinterpret_cast<char *>(imappedEnd);
+            assert(mappedEnd > reinterpret_cast<char *>(this));
+            assert(mappedEnd < reinterpret_cast<char *>(this) + sizeof(StackLayout));
+
+            if(mappedEnd >= stackState()._userspaceMapped)
+            {
+                return;
+            }
+
+            vm::protect(
+                        mappedEnd,
+                        stackState()._userspaceMapped - mappedEnd,
+                        false);
+
+            stackState()._userspaceMapped = mappedEnd;
+        }
 
     private:
         StackState &stackState()
         {
-            union
-            {
-                StackStateArea *_ssa;
-                StackState *_ss;
-            } u;
-            u._ssa = &_stackStateArea;
-            return *u._ss;
+            return *reinterpret_cast<StackState *>(&_stackStateArea);
         }
 
     private:
@@ -68,34 +112,42 @@ namespace lut { namespace mm { namespace impl
     template <>
     class StackLayout<false, true>
     {
+
     public:
-        StackLayout();
-        ~StackLayout();
+        StackLayout()
+        {
+        }
 
-        void protectTo(const void *addr);
+        ~StackLayout()
+        {
+        }
 
-        static const lut::mm::Stack *impl2Face(StackLayout *impl);
-        static StackLayout *face2Impl(const lut::mm::Stack *face);
+        static const lut::mm::Stack *impl2Face(StackLayout *impl)
+        {
+            return WithoutGuard::impl2Face(reinterpret_cast<WithoutGuard *>(reinterpret_cast<char *>(impl) + offsetof(StackLayout, _withoutGuard)));
+        }
+
+        static StackLayout *face2Impl(const lut::mm::Stack *face)
+        {
+            return reinterpret_cast<StackLayout *>(reinterpret_cast<char *>(WithoutGuard::face2Impl(face)) - offsetof(StackLayout, _withoutGuard));
+        }
+
+        void compact()
+        {
+            return _withoutGuard.compact();
+        }
 
     private:
         StackState &stackState()
         {
-            union
-            {
-                StackStateArea *_ssa;
-                StackState *_ss;
-            } u;
-            u._ssa = &_stackStateArea;
-            return *u._ss;
+            return _withoutGuard.stackState();
         }
 
     private:
         using GuardArea = std::aligned_storage<Config::_pageSize, Config::_pageSize>::type;
-        using StackStateArea = std::aligned_storage<sizeof(StackState)>::type;
-        using UserArea = std::aligned_storage<Config::_stackPages * Config::_pageSize - sizeof(StackStateArea) - sizeof(GuardArea), 1>::type;
+        using WithoutGuard = StackLayout<false, false>;
 
-        StackStateArea  _stackStateArea;
-        UserArea        _userArea;
+        WithoutGuard    _withoutGuard;
         GuardArea       _guardArea;
     };
 
@@ -103,25 +155,85 @@ namespace lut { namespace mm { namespace impl
     template <>
     class StackLayout<true, false>
     {
+        template <bool, bool> friend class StackLayout;
+
     public:
-        StackLayout();
-        ~StackLayout();
+        StackLayout()
+        {
+            std::size_t mappedSize = sizeof(_stackStateArea) + Config::_stackKeepProtectedBytes;
 
-        void protectTo(const void *addr);
+            if(mappedSize % Config::_pageSize)
+            {
+                mappedSize = (mappedSize / Config::_pageSize + 1) * Config::_pageSize;
+            }
 
-        static const lut::mm::Stack *impl2Face(StackLayout *impl);
-        static StackLayout *face2Impl(const lut::mm::Stack *face);
+            char *area = reinterpret_cast<char *>(this);
+
+            vm::protect(
+                        area + sizeof(StackLayout) - mappedSize,
+                        mappedSize,
+                        true);
+
+            new (&stackState()) StackState;
+
+            stackState()._userspaceBegin = area + offsetof(StackLayout, _userArea);
+            stackState()._userspaceMapped = area + sizeof(StackLayout) - mappedSize;
+            stackState()._userspaceEnd = area + offsetof(StackLayout, _userArea) + sizeof(UserArea);
+        }
+
+        ~StackLayout()
+        {
+            const char *area = reinterpret_cast<const char *>(this);
+            const char *mappedBegin = stackState()._userspaceMapped;
+            std::size_t mappedSize = area + sizeof(StackLayout) - mappedBegin;
+            assert(! (mappedSize % Config::_pageSize));
+
+            stackState().~StackState();
+
+            vm::protect(
+                        mappedBegin,
+                        mappedSize,
+                        false);
+        }
+
+        static const lut::mm::Stack *impl2Face(StackLayout *impl)
+        {
+            return &impl->stackState();
+        }
+
+        static StackLayout *face2Impl(const lut::mm::Stack *face)
+        {
+            char *ss = reinterpret_cast<char *>(static_cast<StackState *>(const_cast<lut::mm::Stack *>(face)));
+            return reinterpret_cast<StackLayout *>(ss - offsetof(StackLayout, _stackStateArea));
+        }
+
+        void compact()
+        {
+            std::uintptr_t imappedBegin = reinterpret_cast<std::uintptr_t>(alloca(1)) - Config::_stackKeepProtectedBytes;
+
+            imappedBegin -= imappedBegin % Config::_pageSize;
+
+            char *mappedBegin = reinterpret_cast<char *>(imappedBegin);
+            assert(mappedBegin > reinterpret_cast<char *>(this));
+            assert(mappedBegin < reinterpret_cast<char *>(this) + sizeof(StackLayout));
+
+            if(mappedBegin >= stackState()._userspaceMapped)
+            {
+                return;
+            }
+
+            vm::protect(
+                        mappedBegin,
+                        mappedBegin - stackState()._userspaceMapped,
+                        false);
+
+            stackState()._userspaceMapped = mappedBegin;
+        }
 
     private:
         StackState &stackState()
         {
-            union
-            {
-                StackStateArea *_ssa;
-                StackState *_ss;
-            } u;
-            u._ssa = &_stackStateArea;
-            return *u._ss;
+            return *reinterpret_cast<StackState *>(&_stackStateArea);
         }
 
     private:
@@ -137,34 +249,41 @@ namespace lut { namespace mm { namespace impl
     class StackLayout<true, true>
     {
     public:
-        StackLayout();
-        ~StackLayout();
+        StackLayout()
+        {
+        }
 
-        void protectTo(const void *addr);
+        ~StackLayout()
+        {
+        }
 
-        static const lut::mm::Stack *impl2Face(StackLayout *impl);
-        static StackLayout *face2Impl(const lut::mm::Stack *face);
+        static const lut::mm::Stack *impl2Face(StackLayout *impl)
+        {
+            return WithoutGuard::impl2Face(reinterpret_cast<WithoutGuard *>(reinterpret_cast<char *>(impl) + offsetof(StackLayout, _withoutGuard)));
+        }
+
+        static StackLayout *face2Impl(const lut::mm::Stack *face)
+        {
+            return reinterpret_cast<StackLayout *>(reinterpret_cast<char *>(WithoutGuard::face2Impl(face)) - offsetof(StackLayout, _withoutGuard));
+        }
+
+        void compact()
+        {
+            return _withoutGuard.compact();
+        }
 
     private:
         StackState &stackState()
         {
-            union
-            {
-                StackStateArea *_ssa;
-                StackState *_ss;
-            } u;
-            u._ssa = &_stackStateArea;
-            return *u._ss;
+            return _withoutGuard.stackState();
         }
 
     private:
         using GuardArea = std::aligned_storage<Config::_pageSize, Config::_pageSize>::type;
-        using StackStateArea = std::aligned_storage<sizeof(StackState)>::type;
-        using UserArea = std::aligned_storage<Config::_stackPages * Config::_pageSize - sizeof(StackStateArea) - sizeof(GuardArea), 1>::type;
+        using WithoutGuard = StackLayout<true, false>;
 
         GuardArea       _guardArea;
-        UserArea        _userArea;
-        StackStateArea  _stackStateArea;
+        WithoutGuard    _withoutGuard;
     };
 }}}
 

@@ -10,8 +10,8 @@ namespace lut { namespace mm
         , public ConfigStack
     {
         char *_userspaceBegin;
-        char *_mappedEnd;
-        char *_guardBegin;
+        char *_userspaceMapped;
+        char *_userspaceEnd;
     };
 }}
 

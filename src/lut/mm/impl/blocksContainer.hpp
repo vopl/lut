@@ -75,26 +75,14 @@ namespace lut { namespace mm { namespace impl
     template <typename Block, std::size_t amount>
     typename BlocksContainer<Block, amount>::Index &BlocksContainer<Block, amount>::index()
     {
-        union
-        {
-            IndexArea *_ia;
-            Index *_i;
-        } u;
-        u._ia = &_indexArea;
-        return *u._i;
+        return *reinterpret_cast<Index *>(&_indexArea);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
     Block *BlocksContainer<Block, amount>::blocks()
     {
-        union
-        {
-            BlocksArea *_ba;
-            Block *_b;
-        } u;
-        u._ba = &_blocksArea;
-        return u._b;
+        return reinterpret_cast<Block *>(&_blocksArea);
     }
 }}}
 

@@ -27,7 +27,7 @@ namespace lut { namespace async { namespace impl { namespace worker
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
     EffortContainer<T>::EffortContainer()
-        : Base(typename Base::capacity_type((size_t)-1, 128))
+        : Base(typename Base::capacity_type((std::size_t)-1, 128))
     {
 
     }

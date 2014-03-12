@@ -7,13 +7,9 @@
 namespace lut { namespace mm { namespace impl
 {
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    class StackState
+    struct StackState
         : public lut::mm::Stack
     {
-    public:
-        StackState();
-
-
     };
 
 }}}

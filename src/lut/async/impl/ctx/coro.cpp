@@ -12,8 +12,15 @@ namespace lut { namespace async { namespace impl { namespace ctx
             return nullptr;
         }
 
-        Coro *coro = (Coro *)
-                ((intptr_t)(stack->_userspaceBegin - sizeof(Coro)) & ~0xf);
+        Coro *coro;
+        if(stack->_stackGrowsDown)
+        {
+            coro = reinterpret_cast<Coro *>(stack->_userspaceEnd - sizeof(Coro));
+        }
+        else
+        {
+            coro = reinterpret_cast<Coro *>(stack->_userspaceBegin);
+        }
 
         new(coro) Coro(stack);
 
@@ -23,10 +30,24 @@ namespace lut { namespace async { namespace impl { namespace ctx
     Coro::Coro(const lut::mm::Stack *stack)
         : _stack(stack)
     {
-        constructCoro(
-                    _stack->_guardBegin,
-                    &Coro::s_contextProc,
-                    reinterpret_cast<intptr_t>(this));
+        if(stack->_stackGrowsDown)
+        {
+            char *end = reinterpret_cast<char *>(this);
+            constructCoro(
+                        _stack->_userspaceBegin,
+                        end - _stack->_userspaceBegin,
+                        &Coro::s_contextProc,
+                        reinterpret_cast<std::intptr_t>(this));
+        }
+        else
+        {
+            char *begin = reinterpret_cast<char *>(this) + sizeof(Coro);
+            constructCoro(
+                        begin,
+                        _stack->_userspaceEnd - begin,
+                        &Coro::s_contextProc,
+                        reinterpret_cast<std::intptr_t>(this));
+        }
     }
 
     void Coro::free()
@@ -56,7 +77,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         Engine::switchTo(to);
     }
 
-    void Coro::s_contextProc(intptr_t self)
+    void Coro::s_contextProc(std::intptr_t self)
     {
         reinterpret_cast<Coro*>(self)->contextProc();
     }
@@ -89,4 +110,5 @@ namespace lut { namespace async { namespace impl { namespace ctx
             }
         }
     }
+
 }}}}

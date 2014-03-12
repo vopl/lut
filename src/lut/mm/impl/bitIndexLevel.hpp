@@ -9,27 +9,27 @@
 
 namespace lut { namespace mm { namespace impl
 {
-    using AddressInIndex = size_t;
+    using AddressInIndex = std::size_t;
     static const AddressInIndex badAddressInIndex = (AddressInIndex)-1;
 
     ////////////////////////////////////////////////
-    template <size_t levelBittness, size_t depth, size_t maxVolume>
+    template <std::size_t levelBittness, std::size_t depth, std::size_t maxVolume>
     class BitIndexLevel;
 
     ////////////////////////////////////////////////
-    template <size_t levelBittness, size_t depth, size_t maxVolume>
+    template <std::size_t levelBittness, std::size_t depth, std::size_t maxVolume>
     class BitIndexLevel
     {
     public:
         AddressInIndex alloc(bool &layoutChanged);
         void free(AddressInIndex address, bool &layoutChanged);
         bool isAllocated(AddressInIndex address) const;
-        size_t usedLayout() const;
+        std::size_t usedLayout() const;
 
     public:
-        static const size_t _bittness = levelBittness * depth;
-        static const size_t _volume = ((size_t)1 << _bittness) > maxVolume ? maxVolume : ((size_t)1 << _bittness);
-        static const size_t _subLevelsAmount = 1 << levelBittness;
+        static const std::size_t _bittness = levelBittness * depth;
+        static const std::size_t _volume = ((std::size_t)1 << _bittness) > maxVolume ? maxVolume : ((std::size_t)1 << _bittness);
+        static const std::size_t _subLevelsAmount = 1 << levelBittness;
 
         using SubLevel = BitIndexLevel<
             levelBittness,
@@ -55,18 +55,18 @@ namespace lut { namespace mm { namespace impl
     };
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t maxVolume>
+    template <std::size_t levelBittness, std::size_t maxVolume>
     class BitIndexLevel<levelBittness, 1, maxVolume>
     {
     public:
         AddressInIndex alloc(bool &layoutChanged);
         void free(AddressInIndex address, bool &layoutChanged);
         bool isAllocated(AddressInIndex address) const;
-        size_t usedLayout() const;
+        std::size_t usedLayout() const;
 
     public:
-        static const size_t _bittness = levelBittness;
-        static const size_t _volume = ((size_t)1 << _bittness) > maxVolume ? maxVolume : ((size_t)1 << _bittness);
+        static const std::size_t _bittness = levelBittness;
+        static const std::size_t _volume = ((std::size_t)1 << _bittness) > maxVolume ? maxVolume : ((std::size_t)1 << _bittness);
 
     private:
         using BitHolder = typename utils::Integral4Bittness<_volume>::type;
@@ -84,7 +84,7 @@ namespace lut { namespace mm { namespace impl
 
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t depth, size_t maxVolume>
+    template <std::size_t levelBittness, std::size_t depth, std::size_t maxVolume>
     AddressInIndex BitIndexLevel<levelBittness, depth, maxVolume>::alloc(bool &layoutChanged)
     {
         if(_workIndex >= _subLevelsAmount)
@@ -141,12 +141,12 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t depth, size_t maxVolume>
-    void BitIndexLevel<levelBittness, depth, maxVolume>::free(size_t address, bool &layoutChanged)
+    template <std::size_t levelBittness, std::size_t depth, std::size_t maxVolume>
+    void BitIndexLevel<levelBittness, depth, maxVolume>::free(std::size_t address, bool &layoutChanged)
     {
         assert(address < _volume);
 
-        const size_t sli = address >> SubLevel::_bittness;
+        const std::size_t sli = address >> SubLevel::_bittness;
         const AddressInIndex subaddress = address & ((1 << SubLevel::_bittness) -1);
 
         assert(_counters[sli]);
@@ -158,7 +158,7 @@ namespace lut { namespace mm { namespace impl
         }
 
         {
-            size_t sli2 = sli;
+            std::size_t sli2 = sli;
             while(sli2 && !_counters[sli2])
             {
                 --sli2;
@@ -182,12 +182,12 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t depth, size_t maxVolume>
-    bool BitIndexLevel<levelBittness, depth, maxVolume>::isAllocated(size_t address) const
+    template <std::size_t levelBittness, std::size_t depth, std::size_t maxVolume>
+    bool BitIndexLevel<levelBittness, depth, maxVolume>::isAllocated(std::size_t address) const
     {
         assert(address < _volume);
 
-        const size_t sli = address >> SubLevel::_bittness;
+        const std::size_t sli = address >> SubLevel::_bittness;
         const AddressInIndex subaddress = address & ((1 << SubLevel::_bittness) -1);
 
         if(sli == _subLevelsAmount-1)
@@ -199,8 +199,8 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t depth, size_t maxVolume>
-    size_t BitIndexLevel<levelBittness, depth, maxVolume>::usedLayout() const
+    template <std::size_t levelBittness, std::size_t depth, std::size_t maxVolume>
+    std::size_t BitIndexLevel<levelBittness, depth, maxVolume>::usedLayout() const
     {
         if(_lastUsedIndex == _subLevelsAmount-1)
         {
@@ -220,11 +220,11 @@ namespace lut { namespace mm { namespace impl
 
     ////////////////////////////////////////////////////////////////
     //1
-    template <size_t levelBittness, size_t maxVolume>
+    template <std::size_t levelBittness, std::size_t maxVolume>
     AddressInIndex BitIndexLevel<levelBittness, 1, maxVolume>::alloc(bool &layoutChanged)
     {
         (void)layoutChanged;
-        size_t sli = utils::ffz(_bitHolder, _volume);
+        std::size_t sli = utils::ffz(_bitHolder, _volume);
         assert(sli < _volume);
         if(sli >= _volume)
         {
@@ -236,7 +236,7 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t maxVolume>
+    template <std::size_t levelBittness, std::size_t maxVolume>
     void BitIndexLevel<levelBittness, 1, maxVolume>::free(AddressInIndex address, bool &layoutChanged)
     {
         (void)layoutChanged;
@@ -248,7 +248,7 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t maxVolume>
+    template <std::size_t levelBittness, std::size_t maxVolume>
     bool BitIndexLevel<levelBittness, 1, maxVolume>::isAllocated(AddressInIndex address) const
     {
         assert(address < _volume);
@@ -258,8 +258,8 @@ namespace lut { namespace mm { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////
-    template <size_t levelBittness, size_t maxVolume>
-    size_t BitIndexLevel<levelBittness, 1, maxVolume>::usedLayout() const
+    template <std::size_t levelBittness, std::size_t maxVolume>
+    std::size_t BitIndexLevel<levelBittness, 1, maxVolume>::usedLayout() const
     {
         return sizeof(BitIndexLevel);
     }

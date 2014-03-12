@@ -15,7 +15,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         void constructRoot();
         void destructRoot();
 
-        void constructCoro(char *stackBegin, void(*f)(intptr_t), intptr_t arg);
+        void constructCoro(char *stackPtr, std::size_t stackSize, void(*f)(std::intptr_t), std::intptr_t arg);
         void destructCoro();
 
         void switchTo(Engine *to);
