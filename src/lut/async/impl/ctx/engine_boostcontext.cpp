@@ -38,7 +38,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void Engine::constructCoro(char *stackPtr, std::size_t stackSize, void(*f)(intptr_t), intptr_t arg)
+    void Engine::constructCoro(char *stackPtr, std::size_t stackSize, void(*f)(std::intptr_t), std::uintptr_t arg)
     {
         assert(!_ctx);
         assert(!_ctxIsRoot);

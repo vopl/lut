@@ -31,4 +31,10 @@ namespace lut { namespace mm { namespace impl
         return static_cast<Stack *>(Layout::face2Impl(face));
     }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    bool Stack::vmAccessHandler(std::uintptr_t offset)
+    {
+        return Layout::vmAccessHandler(offset);
+    }
+
 }}}

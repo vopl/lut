@@ -36,13 +36,13 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     const lut::mm::Stack *Thread::stackAlloc()
     {
-        void *ptr = stacksContainer().alloc();
-        if(!ptr)
+        Stack *inst = stacksContainer().alloc();
+        if(!inst)
         {
             return nullptr;
         }
 
-        return Stack::impl2Face(new(ptr) Stack);
+        return Stack::impl2Face(inst);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -66,9 +66,22 @@ namespace lut { namespace mm { namespace impl
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    bool Thread::vmAccessHandler(void *addr)
+    bool Thread::vmAccessHandler(std::uintptr_t offset)
     {
-        assert(0);
+        assert(offset < sizeof(Thread));
+
+        if(offset < offsetof(Thread, _stacksContainerArea))
+        {
+            assert(!"must be already protected");
+            return false;
+        }
+
+        if(offset < offsetof(Thread, _buffersContainerArea))
+        {
+            return stacksContainer().vmAccessHandler(offset - offsetof(Thread, _stacksContainerArea));
+        }
+
+        return buffersContainer().vmAccessHandler(offset - offsetof(Thread, _buffersContainerArea));
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

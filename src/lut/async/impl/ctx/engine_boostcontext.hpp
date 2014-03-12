@@ -14,7 +14,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
         void constructRoot();
         void destructRoot();
 
-        void constructCoro(char *stackPtr, std::size_t stackSize, void(*f)(intptr_t), intptr_t arg);
+        void constructCoro(char *stackPtr, std::size_t stackSize, void(*f)(std::intptr_t), std::uintptr_t arg);
         void destructCoro();
 
         void switchTo(Engine *to);
@@ -22,7 +22,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
     private:
         boost::context::fcontext_t *_ctx;
         bool _ctxIsRoot;
-        intptr_t _coroArg;
+        std::uintptr_t _coroArg;
     };
 }}}}
 

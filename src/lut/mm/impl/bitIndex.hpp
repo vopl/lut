@@ -21,6 +21,9 @@ namespace lut { namespace mm { namespace impl
         void free(AddressInIndex address);
         bool isAllocated(AddressInIndex address);
 
+    public:
+        bool vmAccessHandler(std::uintptr_t offset);
+
     private:
         void updateProtection();
 
@@ -86,6 +89,13 @@ namespace lut { namespace mm { namespace impl
     bool BitIndex<maxVolume>::isAllocated(AddressInIndex address)
     {
         return _subLevel.isAllocated(address);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    template <std::size_t maxVolume>
+    bool BitIndex<maxVolume>::vmAccessHandler(std::uintptr_t offset)
+    {
+        assert(!"not impl yet");
     }
 
     ////////////////////////////////////////////////////////////////////////////////

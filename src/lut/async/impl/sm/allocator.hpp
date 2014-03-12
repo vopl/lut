@@ -208,7 +208,7 @@ namespace lut { namespace async { namespace impl { namespace sm
 
             if(addr >= stack->_guardBound && addr < end - initialMappedSize)
             {
-                char *newMappedBound = (char *)((std::intptr_t)addr & ~(pageSize-1));
+                char *newMappedBound = (char *)((std::uintptr_t)addr & ~(pageSize-1));
 
                 if(newMappedBound > stack->_mappedBound)
                 {
@@ -251,7 +251,7 @@ namespace lut { namespace async { namespace impl { namespace sm
 
             if(addr >= stack->_guardBound)
             {
-                char * newMappedBound = (char *)((std::intptr_t)addr & ~(pageSize-1));
+                char * newMappedBound = (char *)((std::uintptr_t)addr & ~(pageSize-1));
                 if(vm::protect(newMappedBound, stack->_mappedBound - newMappedBound, true))
                 {
                     stack->_mappedBound = newMappedBound;

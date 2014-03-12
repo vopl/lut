@@ -30,7 +30,7 @@ namespace lut { namespace mm { namespace impl
         template <std::size_t size> bool bufferFreeFromOtherThread(void *buffer);
 
     public:
-        bool vmAccessHandler(void *addr);
+        bool vmAccessHandler(std::uintptr_t offset);
 
     private:
         static __thread Thread *_instance;

@@ -143,7 +143,7 @@ namespace lut { namespace mm { namespace impl
             return false;
         }
 
-        return t->vmAccessHandler(addr);
+        return t->vmAccessHandler(reinterpret_cast<std::uintptr_t>(addr) - reinterpret_cast<std::uintptr_t>(t));
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

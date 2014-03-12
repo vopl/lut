@@ -22,39 +22,24 @@ namespace lut { namespace mm { namespace impl
     public:
         StackLayout()
         {
-            std::size_t mappedSize = sizeof(_stackStateArea) + Config::_stackKeepProtectedBytes;
-
-            if(mappedSize % Config::_pageSize)
-            {
-                mappedSize = (mappedSize / Config::_pageSize + 1) * Config::_pageSize;
-            }
-
             char *area = reinterpret_cast<char *>(this);
-
-            vm::protect(
-                        area,
-                        mappedSize,
-                        true);
+            char *mappedEnd = extend(area, area + sizeof(_stackStateArea) + Config::_stackKeepProtectedBytes);
 
             new (&stackState()) StackState;
 
             stackState()._userspaceBegin = area + offsetof(StackLayout, _userArea);
-            stackState()._userspaceMapped = area + mappedSize;
+            stackState()._userspaceMapped = mappedEnd;
             stackState()._userspaceEnd = area + offsetof(StackLayout, _userArea) + sizeof(UserArea);
         }
 
         ~StackLayout()
         {
-            const char *area = reinterpret_cast<const char *>(this);
-            std::size_t mappedSize = stackState()._userspaceMapped - area;
-            assert(! (mappedSize % Config::_pageSize));
+            char *area = reinterpret_cast<char *>(this);
+            char *mappedEnd = stackState()._userspaceMapped;
 
             stackState().~StackState();
 
-            vm::protect(
-                        area,
-                        mappedSize,
-                        false);
+            reduce(mappedEnd, area);
         }
 
         static const lut::mm::Stack *impl2Face(StackLayout *impl)
@@ -70,28 +55,73 @@ namespace lut { namespace mm { namespace impl
 
         void compact()
         {
-            std::uintptr_t imappedEnd = reinterpret_cast<std::uintptr_t>(alloca(1)) + Config::_stackKeepProtectedBytes;
-
-            if(imappedEnd % Config::_pageSize)
+            char *bound = stackState()._userspaceMapped;
+            bound = reduce(bound, reinterpret_cast<char *>(alloca(1)) + Config::_stackKeepProtectedBytes);
+            if(bound != stackState()._userspaceMapped)
             {
-                imappedEnd = (imappedEnd / Config::_pageSize + 1) * Config::_pageSize;
+                stackState()._userspaceMapped = bound;
+            }
+        }
+
+        bool vmAccessHandler(std::uintptr_t offset)
+        {
+            char *bound = stackState()._userspaceMapped;
+            bound = extend(bound, reinterpret_cast<char *>(this) + offset);
+            if(bound != stackState()._userspaceMapped)
+            {
+                stackState()._userspaceMapped = bound;
             }
 
-            char *mappedEnd = reinterpret_cast<char *>(imappedEnd);
-            assert(mappedEnd > reinterpret_cast<char *>(this));
-            assert(mappedEnd < reinterpret_cast<char *>(this) + sizeof(StackLayout));
+            return true;
+        }
 
-            if(mappedEnd >= stackState()._userspaceMapped)
+    private:
+        static char *reduce(char *oldBount, char *newBound)
+        {
+            std::uintptr_t inewBound = reinterpret_cast<std::uintptr_t>(newBound);
+
+            if(inewBound % Config::_pageSize)
             {
-                return;
+                inewBound = (inewBound / Config::_pageSize + 1) * Config::_pageSize;
+            }
+
+            newBound = reinterpret_cast<char *>(inewBound);
+
+            if(newBound >= oldBount)
+            {
+                return oldBount;
             }
 
             vm::protect(
-                        mappedEnd,
-                        stackState()._userspaceMapped - mappedEnd,
+                        newBound,
+                        oldBount - newBound,
                         false);
 
-            stackState()._userspaceMapped = mappedEnd;
+            return newBound;
+        }
+
+        static char *extend(char *oldBound, char *newBound)
+        {
+            std::uintptr_t inewBound = reinterpret_cast<std::uintptr_t>(newBound);
+
+            if(inewBound % Config::_pageSize)
+            {
+                inewBound = (inewBound / Config::_pageSize + 1) * Config::_pageSize;
+            }
+
+            newBound = reinterpret_cast<char *>(inewBound);
+
+            if(newBound <= oldBound)
+            {
+                return oldBound;
+            }
+
+            vm::protect(
+                        oldBound,
+                        newBound - oldBound,
+                        true);
+
+            return newBound;
         }
 
     private:
@@ -137,6 +167,17 @@ namespace lut { namespace mm { namespace impl
             return _withoutGuard.compact();
         }
 
+        bool vmAccessHandler(std::uintptr_t offset)
+        {
+            if(offset >= offsetof(StackLayout, _guardArea))
+            {
+                fprintf(stderr, "prevent access to stack guard page\n");
+                return false;
+            }
+
+            return _withoutGuard.vmAccessHandler(offset - offsetof(StackLayout, _withoutGuard));
+        }
+
     private:
         StackState &stackState()
         {
@@ -160,40 +201,24 @@ namespace lut { namespace mm { namespace impl
     public:
         StackLayout()
         {
-            std::size_t mappedSize = sizeof(_stackStateArea) + Config::_stackKeepProtectedBytes;
-
-            if(mappedSize % Config::_pageSize)
-            {
-                mappedSize = (mappedSize / Config::_pageSize + 1) * Config::_pageSize;
-            }
-
             char *area = reinterpret_cast<char *>(this);
-
-            vm::protect(
-                        area + sizeof(StackLayout) - mappedSize,
-                        mappedSize,
-                        true);
+            char *mappedEnd = extend(area + sizeof(StackLayout), area + sizeof(StackLayout) - sizeof(_stackStateArea) - Config::_stackKeepProtectedBytes);
 
             new (&stackState()) StackState;
 
             stackState()._userspaceBegin = area + offsetof(StackLayout, _userArea);
-            stackState()._userspaceMapped = area + sizeof(StackLayout) - mappedSize;
+            stackState()._userspaceMapped = mappedEnd;
             stackState()._userspaceEnd = area + offsetof(StackLayout, _userArea) + sizeof(UserArea);
         }
 
         ~StackLayout()
         {
-            const char *area = reinterpret_cast<const char *>(this);
-            const char *mappedBegin = stackState()._userspaceMapped;
-            std::size_t mappedSize = area + sizeof(StackLayout) - mappedBegin;
-            assert(! (mappedSize % Config::_pageSize));
+            char *area = reinterpret_cast<char *>(this);
+            char *mappedEnd = stackState()._userspaceMapped;
 
             stackState().~StackState();
 
-            vm::protect(
-                        mappedBegin,
-                        mappedSize,
-                        false);
+            reduce(mappedEnd, area + sizeof(StackLayout));
         }
 
         static const lut::mm::Stack *impl2Face(StackLayout *impl)
@@ -209,27 +234,74 @@ namespace lut { namespace mm { namespace impl
 
         void compact()
         {
-            std::uintptr_t imappedBegin = reinterpret_cast<std::uintptr_t>(alloca(1)) - Config::_stackKeepProtectedBytes;
-
-            imappedBegin -= imappedBegin % Config::_pageSize;
-
-            char *mappedBegin = reinterpret_cast<char *>(imappedBegin);
-            assert(mappedBegin > reinterpret_cast<char *>(this));
-            assert(mappedBegin < reinterpret_cast<char *>(this) + sizeof(StackLayout));
-
-            if(mappedBegin >= stackState()._userspaceMapped)
+            char *bound = stackState()._userspaceMapped;
+            bound = reduce(bound, reinterpret_cast<char *>(alloca(1)) - Config::_stackKeepProtectedBytes);
+            if(bound != stackState()._userspaceMapped)
             {
-                return;
+                stackState()._userspaceMapped = bound;
+            }
+        }
+
+        bool vmAccessHandler(std::uintptr_t offset)
+        {
+            char *bound = stackState()._userspaceMapped;
+            bound = extend(bound, reinterpret_cast<char *>(this) - offset);
+            if(bound != stackState()._userspaceMapped)
+            {
+                stackState()._userspaceMapped = bound;
+            }
+
+            return true;
+        }
+
+    private:
+        static char *reduce(char *oldBound, char *newBound)
+        {
+            std::uintptr_t inewBound = reinterpret_cast<std::uintptr_t>(newBound);
+
+            if(inewBound % Config::_pageSize)
+            {
+                inewBound = inewBound - inewBound % Config::_pageSize;
+            }
+
+            newBound = reinterpret_cast<char *>(inewBound);
+
+            if(newBound <= oldBound)
+            {
+                return oldBound;
             }
 
             vm::protect(
-                        mappedBegin,
-                        mappedBegin - stackState()._userspaceMapped,
+                        oldBound,
+                        newBound - oldBound,
                         false);
 
-            stackState()._userspaceMapped = mappedBegin;
+            return newBound;
         }
 
+        static char *extend(char *oldBound, char *newBound)
+        {
+            std::uintptr_t inewBound = reinterpret_cast<std::uintptr_t>(newBound);
+
+            if(inewBound % Config::_pageSize)
+            {
+                inewBound = inewBound - inewBound % Config::_pageSize;
+            }
+
+            newBound = reinterpret_cast<char *>(inewBound);
+
+            if(newBound >= oldBound)
+            {
+                return oldBound;
+            }
+
+            vm::protect(
+                        newBound,
+                        oldBound - newBound,
+                        true);
+
+            return newBound;
+        }
     private:
         StackState &stackState()
         {
@@ -270,6 +342,17 @@ namespace lut { namespace mm { namespace impl
         void compact()
         {
             return _withoutGuard.compact();
+        }
+
+        bool vmAccessHandler(std::uintptr_t offset)
+        {
+            if(offset <= offsetof(StackLayout, _withoutGuard))
+            {
+                fprintf(stderr, "prevent access to stack guard page\n");
+                return false;
+            }
+
+            return _withoutGuard.vmAccessHandler(offset - offsetof(StackLayout, _withoutGuard));
         }
 
     private:

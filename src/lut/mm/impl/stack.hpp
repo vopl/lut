@@ -19,6 +19,9 @@ namespace lut { namespace mm { namespace impl
         static const lut::mm::Stack *impl2Face(Stack *impl);
         static Stack *face2Impl(const lut::mm::Stack *face);
 
+    public:
+        bool vmAccessHandler(std::uintptr_t offset);
+
     private:
     };
 }}}

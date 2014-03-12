@@ -22,6 +22,9 @@ namespace lut { namespace mm { namespace impl
         Block *alloc();
         void free(Block *ptr);
 
+    public:
+        bool vmAccessHandler(std::uintptr_t offset);
+
     private:
         using Index = BitIndex<amount>;
         using IndexArea = typename std::aligned_storage<sizeof(Index), Config::_pageSize>::type;
@@ -60,6 +63,29 @@ namespace lut { namespace mm { namespace impl
         Block *ptr = blocks() + addr;
         new (ptr) Block;
         return ptr;
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <typename Block, std::size_t amount>
+    bool BlocksContainer<Block, amount>::vmAccessHandler(std::uintptr_t offset)
+    {
+        assert(offset < sizeof(BlocksContainer));
+
+        if(offset < offsetof(BlocksContainer, _blocksArea))
+        {
+            return index().vmAccessHandler(offset - offsetof(BlocksContainer, _indexArea));
+        }
+
+        AddressInIndex blockAddr = (offset - offsetof(BlocksContainer, _blocksArea)) / sizeof(Block);
+
+        if(index().isAllocated(blockAddr))
+        {
+            Block *block = blocks() + blockAddr;
+            return block->vmAccessHandler(offset - offsetof(BlocksContainer, _blocksArea) - blockAddr * sizeof(Block));
+        }
+
+        assert(!"seg fault in unallocated block");
+        return false;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
