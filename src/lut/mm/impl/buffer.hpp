@@ -6,6 +6,16 @@
 
 namespace lut { namespace mm { namespace impl
 {
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    enum class BufferFullnessChange
+    {
+        Empty2Middle,
+        Middle2Empty,
+        Middle2Full,
+        Full2Middle,
+    };
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     class Buffer
     {
     public:
@@ -15,8 +25,12 @@ namespace lut { namespace mm { namespace impl
     public:
         bool vmAccessHandler(std::uintptr_t offset);
 
+    public:
+        Buffer *_prevBufferInList;
+        Buffer *_nextBufferInList;
+
     private:
-        char _stub[Config::_pageSize];
+        char _stub[Config::_pageSize-8-8];
     };
 }}}
 

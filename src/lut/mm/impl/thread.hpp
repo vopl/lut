@@ -7,6 +7,7 @@
 #include "lut/mm/impl/blocksContainer.hpp"
 #include "lut/mm/impl/stack.hpp"
 #include "lut/mm/impl/buffer.hpp"
+#include "lut/mm/impl/sizedBuffer.hpp"
 
 namespace lut { namespace mm { namespace impl
 {
@@ -33,12 +34,25 @@ namespace lut { namespace mm { namespace impl
         bool vmAccessHandler(std::uintptr_t offset);
 
     private:
+        void updateBufferDisposition(Buffer *buffer, BufferFullnessChange bfc);
+
+    private:
         static __thread Thread *_instance;
 
     private:
         struct Header
         {
+            struct BuffersBySize
+            {
+                Buffer *_bufferListFull;
+                Buffer *_bufferListNotFull;
+                Buffer *_bufferListEmpty;
+            };
 
+            BuffersBySize _buffersBySize[512];
+
+            Header();
+            ~Header();
         };
 
         using HeaderArea = std::aligned_storage<sizeof(Header), Config::_pageSize>::type;
@@ -64,16 +78,61 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void *Thread::bufferAlloc()
     {
-        assert(0);
+        if(0 == size || size > 512)
+        {
+            return ::malloc(size);
+        }
+
+        Header::BuffersBySize buffersBySize = header()._buffersBySize[size-1];
+
+        SizedBuffer<size> *sizedBuffer;
+
+        if(buffersBySize._bufferListNotFull)
+        {
+            sizedBuffer = static_cast<SizedBuffer<size> *>(buffersBySize._bufferListNotFull);
+        }
+        else
+        {
+            sizedBuffer = buffersContainer().alloc<SizedBuffer<size>>();
+            if(!sizedBuffer)
+            {
+                return nullptr;
+            }
+
+            buffersBySize._bufferListNotFull = sizedBuffer;
+        }
+
+        std::pair<void *, BufferFullnessChange> res = sizedBuffer->alloc();
+        assert(res.first);
+
+        updateBufferDisposition(sizedBuffer, res.second);
+
+        return res.first;
     }
 
     template <std::size_t size> void Thread::bufferFree(void *buffer)
     {
-        assert(0);
+        if(0 == size || size > 512)
+        {
+            return ::free(buffer);
+        }
+
+        SizedBuffer<size> *sizedBuffer = buffersContainer().blockByPointer<SizedBuffer<size>>(buffer);
+
+        if(!sizedBuffer)
+        {
+            return;
+        }
+
+        updateBufferDisposition(sizedBuffer, sizedBuffer->free(buffer));
     }
 
     template <std::size_t size> void Thread::bufferFreeFromOtherThread(void *buffer)
     {
+        if(0 == size || size > 512)
+        {
+            return ::free(buffer);
+        }
         assert(0);
     }
 

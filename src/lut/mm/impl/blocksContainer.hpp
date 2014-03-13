@@ -5,6 +5,8 @@
 #include "lut/mm/impl/bitIndex.hpp"
 #include "lut/mm/impl/utils.hpp"
 
+#include <type_traits>
+
 namespace lut { namespace mm { namespace impl
 {
 
@@ -21,6 +23,11 @@ namespace lut { namespace mm { namespace impl
 
         Block *alloc();
         void free(Block *ptr);
+
+        template <typename DerivedBlock> DerivedBlock *alloc();
+        template <typename DerivedBlock> void free(DerivedBlock *ptr);
+
+        template <typename DerivedBlock> DerivedBlock *blockByPointer(const void *ptr);
 
     public:
         bool vmAccessHandler(std::uintptr_t offset);
@@ -67,6 +74,73 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
+    void BlocksContainer<Block, amount>::free(Block *ptr)
+    {
+        AddressInIndex addr = ptr - blocks();
+        index().free(addr);
+        ptr->~Block();
+    }
+
+
+
+
+
+
+
+
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <typename Block, std::size_t amount>
+    template <typename DerivedBlock>
+    DerivedBlock *BlocksContainer<Block, amount>::alloc()
+    {
+        static_assert(sizeof(Block) == sizeof(DerivedBlock), "derived and base must have same layout");
+        static_assert(std::is_base_of<Block, DerivedBlock>::value, "derivedBlock must be inherited from block");
+
+        AddressInIndex addr = index().alloc();
+        DerivedBlock *ptr = static_cast<DerivedBlock *>(blocks() + addr);
+        new (ptr) DerivedBlock;
+        return ptr;
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <typename Block, std::size_t amount>
+    template <typename DerivedBlock>
+    void BlocksContainer<Block, amount>::free(DerivedBlock *ptr)
+    {
+        static_assert(sizeof(Block) == sizeof(DerivedBlock), "derived and base must have same layout");
+        static_assert(std::is_base_of<Block, DerivedBlock>::value, "derivedBlock must be inherited from block");
+
+        AddressInIndex addr = ptr - blocks();
+        index().free(addr);
+        ptr->~DerivedBlock();
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <typename Block, std::size_t amount>
+    template <typename DerivedBlock>
+    DerivedBlock *BlocksContainer<Block, amount>::blockByPointer(const void *ptr)
+    {
+        std::uintptr_t offset = reinterpret_cast<std::uintptr_t>(ptr) - reinterpret_cast<std::uintptr_t>(this);
+        assert(offset < sizeof(BlocksContainer));
+
+        if(offset < offsetof(BlocksContainer, _blocksArea))
+        {
+            return nullptr;
+        }
+
+        AddressInIndex blockAddr = (offset - offsetof(BlocksContainer, _blocksArea)) / sizeof(Block);
+
+        if(index().isAllocated(blockAddr))
+        {
+            return static_cast<DerivedBlock *>(blocks() + blockAddr);
+        }
+
+        return nullptr;
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <typename Block, std::size_t amount>
     bool BlocksContainer<Block, amount>::vmAccessHandler(std::uintptr_t offset)
     {
         assert(offset < sizeof(BlocksContainer));
@@ -86,15 +160,6 @@ namespace lut { namespace mm { namespace impl
 
         assert(!"seg fault in unallocated block");
         return false;
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <typename Block, std::size_t amount>
-    void BlocksContainer<Block, amount>::free(Block *ptr)
-    {
-        AddressInIndex addr = ptr - blocks();
-        index().free(addr);
-        ptr->~Block();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

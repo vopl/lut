@@ -50,6 +50,7 @@ set(SRC_IMPL
     ${PSRC}/impl/stack.cpp
     ${PSRC}/impl/buffer.hpp
     ${PSRC}/impl/buffer.cpp
+    ${PSRC}/impl/sizedBuffer.hpp
     ${PSRC}/impl/vm.hpp
     ${PSRC}/impl/vm.cpp
     ${PSRC}/impl/bitIndex.hpp
