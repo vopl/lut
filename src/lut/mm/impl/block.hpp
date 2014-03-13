@@ -31,10 +31,11 @@ namespace lut { namespace mm { namespace impl
         Block *_nextBlockInList;
 
     protected:
-        char _area[
-            Config::_pageSize * Config::_blockPages
-            - sizeof(std::aligned_storage<sizeof(_nextBlockInList), alignof(Block *)>::type)
-            - sizeof(std::aligned_storage<sizeof(_nextBlockInList), alignof(Block *)>::type)];
+        static const std::size_t _areaOffset =
+                sizeof(std::aligned_storage<sizeof(_prevBlockInList), alignof(Block *)>::type) +
+                sizeof(std::aligned_storage<sizeof(_nextBlockInList), alignof(Block *)>::type);
+
+        char _area[Config::_pageSize * Config::_blockPages - _areaOffset];
     };
 }}}
 
