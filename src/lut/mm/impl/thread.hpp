@@ -3,6 +3,7 @@
 
 #include "lut/mm/impl/stack.hpp"
 #include "lut/mm/config.hpp"
+#include "lut/mm/allocator.hpp"
 
 #include "lut/mm/impl/indexedContainer.hpp"
 #include "lut/mm/impl/stack.hpp"
@@ -46,7 +47,7 @@ namespace lut { namespace mm { namespace impl
                 Buffer *_bufferListEmpty;
             };
 
-            BuffersBySize _buffersBySize[512];
+            BuffersBySize _buffersBySize[lut::mm::Allocator::_maxAllocatedBufferSize+1];
 
             Header();
             ~Header();
@@ -78,12 +79,12 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void *Thread::alloc()
     {
-        if(0 == size || size > 512)
+        if(size > lut::mm::Allocator::_maxAllocatedBufferSize)
         {
             return ::malloc(size);
         }
 
-        Header::BuffersBySize buffersBySize = header()._buffersBySize[size-1];
+        Header::BuffersBySize &buffersBySize = header()._buffersBySize[size-1];
 
         SizedBuffer<size> *sizedBuffer;
 
@@ -112,7 +113,7 @@ namespace lut { namespace mm { namespace impl
 
     template <std::size_t size> void Thread::free(void *ptr)
     {
-        if(0 == size || size > 512)
+        if(size > lut::mm::Allocator::_maxAllocatedBufferSize)
         {
             return ::free(ptr);
         }
@@ -129,7 +130,7 @@ namespace lut { namespace mm { namespace impl
 
     template <std::size_t size> void Thread::freeFromOtherThread(void *ptr)
     {
-        if(0 == size || size > 512)
+        if(size > lut::mm::Allocator::_maxAllocatedBufferSize)
         {
             return ::free(ptr);
         }

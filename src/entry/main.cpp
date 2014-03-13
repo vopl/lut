@@ -26,9 +26,10 @@ int lmain()
 
     auto f = [&](lut::async::Scheduler *sched, std::size_t iters){
 
+        for(size_t i(0); i<200000; ++i)
         {
             void *p = lut::mm::Allocator::alloc<20>();
-            lut::mm::Allocator::free<20>(p);
+            //lut::mm::Allocator::free<20>(p);
         }
 
         char *c = (char *)alloca(4096);

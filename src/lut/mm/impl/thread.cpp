@@ -117,6 +117,8 @@ namespace lut { namespace mm { namespace impl
         {
             switch(bfc)
             {
+            case BufferFullnessChange::Empty2Empty:
+                return;
             case BufferFullnessChange::Empty2Middle:
                 bufferListSrc = &buffersBySize._bufferListEmpty;
                 bufferListDst = &buffersBySize._bufferListMiddle;
@@ -125,6 +127,8 @@ namespace lut { namespace mm { namespace impl
                 bufferListSrc = &buffersBySize._bufferListMiddle;
                 bufferListDst = &buffersBySize._bufferListEmpty;
                 break;
+            case BufferFullnessChange::Middle2Middle:
+                return;
             case BufferFullnessChange::Middle2Full:
                 bufferListSrc = &buffersBySize._bufferListMiddle;
                 bufferListDst = &buffersBySize._bufferListFull;
@@ -133,6 +137,8 @@ namespace lut { namespace mm { namespace impl
                 bufferListSrc = &buffersBySize._bufferListFull;
                 bufferListDst = &buffersBySize._bufferListMiddle;
                 break;
+            case BufferFullnessChange::Full2Full:
+                return;
             }
         }
 
@@ -147,10 +153,7 @@ namespace lut { namespace mm { namespace impl
             buffer->_prevBufferInList->_nextBufferInList = buffer->_prevBufferInList;
         }
 
-        if(newSrcHead)
-        {
-            (*bufferListSrc) = newSrcHead;
-        }
+        (*bufferListSrc) = newSrcHead;
 
         if((*bufferListDst))
         {

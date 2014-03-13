@@ -10,10 +10,13 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     enum class BufferFullnessChange
     {
+        Empty2Empty,
         Empty2Middle,
         Middle2Empty,
+        Middle2Middle,
         Middle2Full,
         Full2Middle,
+        Full2Full,
     };
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

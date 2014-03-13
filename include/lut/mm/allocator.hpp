@@ -21,6 +21,9 @@ namespace lut { namespace mm
         static void stackCompact(const Stack *stack);
 
     public:
+        static const std::size_t _maxAllocatedBufferSize = 512;
+
+    public:
         template <std::size_t size, std::size_t align =
                   size <=1 ? 1 :
                   size <=2 ? 2 :
@@ -65,6 +68,7 @@ namespace lut { namespace mm
     template <> void Allocator::freeAligned<N0>(void *ptr);
 
 #define BAF_9238658994592102(N1) \
+    BAF_9238657287658752(N1*10 + 0) \
     BAF_9238657287658752(N1*10 + 1) \
     BAF_9238657287658752(N1*10 + 2) \
     BAF_9238657287658752(N1*10 + 3) \
@@ -74,7 +78,6 @@ namespace lut { namespace mm
     BAF_9238657287658752(N1*10 + 7) \
     BAF_9238657287658752(N1*10 + 8) \
     BAF_9238657287658752(N1*10 + 9) \
-    BAF_9238657287658752(N1*10 + 10) \
 
     BAF_9238658994592102(0)
     BAF_9238658994592102(1)
@@ -128,6 +131,7 @@ namespace lut { namespace mm
     BAF_9238658994592102(49)
     BAF_9238658994592102(50)
 
+    BAF_9238657287658752(510)
     BAF_9238657287658752(511)
     BAF_9238657287658752(512)
 
