@@ -29,7 +29,7 @@ namespace lut { namespace async { namespace impl
     {
         assert(worker::Thread::getCurrent() == thread);
 
-        if(!ctx::StackAllocator::instance().threadInit())
+        if(!ctx::StackAllocator::threadInit())
         {
             return false;
         }
@@ -56,7 +56,7 @@ namespace lut { namespace async { namespace impl
             {
                 _threads.erase(iter);
 
-                ctx::StackAllocator::instance().threadDeinit();
+                ctx::StackAllocator::threadDeinit();
                 return true;
             }
         }

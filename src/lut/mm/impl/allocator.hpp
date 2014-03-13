@@ -96,7 +96,7 @@ namespace lut { namespace mm { namespace impl
         assert(at);
         if(!at)
         {
-            return false;
+            return;
         }
 
         if(at == &Thread::instance())

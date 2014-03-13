@@ -23,10 +23,12 @@ endif()
 set(INC
     ${PINC}/config.hpp
     ${PINC}/stack.hpp
+    ${PINC}/allocator.hpp
 )
 source_group(include/mm FILES ${INC})
 ############################################################
 set(SRC
+    ${PSRC}/allocator.cpp
 )
 source_group(src/mm FILES ${SRC})
 

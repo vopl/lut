@@ -1,4 +1,4 @@
-#include "lut/async/stable.hpp"
+#include "lut/mm/stable.hpp"
 #include "lut/mm/impl/thread.hpp"
 
 namespace lut { namespace mm { namespace impl

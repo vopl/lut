@@ -3,7 +3,7 @@
 
 #include "lut/async/impl/ctx/root.hpp"
 #include "lut/async/impl/task.hpp"
-#include "lut/mm/impl/stack.hpp"
+#include "lut/mm/stack.hpp"
 
 namespace lut { namespace async { namespace impl { namespace ctx
 {

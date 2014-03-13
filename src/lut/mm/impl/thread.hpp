@@ -26,8 +26,8 @@ namespace lut { namespace mm { namespace impl
 
     public:
         template <std::size_t size> void *bufferAlloc();
-        template <std::size_t size> bool bufferFree(void *buffer);
-        template <std::size_t size> bool bufferFreeFromOtherThread(void *buffer);
+        template <std::size_t size> void bufferFree(void *buffer);
+        template <std::size_t size> void bufferFreeFromOtherThread(void *buffer);
 
     public:
         bool vmAccessHandler(std::uintptr_t offset);
@@ -67,12 +67,12 @@ namespace lut { namespace mm { namespace impl
         assert(0);
     }
 
-    template <std::size_t size> bool Thread::bufferFree(void *buffer)
+    template <std::size_t size> void Thread::bufferFree(void *buffer)
     {
         assert(0);
     }
 
-    template <std::size_t size> bool Thread::bufferFreeFromOtherThread(void *buffer)
+    template <std::size_t size> void Thread::bufferFreeFromOtherThread(void *buffer)
     {
         assert(0);
     }
