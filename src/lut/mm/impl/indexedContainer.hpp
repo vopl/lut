@@ -11,23 +11,23 @@ namespace lut { namespace mm { namespace impl
 {
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <typename Block, std::size_t amount>
+    template <typename Buffer, std::size_t amount>
     class IndexedContainer
     {
 
-        static_assert(sizeof(Block) == sizeof(Block)/Config::_pageSize*Config::_pageSize, "sizeof Block must be pageSize aligned");
+        static_assert(sizeof(Buffer) == sizeof(Buffer)/Config::_pageSize*Config::_pageSize, "sizeof Buffer must be pageSize aligned");
 
     public:
         IndexedContainer();
         ~IndexedContainer();
 
-        Block *alloc();
-        void free(Block *ptr);
+        Buffer *alloc();
+        void free(Buffer *ptr);
 
-        template <typename DerivedBlock> DerivedBlock *alloc();
-        template <typename DerivedBlock> void free(DerivedBlock *ptr);
+        template <typename DerivedBuffer> DerivedBuffer *alloc();
+        template <typename DerivedBuffer> void free(DerivedBuffer *ptr);
 
-        template <typename DerivedBlock> DerivedBlock *blockByPointer(const void *ptr);
+        template <typename DerivedBuffer> DerivedBuffer *bufferByPointer(const void *ptr);
 
     public:
         bool vmAccessHandler(std::uintptr_t offset);
@@ -40,45 +40,45 @@ namespace lut { namespace mm { namespace impl
         Index &index();
 
     private:
-        using BlocksArea = typename std::aligned_storage<sizeof(Block)*amount, Config::_pageSize>::type;
+        using BuffersArea = typename std::aligned_storage<sizeof(Buffer)*amount, Config::_pageSize>::type;
 
-        BlocksArea _blocksArea;
-        Block *blocks();
+        BuffersArea _buffersArea;
+        Buffer *buffers();
     };
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <typename Block, std::size_t amount>
-    IndexedContainer<Block, amount>::IndexedContainer()
+    template <typename Buffer, std::size_t amount>
+    IndexedContainer<Buffer, amount>::IndexedContainer()
     {
         new (&index()) Index;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <typename Block, std::size_t amount>
-    IndexedContainer<Block, amount>::~IndexedContainer()
+    template <typename Buffer, std::size_t amount>
+    IndexedContainer<Buffer, amount>::~IndexedContainer()
     {
         index().~Index();
     }
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <typename Block, std::size_t amount>
-    Block *IndexedContainer<Block, amount>::alloc()
+    template <typename Buffer, std::size_t amount>
+    Buffer *IndexedContainer<Buffer, amount>::alloc()
     {
         AddressInIndex addr = index().alloc();
-        Block *ptr = blocks() + addr;
-        new (ptr) Block;
+        Buffer *ptr = buffers() + addr;
+        new (ptr) Buffer;
         return ptr;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <typename Block, std::size_t amount>
-    void IndexedContainer<Block, amount>::free(Block *ptr)
+    template <typename Buffer, std::size_t amount>
+    void IndexedContainer<Buffer, amount>::free(Buffer *ptr)
     {
-        AddressInIndex addr = ptr - blocks();
+        AddressInIndex addr = ptr - buffers();
         index().free(addr);
-        ptr->~Block();
+        ptr->~Buffer();
     }
 
 
@@ -90,90 +90,90 @@ namespace lut { namespace mm { namespace impl
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <typename Block, std::size_t amount>
-    template <typename DerivedBlock>
-    DerivedBlock *IndexedContainer<Block, amount>::alloc()
+    template <typename Buffer, std::size_t amount>
+    template <typename DerivedBuffer>
+    DerivedBuffer *IndexedContainer<Buffer, amount>::alloc()
     {
-        static_assert(sizeof(Block) == sizeof(DerivedBlock), "derived and base must have same layout");
-        static_assert(std::is_base_of<Block, DerivedBlock>::value, "derivedBlock must be inherited from block");
+        static_assert(sizeof(Buffer) == sizeof(DerivedBuffer), "derived and base must have same layout");
+        static_assert(std::is_base_of<Buffer, DerivedBuffer>::value, "derivedBuffer must be inherited from buffer");
 
         AddressInIndex addr = index().alloc();
-        DerivedBlock *ptr = static_cast<DerivedBlock *>(blocks() + addr);
-        new (ptr) DerivedBlock;
+        DerivedBuffer *ptr = static_cast<DerivedBuffer *>(buffers() + addr);
+        new (ptr) DerivedBuffer;
         return ptr;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <typename Block, std::size_t amount>
-    template <typename DerivedBlock>
-    void IndexedContainer<Block, amount>::free(DerivedBlock *ptr)
+    template <typename Buffer, std::size_t amount>
+    template <typename DerivedBuffer>
+    void IndexedContainer<Buffer, amount>::free(DerivedBuffer *ptr)
     {
-        static_assert(sizeof(Block) == sizeof(DerivedBlock), "derived and base must have same layout");
-        static_assert(std::is_base_of<Block, DerivedBlock>::value, "derivedBlock must be inherited from block");
+        static_assert(sizeof(Buffer) == sizeof(DerivedBuffer), "derived and base must have same layout");
+        static_assert(std::is_base_of<Buffer, DerivedBuffer>::value, "derivedBuffer must be inherited from buffer");
 
-        AddressInIndex addr = ptr - blocks();
+        AddressInIndex addr = ptr - buffers();
         index().free(addr);
-        ptr->~DerivedBlock();
+        ptr->~DerivedBuffer();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <typename Block, std::size_t amount>
-    template <typename DerivedBlock>
-    DerivedBlock *IndexedContainer<Block, amount>::blockByPointer(const void *ptr)
+    template <typename Buffer, std::size_t amount>
+    template <typename DerivedBuffer>
+    DerivedBuffer *IndexedContainer<Buffer, amount>::bufferByPointer(const void *ptr)
     {
         std::uintptr_t offset = reinterpret_cast<std::uintptr_t>(ptr) - reinterpret_cast<std::uintptr_t>(this);
         assert(offset < sizeof(IndexedContainer));
 
-        if(offset < offsetof(IndexedContainer, _blocksArea))
+        if(offset < offsetof(IndexedContainer, _buffersArea))
         {
             return nullptr;
         }
 
-        AddressInIndex blockAddr = (offset - offsetof(IndexedContainer, _blocksArea)) / sizeof(Block);
+        AddressInIndex bufferAddr = (offset - offsetof(IndexedContainer, _buffersArea)) / sizeof(Buffer);
 
-        if(index().isAllocated(blockAddr))
+        if(index().isAllocated(bufferAddr))
         {
-            return static_cast<DerivedBlock *>(blocks() + blockAddr);
+            return static_cast<DerivedBuffer *>(buffers() + bufferAddr);
         }
 
         return nullptr;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <typename Block, std::size_t amount>
-    bool IndexedContainer<Block, amount>::vmAccessHandler(std::uintptr_t offset)
+    template <typename Buffer, std::size_t amount>
+    bool IndexedContainer<Buffer, amount>::vmAccessHandler(std::uintptr_t offset)
     {
         assert(offset < sizeof(IndexedContainer));
 
-        if(offset < offsetof(IndexedContainer, _blocksArea))
+        if(offset < offsetof(IndexedContainer, _buffersArea))
         {
             return index().vmAccessHandler(offset - offsetof(IndexedContainer, _indexArea));
         }
 
-        AddressInIndex blockAddr = (offset - offsetof(IndexedContainer, _blocksArea)) / sizeof(Block);
+        AddressInIndex bufferAddr = (offset - offsetof(IndexedContainer, _buffersArea)) / sizeof(Buffer);
 
-        if(index().isAllocated(blockAddr))
+        if(index().isAllocated(bufferAddr))
         {
-            Block *block = blocks() + blockAddr;
-            return block->vmAccessHandler(offset - offsetof(IndexedContainer, _blocksArea) - blockAddr * sizeof(Block));
+            Buffer *buffer = buffers() + bufferAddr;
+            return buffer->vmAccessHandler(offset - offsetof(IndexedContainer, _buffersArea) - bufferAddr * sizeof(Buffer));
         }
 
-        assert(!"seg fault in unallocated block");
+        assert(!"seg fault in unallocated buffer");
         return false;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <typename Block, std::size_t amount>
-    typename IndexedContainer<Block, amount>::Index &IndexedContainer<Block, amount>::index()
+    template <typename Buffer, std::size_t amount>
+    typename IndexedContainer<Buffer, amount>::Index &IndexedContainer<Buffer, amount>::index()
     {
         return *reinterpret_cast<Index *>(&_indexArea);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <typename Block, std::size_t amount>
-    Block *IndexedContainer<Block, amount>::blocks()
+    template <typename Buffer, std::size_t amount>
+    Buffer *IndexedContainer<Buffer, amount>::buffers()
     {
-        return reinterpret_cast<Block *>(&_blocksArea);
+        return reinterpret_cast<Buffer *>(&_buffersArea);
     }
 }}}
 

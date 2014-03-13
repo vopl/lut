@@ -15,13 +15,13 @@ namespace lut { namespace mm { namespace impl
         new(&header()) Header;
 
         new(&stacksContainer()) StacksContainer;
-        new(&blocksContainer()) BlocksContainer;
+        new(&buffersContainer()) BuffersContainer;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Thread::~Thread()
     {
-        blocksContainer().~BlocksContainer();
+        buffersContainer().~BuffersContainer();
         stacksContainer().~StacksContainer();
 
         header().~Header();
@@ -80,12 +80,12 @@ namespace lut { namespace mm { namespace impl
             return false;
         }
 
-        if(offset < offsetof(Thread, _blocksContainerArea))
+        if(offset < offsetof(Thread, _buffersContainerArea))
         {
             return stacksContainer().vmAccessHandler(offset - offsetof(Thread, _stacksContainerArea));
         }
 
-        return blocksContainer().vmAccessHandler(offset - offsetof(Thread, _blocksContainerArea));
+        return buffersContainer().vmAccessHandler(offset - offsetof(Thread, _buffersContainerArea));
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -109,62 +109,62 @@ namespace lut { namespace mm { namespace impl
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    void Thread::updateBlockDisposition(Block *block, BlockFullnessChange bfc, Header::BlocksBySize &blocksBySize)
+    void Thread::updateBufferDisposition(Buffer *buffer, BufferFullnessChange bfc, Header::BuffersBySize &buffersBySize)
     {
-        Block **blockListSrc;
-        Block **blockListDst;
+        Buffer **bufferListSrc;
+        Buffer **bufferListDst;
 
         {
             switch(bfc)
             {
-            case BlockFullnessChange::Empty2Middle:
-                blockListSrc = &blocksBySize._blockListEmpty;
-                blockListDst = &blocksBySize._blockListMiddle;
+            case BufferFullnessChange::Empty2Middle:
+                bufferListSrc = &buffersBySize._bufferListEmpty;
+                bufferListDst = &buffersBySize._bufferListMiddle;
                 break;
-            case BlockFullnessChange::Middle2Empty:
-                blockListSrc = &blocksBySize._blockListMiddle;
-                blockListDst = &blocksBySize._blockListEmpty;
+            case BufferFullnessChange::Middle2Empty:
+                bufferListSrc = &buffersBySize._bufferListMiddle;
+                bufferListDst = &buffersBySize._bufferListEmpty;
                 break;
-            case BlockFullnessChange::Middle2Full:
-                blockListSrc = &blocksBySize._blockListMiddle;
-                blockListDst = &blocksBySize._blockListFull;
+            case BufferFullnessChange::Middle2Full:
+                bufferListSrc = &buffersBySize._bufferListMiddle;
+                bufferListDst = &buffersBySize._bufferListFull;
                 break;
-            case BlockFullnessChange::Full2Middle:
-                blockListSrc = &blocksBySize._blockListFull;
-                blockListDst = &blocksBySize._blockListMiddle;
+            case BufferFullnessChange::Full2Middle:
+                bufferListSrc = &buffersBySize._bufferListFull;
+                bufferListDst = &buffersBySize._bufferListMiddle;
                 break;
             }
         }
 
-        Block *newSrcHead = block->_prevBlockInList ? nullptr : block->_nextBlockInList;
+        Buffer *newSrcHead = buffer->_prevBufferInList ? nullptr : buffer->_nextBufferInList;
 
-        if(block->_nextBlockInList)
+        if(buffer->_nextBufferInList)
         {
-            block->_nextBlockInList->_prevBlockInList = block->_prevBlockInList;
+            buffer->_nextBufferInList->_prevBufferInList = buffer->_prevBufferInList;
         }
-        if(block->_prevBlockInList)
+        if(buffer->_prevBufferInList)
         {
-            block->_prevBlockInList->_nextBlockInList = block->_prevBlockInList;
+            buffer->_prevBufferInList->_nextBufferInList = buffer->_prevBufferInList;
         }
 
         if(newSrcHead)
         {
-            (*blockListSrc) = newSrcHead;
+            (*bufferListSrc) = newSrcHead;
         }
 
-        if((*blockListDst))
+        if((*bufferListDst))
         {
-            assert(!(*blockListDst)->_prevBlockInList);
-            (*blockListDst)->_prevBlockInList = block;
-            block->_nextBlockInList = (*blockListDst);
-            block->_prevBlockInList = nullptr;
-            (*blockListDst) = block;
+            assert(!(*bufferListDst)->_prevBufferInList);
+            (*bufferListDst)->_prevBufferInList = buffer;
+            buffer->_nextBufferInList = (*bufferListDst);
+            buffer->_prevBufferInList = nullptr;
+            (*bufferListDst) = buffer;
         }
         else
         {
-            block->_nextBlockInList = nullptr;
-            block->_prevBlockInList = nullptr;
-            (*blockListDst) = block;
+            buffer->_nextBufferInList = nullptr;
+            buffer->_prevBufferInList = nullptr;
+            (*bufferListDst) = buffer;
         }
     }
 
@@ -175,9 +175,9 @@ namespace lut { namespace mm { namespace impl
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    Thread::BlocksContainer &Thread::blocksContainer()
+    Thread::BuffersContainer &Thread::buffersContainer()
     {
-        return *reinterpret_cast<BlocksContainer *>(&_blocksContainerArea);
+        return *reinterpret_cast<BuffersContainer *>(&_buffersContainerArea);
     }
 
 }}}

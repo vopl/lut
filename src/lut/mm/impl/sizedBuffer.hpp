@@ -1,7 +1,7 @@
-#ifndef _LUT_MM_IMPL_SIZEDBLOCK_HPP_
-#define _LUT_MM_IMPL_SIZEDBLOCK_HPP_
+#ifndef _LUT_MM_IMPL_SIZEDBUFFER_HPP_
+#define _LUT_MM_IMPL_SIZEDBUFFER_HPP_
 
-#include "lut/mm/impl/block.hpp"
+#include "lut/mm/impl/buffer.hpp"
 #include "lut/mm/impl/vm.hpp"
 
 #include <cstdint>
@@ -9,47 +9,45 @@
 namespace lut { namespace mm { namespace impl
 {
     template <std::size_t size>
-    class SizedBlock
-        : public Block
+    class SizedBuffer
+        : public Buffer
     {
     public:
-        SizedBlock();
-        ~SizedBlock();
+        SizedBuffer();
+        ~SizedBuffer();
 
     public:
-        std::pair<void *, BlockFullnessChange> alloc();
-        BlockFullnessChange free(void *ptr);
+        std::pair<void *, BufferFullnessChange> alloc();
+        BufferFullnessChange free(void *ptr);
 
     private:
-//        using Offset = std::size_t;
-//        static_assert(sizeof(Offset) <= size, "sizeof(Index) <= size");
+        using Offset = std::uint32_t;
 
-//        union Block
-//        {
-//            Offset _next;
-//            char _stub[size];
-//        };
+        struct Block
+        {
+            char _stub[size < sizeof(Offset) ? sizeof(Offset) : size];
 
-//        static_assert(sizeof(Block) == size, "sizeof(Block) == size");
+            Offset &next();
+        };
 
-//        static const Offset _badOffset = (Offset)-1;
+        static const Offset _badOffset = (Offset)-1;
 
         struct Header
         {
-//            Offset _next;
-//            Offset _allocated;
+            Offset _next;
+            Offset _allocated;
         };
         Header &header();
 
         static const std::size_t _dataOffset = _areaOffset + sizeof(typename std::aligned_storage<sizeof(Header), alignof(Header)>::type);
-        static const std::size_t _dataSize = (sizeof(Block) - _dataOffset) / size;
+        static const std::size_t _dataSize = (sizeof(Buffer) - _dataOffset) / size;
 
     };
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    SizedBlock<size>::SizedBlock()
+    SizedBuffer<size>::SizedBuffer()
     {
         std::size_t protectedBound = sizeof(typename std::aligned_storage<_dataOffset, Config::_pageSize>::type);
         vm::protect(this, protectedBound, true);
@@ -59,29 +57,29 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    SizedBlock<size>::~SizedBlock()
+    SizedBuffer<size>::~SizedBuffer()
     {
         header().~Header();
-        vm::protect(this, sizeof(Block), false);
+        vm::protect(this, sizeof(Buffer), false);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    std::pair<void *, BlockFullnessChange> SizedBlock<size>::alloc()
+    std::pair<void *, BufferFullnessChange> SizedBuffer<size>::alloc()
     {
         assert(0);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    BlockFullnessChange SizedBlock<size>::free(void *ptr)
+    BufferFullnessChange SizedBuffer<size>::free(void *ptr)
     {
         assert(0);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    typename SizedBlock<size>::Header &SizedBlock<size>::header()
+    typename SizedBuffer<size>::Header &SizedBuffer<size>::header()
     {
         return *reinterpret_cast<Header*>(_area);
     }

@@ -48,9 +48,9 @@ set(SRC_IMPL
     ${PSRC}/impl/stackLayout.hpp
     ${PSRC}/impl/stack.hpp
     ${PSRC}/impl/stack.cpp
-    ${PSRC}/impl/block.hpp
-    ${PSRC}/impl/block.cpp
-    ${PSRC}/impl/sizedBlock.hpp
+    ${PSRC}/impl/buffer.hpp
+    ${PSRC}/impl/buffer.cpp
+    ${PSRC}/impl/sizedBuffer.hpp
     ${PSRC}/impl/vm.hpp
     ${PSRC}/impl/vm.cpp
     ${PSRC}/impl/bitIndex.hpp
