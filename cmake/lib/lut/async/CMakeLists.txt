@@ -221,20 +221,6 @@ source_group(src/impl/ctx FILES ${SRC_IMPL_CTX})
 
 
 
-############################################################
-set(INC_IMPL_SM
-)
-source_group(include/impl/sm FILES ${INC_IMPL_SM})
-############################################################
-set(SRC_IMPL_SM
-    ${PSRC}/impl/sm/allocator.hpp
-    ${PSRC}/impl/sm/index.hpp
-    ${PSRC}/impl/sm/stack.hpp
-    ${PSRC}/impl/sm/utils.hpp
-    ${PSRC}/impl/sm/vm.hpp
-    ${PSRC}/impl/sm/vm.cpp
-)
-source_group(src/impl/sm FILES ${SRC_IMPL_SM})
 
 
 
@@ -327,8 +313,7 @@ add_library(${PROJECT} STATIC
     ${INC_DETAILS_IMPL}     ${SRC_DETAILS_IMPL}
     ${INC_IMPL}             ${SRC_IMPL}
     ${INC_IMPL_CTX}         ${SRC_IMPL_CTX}
-    ${INC_IMPL_SM}          ${SRC_IMPL_SM}
-    ${SRC_IMPL_WORKER}      ${SRC_IMPL_WORKER}
+    ${INC_IMPL_WORKER}      ${SRC_IMPL_WORKER}
 
     ${SRC_PCH}
     ${PINC}/sizeofImpl.hpp)
