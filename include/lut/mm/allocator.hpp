@@ -21,10 +21,18 @@ namespace lut { namespace mm
         static void stackCompact(const Stack *stack);
 
     public:
-        template <std::size_t size, std::size_t align = alignof(typename std::aligned_storage<size>::type)>
+        template <std::size_t size, std::size_t align =
+                  size <=1 ? 1 :
+                  size <=2 ? 2 :
+                  size <=4 ? 4 :
+                  size <=8 ? 8 : 16>
         static void *alloc();
 
-        template <std::size_t size, std::size_t align = alignof(typename std::aligned_storage<size>::type)>
+        template <std::size_t size, std::size_t align =
+                  size <=1 ? 1 :
+                  size <=2 ? 2 :
+                  size <=4 ? 4 :
+                  size <=8 ? 8 : 16>
         static void free(void *ptr);
 
     private:

@@ -70,7 +70,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     bool Allocator::threadDeinit()
     {
-        Thread *t = &Thread::instance();
+        Thread *t = Thread::instance();
         if(!t)
         {
             return false;
@@ -100,7 +100,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     const lut::mm::Stack *Allocator::stackAlloc()
     {
-        return Thread::instance().stackAlloc();
+        return Thread::instance()->stackAlloc();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -113,7 +113,7 @@ namespace lut { namespace mm { namespace impl
             return;
         }
 
-        if(t == &Thread::instance())
+        if(t == Thread::instance())
         {
             return t->stackFree(stack);
         }

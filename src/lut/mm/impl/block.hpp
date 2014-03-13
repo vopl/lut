@@ -3,6 +3,7 @@
 
 #include "lut/mm/config.hpp"
 #include <cstdint>
+#include <type_traits>
 
 namespace lut { namespace mm { namespace impl
 {
@@ -29,8 +30,11 @@ namespace lut { namespace mm { namespace impl
         Block *_prevBlockInList;
         Block *_nextBlockInList;
 
-    private:
-        char _stub[Config::_pageSize-8-8];
+    protected:
+        char _area[
+            Config::_pageSize * Config::_blockPages
+            - sizeof(std::aligned_storage<sizeof(_nextBlockInList), alignof(Block *)>::type)
+            - sizeof(std::aligned_storage<sizeof(_nextBlockInList), alignof(Block *)>::type)];
     };
 }}}
 

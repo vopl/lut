@@ -32,9 +32,9 @@ namespace lut { namespace mm { namespace impl
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    Thread &Thread::instance()
+    Thread *Thread::instance()
     {
-        return *_instance;
+        return _instance;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

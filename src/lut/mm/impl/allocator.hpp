@@ -85,7 +85,12 @@ namespace lut { namespace mm { namespace impl
     template <std::size_t size>
     void *Allocator::alloc()
     {
-        return Thread::instance().alloc<size>();
+        Thread *thread = Thread::instance();
+        if(!thread)
+        {
+            return ::malloc(size);
+        }
+        return thread->alloc<size>();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -93,13 +98,12 @@ namespace lut { namespace mm { namespace impl
     void Allocator::free(void *ptr)
     {
         Thread *at = thread(ptr);
-        assert(at);
         if(!at)
         {
-            return;
+            return ::free(ptr);
         }
 
-        if(at == &Thread::instance())
+        if(at == Thread::instance())
         {
             return at->free<size>(ptr);
         }

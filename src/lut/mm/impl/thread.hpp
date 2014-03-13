@@ -17,7 +17,7 @@ namespace lut { namespace mm { namespace impl
         Thread();
         ~Thread();
 
-        static Thread &instance();
+        static Thread *instance();
 
     public:
         const lut::mm::Stack *stackAlloc();

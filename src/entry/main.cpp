@@ -16,7 +16,6 @@ std::atomic<std::size_t> cnt(0);
 
 int lmain()
 {
-
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
@@ -26,6 +25,11 @@ int lmain()
 
 
     auto f = [&](lut::async::Scheduler *sched, std::size_t iters){
+
+        {
+            void *p = lut::mm::Allocator::alloc<20>();
+            lut::mm::Allocator::free<20>(p);
+        }
 
         char *c = (char *)alloca(4096);
         c[0] = 220;
