@@ -32,13 +32,13 @@ namespace lut { namespace mm
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
 #define BAF_9238657287658752(N0) \
-    template <> void *Allocator::bufferAlloc<N0>() \
+    template <> void *Allocator::allocAligned<N0>() \
     { \
-        return impl::Allocator::instance().bufferAlloc<N0>(); \
+        return impl::Allocator::instance().alloc<N0>(); \
     } \
-    template <> void Allocator::bufferFree<N0>(void *buffer) \
+    template <> void Allocator::freeAligned<N0>(void *ptr) \
     { \
-        return impl::Allocator::instance().bufferFree<N0>(buffer); \
+        return impl::Allocator::instance().free<N0>(ptr); \
     } \
 
 #define BAF_9238658994592102(N1) \

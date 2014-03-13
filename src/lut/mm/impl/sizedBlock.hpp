@@ -1,48 +1,48 @@
-#ifndef _LUT_MM_IMPL_SIZEDBUFFER_HPP_
-#define _LUT_MM_IMPL_SIZEDBUFFER_HPP_
+#ifndef _LUT_MM_IMPL_SIZEDBLOCK_HPP_
+#define _LUT_MM_IMPL_SIZEDBLOCK_HPP_
 
-#include "lut/mm/impl/buffer.hpp"
+#include "lut/mm/impl/block.hpp"
 
 namespace lut { namespace mm { namespace impl
 {
     template <std::size_t size>
-    class SizedBuffer
-        : public Buffer
+    class SizedBlock
+        : public Block
     {
     public:
-        SizedBuffer();
-        ~SizedBuffer();
+        SizedBlock();
+        ~SizedBlock();
 
     public:
-        std::pair<void *, BufferFullnessChange> alloc();
-        BufferFullnessChange free(void *ptr);
+        std::pair<void *, BlockFullnessChange> alloc();
+        BlockFullnessChange free(void *ptr);
     };
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    SizedBuffer<size>::SizedBuffer()
+    SizedBlock<size>::SizedBlock()
     {
         assert(0);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    SizedBuffer<size>::~SizedBuffer()
+    SizedBlock<size>::~SizedBlock()
     {
         assert(0);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    std::pair<void *, BufferFullnessChange> SizedBuffer<size>::alloc()
+    std::pair<void *, BlockFullnessChange> SizedBlock<size>::alloc()
     {
         assert(0);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    BufferFullnessChange SizedBuffer<size>::free(void *ptr)
+    BlockFullnessChange SizedBlock<size>::free(void *ptr)
     {
         assert(0);
     }

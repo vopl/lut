@@ -23,8 +23,8 @@ namespace lut { namespace mm
 
     struct ConfigHeap
     {
-        static const std::size_t    _bufferPages {64};
-        static const std::size_t    _buffersAmount {1024*1024};
+        static const std::size_t    _blockPages {64};
+        static const std::size_t    _blocksAmount {1024*1024};
     };
 
     struct ConfigThreads

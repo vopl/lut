@@ -30,10 +30,10 @@ namespace lut { namespace mm { namespace impl
 
     public:
         template <std::size_t size>
-        void *bufferAlloc();
+        void *alloc();
 
         template <std::size_t size>
-        void bufferFree(void *buffer);
+        void free(void *ptr);
 
     private:
         bool vmAccessHandler(void *addr);
@@ -83,16 +83,16 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    void *Allocator::bufferAlloc()
+    void *Allocator::alloc()
     {
-        return Thread::instance().bufferAlloc<size>();
+        return Thread::instance().alloc<size>();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    void Allocator::bufferFree(void *buffer)
+    void Allocator::free(void *ptr)
     {
-        Thread *at = thread(buffer);
+        Thread *at = thread(ptr);
         assert(at);
         if(!at)
         {
@@ -101,9 +101,9 @@ namespace lut { namespace mm { namespace impl
 
         if(at == &Thread::instance())
         {
-            return at->bufferFree<size>(buffer);
+            return at->free<size>(ptr);
         }
-        return at->bufferFreeFromOtherThread<size>(buffer);
+        return at->freeFromOtherThread<size>(ptr);
     }
 
 

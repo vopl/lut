@@ -4,10 +4,10 @@
 #include "lut/mm/impl/stack.hpp"
 #include "lut/mm/config.hpp"
 
-#include "lut/mm/impl/blocksContainer.hpp"
+#include "lut/mm/impl/indexedContainer.hpp"
 #include "lut/mm/impl/stack.hpp"
-#include "lut/mm/impl/buffer.hpp"
-#include "lut/mm/impl/sizedBuffer.hpp"
+#include "lut/mm/impl/block.hpp"
+#include "lut/mm/impl/sizedBlock.hpp"
 
 namespace lut { namespace mm { namespace impl
 {
@@ -26,15 +26,12 @@ namespace lut { namespace mm { namespace impl
         void stackCompact(const lut::mm::Stack *stack);
 
     public:
-        template <std::size_t size> void *bufferAlloc();
-        template <std::size_t size> void bufferFree(void *buffer);
-        template <std::size_t size> void bufferFreeFromOtherThread(void *buffer);
+        template <std::size_t size> void *alloc();
+        template <std::size_t size> void free(void *ptr);
+        template <std::size_t size> void freeFromOtherThread(void *ptr);
 
     public:
         bool vmAccessHandler(std::uintptr_t offset);
-
-    private:
-        void updateBufferDisposition(Buffer *buffer, BufferFullnessChange bfc);
 
     private:
         static __thread Thread *_instance;
@@ -42,14 +39,14 @@ namespace lut { namespace mm { namespace impl
     private:
         struct Header
         {
-            struct BuffersBySize
+            struct BlocksBySize
             {
-                Buffer *_bufferListFull;
-                Buffer *_bufferListNotFull;
-                Buffer *_bufferListEmpty;
+                Block *_blockListFull;
+                Block *_blockListMiddle;
+                Block *_blockListEmpty;
             };
 
-            BuffersBySize _buffersBySize[512];
+            BlocksBySize _blocksBySize[512];
 
             Header();
             ~Header();
@@ -60,82 +57,84 @@ namespace lut { namespace mm { namespace impl
         Header &header();
 
     private:
-        using StacksContainer = BlocksContainer<Stack, Config::_stacksAmount>;
+        void updateBlockDisposition(Block *block, BlockFullnessChange bfc, Header::BlocksBySize &blocksBySize);
+
+    private:
+        using StacksContainer = IndexedContainer<Stack, Config::_stacksAmount>;
         using StacksContainerArea = std::aligned_storage<sizeof(StacksContainer), Config::_pageSize>::type;
 
         StacksContainerArea _stacksContainerArea;
         StacksContainer &stacksContainer();
 
     private:
-        using BuffersContainer = BlocksContainer<Buffer, Config::_buffersAmount>;
-        using BuffersContainerArea = std::aligned_storage<sizeof(BuffersContainer), Config::_pageSize>::type;
+        using BlocksContainer = IndexedContainer<Block, Config::_blocksAmount>;
+        using BlocksContainerArea = std::aligned_storage<sizeof(BlocksContainer), Config::_pageSize>::type;
 
-        BuffersContainerArea _buffersContainerArea;
-        BuffersContainer &buffersContainer();
+        BlocksContainerArea _blocksContainerArea;
+        BlocksContainer &blocksContainer();
     };
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <std::size_t size> void *Thread::bufferAlloc()
+    template <std::size_t size> void *Thread::alloc()
     {
         if(0 == size || size > 512)
         {
             return ::malloc(size);
         }
 
-        Header::BuffersBySize buffersBySize = header()._buffersBySize[size-1];
+        Header::BlocksBySize blocksBySize = header()._blocksBySize[size-1];
 
-        SizedBuffer<size> *sizedBuffer;
+        SizedBlock<size> *sizedBlock;
 
-        if(buffersBySize._bufferListNotFull)
+        if(blocksBySize._blockListMiddle)
         {
-            sizedBuffer = static_cast<SizedBuffer<size> *>(buffersBySize._bufferListNotFull);
+            sizedBlock = static_cast<SizedBlock<size> *>(blocksBySize._blockListMiddle);
         }
         else
         {
-            sizedBuffer = buffersContainer().alloc<SizedBuffer<size>>();
-            if(!sizedBuffer)
+            sizedBlock = blocksContainer().alloc<SizedBlock<size>>();
+            if(!sizedBlock)
             {
                 return nullptr;
             }
 
-            buffersBySize._bufferListNotFull = sizedBuffer;
+            blocksBySize._blockListEmpty = sizedBlock;
         }
 
-        std::pair<void *, BufferFullnessChange> res = sizedBuffer->alloc();
+        std::pair<void *, BlockFullnessChange> res = sizedBlock->alloc();
         assert(res.first);
 
-        updateBufferDisposition(sizedBuffer, res.second);
+        updateBlockDisposition(sizedBlock, res.second, blocksBySize);
 
         return res.first;
     }
 
-    template <std::size_t size> void Thread::bufferFree(void *buffer)
+    template <std::size_t size> void Thread::free(void *ptr)
     {
         if(0 == size || size > 512)
         {
-            return ::free(buffer);
+            return ::free(ptr);
         }
 
-        SizedBuffer<size> *sizedBuffer = buffersContainer().blockByPointer<SizedBuffer<size>>(buffer);
+        SizedBlock<size> *sizedBlock = blocksContainer().blockByPointer<SizedBlock<size>>(ptr);
 
-        if(!sizedBuffer)
+        if(!sizedBlock)
         {
             return;
         }
 
-        updateBufferDisposition(sizedBuffer, sizedBuffer->free(buffer));
+        updateBlockDisposition(sizedBlock, sizedBlock->free(ptr), header()._blocksBySize[size-1]);
     }
 
-    template <std::size_t size> void Thread::bufferFreeFromOtherThread(void *buffer)
+    template <std::size_t size> void Thread::freeFromOtherThread(void *ptr)
     {
         if(0 == size || size > 512)
         {
-            return ::free(buffer);
+            return ::free(ptr);
         }
         assert(0);
     }
-
 
 }}}
 

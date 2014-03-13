@@ -25,14 +25,14 @@ namespace lut { namespace mm
         static void *alloc();
 
         template <std::size_t size, std::size_t align = alignof(typename std::aligned_storage<size>::type)>
-        static void free(void *buffer);
+        static void free(void *ptr);
 
     private:
         template <std::size_t size>
-        static void *bufferAlloc();
+        static void *allocAligned();
 
         template <std::size_t size>
-        static void bufferFree(void *buffer);
+        static void freeAligned(void *ptr);
     };
 
 
@@ -40,21 +40,21 @@ namespace lut { namespace mm
     template <std::size_t size, std::size_t align>
     void *Allocator::alloc()
     {
-        return bufferAlloc<sizeof(typename std::aligned_storage<size, align>::type)>();
+        return allocAligned<sizeof(typename std::aligned_storage<size, align>::type)>();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size, std::size_t align>
-    void Allocator::free(void *buffer)
+    void Allocator::free(void *ptr)
     {
-        return bufferFree<sizeof(typename std::aligned_storage<size, align>::type)>(buffer);
+        return freeAligned<sizeof(typename std::aligned_storage<size, align>::type)>(ptr);
     }
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
 #define BAF_9238657287658752(N0) \
-    template <> void *Allocator::bufferAlloc<N0>(); \
-    template <> void Allocator::bufferFree<N0>(void *buffer);
+    template <> void *Allocator::allocAligned<N0>(); \
+    template <> void Allocator::freeAligned<N0>(void *ptr);
 
 #define BAF_9238658994592102(N1) \
     BAF_9238657287658752(N1*10 + 1) \
@@ -127,14 +127,14 @@ namespace lut { namespace mm
 #undef BAF_9238658994592102
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <std::size_t size> void *Allocator::bufferAlloc()
+    template <std::size_t size> void *Allocator::allocAligned()
     {
         return ::malloc(size);
     }
 
-    template <std::size_t size> void Allocator::bufferFree(void *buffer)
+    template <std::size_t size> void Allocator::freeAligned(void *ptr)
     {
-        return ::free(buffer);
+        return ::free(ptr);
     }
 
 }}

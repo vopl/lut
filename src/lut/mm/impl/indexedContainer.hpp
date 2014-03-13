@@ -1,5 +1,5 @@
-#ifndef _LUT_MM_IMPL_BLOCKSCONTAINER_HPP_
-#define _LUT_MM_IMPL_BLOCKSCONTAINER_HPP_
+#ifndef _LUT_MM_IMPL_INDEXEDCONTAINER_HPP_
+#define _LUT_MM_IMPL_INDEXEDCONTAINER_HPP_
 
 #include "lut/mm/config.hpp"
 #include "lut/mm/impl/bitIndex.hpp"
@@ -12,14 +12,14 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
-    class BlocksContainer
+    class IndexedContainer
     {
 
         static_assert(sizeof(Block) == sizeof(Block)/Config::_pageSize*Config::_pageSize, "sizeof Block must be pageSize aligned");
 
     public:
-        BlocksContainer();
-        ~BlocksContainer();
+        IndexedContainer();
+        ~IndexedContainer();
 
         Block *alloc();
         void free(Block *ptr);
@@ -49,14 +49,14 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
-    BlocksContainer<Block, amount>::BlocksContainer()
+    IndexedContainer<Block, amount>::IndexedContainer()
     {
         new (&index()) Index;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
-    BlocksContainer<Block, amount>::~BlocksContainer()
+    IndexedContainer<Block, amount>::~IndexedContainer()
     {
         index().~Index();
     }
@@ -64,7 +64,7 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
-    Block *BlocksContainer<Block, amount>::alloc()
+    Block *IndexedContainer<Block, amount>::alloc()
     {
         AddressInIndex addr = index().alloc();
         Block *ptr = blocks() + addr;
@@ -74,7 +74,7 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
-    void BlocksContainer<Block, amount>::free(Block *ptr)
+    void IndexedContainer<Block, amount>::free(Block *ptr)
     {
         AddressInIndex addr = ptr - blocks();
         index().free(addr);
@@ -92,7 +92,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
     template <typename DerivedBlock>
-    DerivedBlock *BlocksContainer<Block, amount>::alloc()
+    DerivedBlock *IndexedContainer<Block, amount>::alloc()
     {
         static_assert(sizeof(Block) == sizeof(DerivedBlock), "derived and base must have same layout");
         static_assert(std::is_base_of<Block, DerivedBlock>::value, "derivedBlock must be inherited from block");
@@ -106,7 +106,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
     template <typename DerivedBlock>
-    void BlocksContainer<Block, amount>::free(DerivedBlock *ptr)
+    void IndexedContainer<Block, amount>::free(DerivedBlock *ptr)
     {
         static_assert(sizeof(Block) == sizeof(DerivedBlock), "derived and base must have same layout");
         static_assert(std::is_base_of<Block, DerivedBlock>::value, "derivedBlock must be inherited from block");
@@ -119,17 +119,17 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
     template <typename DerivedBlock>
-    DerivedBlock *BlocksContainer<Block, amount>::blockByPointer(const void *ptr)
+    DerivedBlock *IndexedContainer<Block, amount>::blockByPointer(const void *ptr)
     {
         std::uintptr_t offset = reinterpret_cast<std::uintptr_t>(ptr) - reinterpret_cast<std::uintptr_t>(this);
-        assert(offset < sizeof(BlocksContainer));
+        assert(offset < sizeof(IndexedContainer));
 
-        if(offset < offsetof(BlocksContainer, _blocksArea))
+        if(offset < offsetof(IndexedContainer, _blocksArea))
         {
             return nullptr;
         }
 
-        AddressInIndex blockAddr = (offset - offsetof(BlocksContainer, _blocksArea)) / sizeof(Block);
+        AddressInIndex blockAddr = (offset - offsetof(IndexedContainer, _blocksArea)) / sizeof(Block);
 
         if(index().isAllocated(blockAddr))
         {
@@ -141,21 +141,21 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
-    bool BlocksContainer<Block, amount>::vmAccessHandler(std::uintptr_t offset)
+    bool IndexedContainer<Block, amount>::vmAccessHandler(std::uintptr_t offset)
     {
-        assert(offset < sizeof(BlocksContainer));
+        assert(offset < sizeof(IndexedContainer));
 
-        if(offset < offsetof(BlocksContainer, _blocksArea))
+        if(offset < offsetof(IndexedContainer, _blocksArea))
         {
-            return index().vmAccessHandler(offset - offsetof(BlocksContainer, _indexArea));
+            return index().vmAccessHandler(offset - offsetof(IndexedContainer, _indexArea));
         }
 
-        AddressInIndex blockAddr = (offset - offsetof(BlocksContainer, _blocksArea)) / sizeof(Block);
+        AddressInIndex blockAddr = (offset - offsetof(IndexedContainer, _blocksArea)) / sizeof(Block);
 
         if(index().isAllocated(blockAddr))
         {
             Block *block = blocks() + blockAddr;
-            return block->vmAccessHandler(offset - offsetof(BlocksContainer, _blocksArea) - blockAddr * sizeof(Block));
+            return block->vmAccessHandler(offset - offsetof(IndexedContainer, _blocksArea) - blockAddr * sizeof(Block));
         }
 
         assert(!"seg fault in unallocated block");
@@ -164,14 +164,14 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
-    typename BlocksContainer<Block, amount>::Index &BlocksContainer<Block, amount>::index()
+    typename IndexedContainer<Block, amount>::Index &IndexedContainer<Block, amount>::index()
     {
         return *reinterpret_cast<Index *>(&_indexArea);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename Block, std::size_t amount>
-    Block *BlocksContainer<Block, amount>::blocks()
+    Block *IndexedContainer<Block, amount>::blocks()
     {
         return reinterpret_cast<Block *>(&_blocksArea);
     }

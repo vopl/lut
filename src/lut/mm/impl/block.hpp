@@ -1,5 +1,5 @@
-#ifndef _LUT_MM_IMPL_BUFFER_HPP_
-#define _LUT_MM_IMPL_BUFFER_HPP_
+#ifndef _LUT_MM_IMPL_BLOCK_HPP_
+#define _LUT_MM_IMPL_BLOCK_HPP_
 
 #include "lut/mm/config.hpp"
 #include <cstdint>
@@ -7,7 +7,7 @@
 namespace lut { namespace mm { namespace impl
 {
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    enum class BufferFullnessChange
+    enum class BlockFullnessChange
     {
         Empty2Middle,
         Middle2Empty,
@@ -16,18 +16,18 @@ namespace lut { namespace mm { namespace impl
     };
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    class Buffer
+    class Block
     {
     public:
-        Buffer();
-        ~Buffer();
+        Block();
+        ~Block();
 
     public:
         bool vmAccessHandler(std::uintptr_t offset);
 
     public:
-        Buffer *_prevBufferInList;
-        Buffer *_nextBufferInList;
+        Block *_prevBlockInList;
+        Block *_nextBlockInList;
 
     private:
         char _stub[Config::_pageSize-8-8];

@@ -11,17 +11,21 @@ namespace lut { namespace mm { namespace impl
         assert(!_instance);
         _instance = this;
 
+        vm::protect(&_headerArea, sizeof(HeaderArea), true);
         new(&header()) Header;
+
         new(&stacksContainer()) StacksContainer;
-        new(&buffersContainer()) BuffersContainer;
+        new(&blocksContainer()) BlocksContainer;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Thread::~Thread()
     {
-        header().~Header();
+        blocksContainer().~BlocksContainer();
         stacksContainer().~StacksContainer();
-        buffersContainer().~BuffersContainer();
+
+        header().~Header();
+        vm::protect(&_headerArea, sizeof(HeaderArea), false);
 
         assert(this == _instance);
         _instance = nullptr;
@@ -76,18 +80,12 @@ namespace lut { namespace mm { namespace impl
             return false;
         }
 
-        if(offset < offsetof(Thread, _buffersContainerArea))
+        if(offset < offsetof(Thread, _blocksContainerArea))
         {
             return stacksContainer().vmAccessHandler(offset - offsetof(Thread, _stacksContainerArea));
         }
 
-        return buffersContainer().vmAccessHandler(offset - offsetof(Thread, _buffersContainerArea));
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    void Thread::updateBufferDisposition(Buffer *buffer, BufferFullnessChange bfc)
-    {
-        assert(0);
+        return blocksContainer().vmAccessHandler(offset - offsetof(Thread, _blocksContainerArea));
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -111,15 +109,75 @@ namespace lut { namespace mm { namespace impl
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    void Thread::updateBlockDisposition(Block *block, BlockFullnessChange bfc, Header::BlocksBySize &blocksBySize)
+    {
+        Block **blockListSrc;
+        Block **blockListDst;
+
+        {
+            switch(bfc)
+            {
+            case BlockFullnessChange::Empty2Middle:
+                blockListSrc = &blocksBySize._blockListEmpty;
+                blockListDst = &blocksBySize._blockListMiddle;
+                break;
+            case BlockFullnessChange::Middle2Empty:
+                blockListSrc = &blocksBySize._blockListMiddle;
+                blockListDst = &blocksBySize._blockListEmpty;
+                break;
+            case BlockFullnessChange::Middle2Full:
+                blockListSrc = &blocksBySize._blockListMiddle;
+                blockListDst = &blocksBySize._blockListFull;
+                break;
+            case BlockFullnessChange::Full2Middle:
+                blockListSrc = &blocksBySize._blockListFull;
+                blockListDst = &blocksBySize._blockListMiddle;
+                break;
+            }
+        }
+
+        Block *newSrcHead = block->_prevBlockInList ? nullptr : block->_nextBlockInList;
+
+        if(block->_nextBlockInList)
+        {
+            block->_nextBlockInList->_prevBlockInList = block->_prevBlockInList;
+        }
+        if(block->_prevBlockInList)
+        {
+            block->_prevBlockInList->_nextBlockInList = block->_prevBlockInList;
+        }
+
+        if(newSrcHead)
+        {
+            (*blockListSrc) = newSrcHead;
+        }
+
+        if((*blockListDst))
+        {
+            assert(!(*blockListDst)->_prevBlockInList);
+            (*blockListDst)->_prevBlockInList = block;
+            block->_nextBlockInList = (*blockListDst);
+            block->_prevBlockInList = nullptr;
+            (*blockListDst) = block;
+        }
+        else
+        {
+            block->_nextBlockInList = nullptr;
+            block->_prevBlockInList = nullptr;
+            (*blockListDst) = block;
+        }
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Thread::StacksContainer &Thread::stacksContainer()
     {
         return *reinterpret_cast<StacksContainer *>(&_stacksContainerArea);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    Thread::BuffersContainer &Thread::buffersContainer()
+    Thread::BlocksContainer &Thread::blocksContainer()
     {
-        return *reinterpret_cast<BuffersContainer *>(&_buffersContainerArea);
+        return *reinterpret_cast<BlocksContainer *>(&_blocksContainerArea);
     }
 
 }}}
