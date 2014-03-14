@@ -19,5 +19,6 @@ namespace lut { namespace mm { namespace impl
     bool Buffer::vmAccessHandler(std::uintptr_t offset)
     {
         assert(!"not impl yet");
+        return false;
     }
 }}}

@@ -34,6 +34,12 @@ namespace lut { namespace mm { namespace impl
     public:
         bool vmAccessHandler(std::uintptr_t offset);
 
+    public:
+        template <std::size_t size> void bufferEmpty2Middle(Buffer *buffer);
+        template <std::size_t size> void bufferMiddle2Full(Buffer *buffer);
+        template <std::size_t size> void bufferMiddle2Empty(Buffer *buffer);
+        template <std::size_t size> void bufferFull2Middle(Buffer *buffer);
+
     private:
         static __thread Thread *_instance;
 
@@ -107,26 +113,7 @@ namespace lut { namespace mm { namespace impl
             buffersBySize._bufferListEmpty = buffer;
         }
 
-        std::pair<void *, BufferFullnessChange> res = buffer->alloc();
-        assert(res.first);
-
-        //updateBufferDisposition(sizedBuffer, res.second, buffersBySize);
-        if(BufferFullnessChange::Null == res.second)
-        {
-            return res.first;
-        }
-
-        switch(res.second)
-        {
-        case BufferFullnessChange::Empty2Middle:
-            relocateBufferDisposition(buffer, buffersBySize._bufferListEmpty, buffersBySize._bufferListMiddle);
-            break;
-        case BufferFullnessChange::Middle2Full:
-            relocateBufferDisposition(buffer, buffersBySize._bufferListMiddle, buffersBySize._bufferListFull);
-            break;
-        }
-
-        return res.first;
+        return buffer->alloc(this);
     }
 
     template <std::size_t size> void Thread::free(void *ptr)
@@ -143,24 +130,7 @@ namespace lut { namespace mm { namespace impl
             return;
         }
 
-        //updateBufferDisposition(buffer, sizedBuffer->free(ptr), header()._buffersBySize[size-1]);
-        BufferFullnessChange bfc = buffer->free(ptr);
-        Header::BuffersBySize &buffersBySize = header()._buffersBySize[size-1];
-
-        if(BufferFullnessChange::Null == bfc)
-        {
-            return;
-        }
-
-        switch(bfc)
-        {
-        case BufferFullnessChange::Middle2Empty:
-            relocateBufferDisposition(buffer, buffersBySize._bufferListMiddle, buffersBySize._bufferListEmpty);
-            break;
-        case BufferFullnessChange::Full2Middle:
-            relocateBufferDisposition(buffer, buffersBySize._bufferListFull, buffersBySize._bufferListMiddle);
-            break;
-        }
+        buffer->free(ptr, this);
     }
 
     template <std::size_t size> void Thread::freeFromOtherThread(void *ptr)
@@ -170,6 +140,38 @@ namespace lut { namespace mm { namespace impl
             return ::free(ptr);
         }
         assert(0);
+    }
+
+    template <std::size_t size> void Thread::bufferEmpty2Middle(Buffer *buffer)
+    {
+        relocateBufferDisposition(
+                    buffer,
+                    header()._buffersBySize[size]._bufferListEmpty,
+                    header()._buffersBySize[size]._bufferListMiddle);
+    }
+
+    template <std::size_t size> void Thread::bufferMiddle2Full(Buffer *buffer)
+    {
+        relocateBufferDisposition(
+                    buffer,
+                    header()._buffersBySize[size]._bufferListMiddle,
+                    header()._buffersBySize[size]._bufferListFull);
+    }
+
+    template <std::size_t size> void Thread::bufferMiddle2Empty(Buffer *buffer)
+    {
+        relocateBufferDisposition(
+                    buffer,
+                    header()._buffersBySize[size]._bufferListMiddle,
+                    header()._buffersBySize[size]._bufferListEmpty);
+    }
+
+    template <std::size_t size> void Thread::bufferFull2Middle(Buffer *buffer)
+    {
+        relocateBufferDisposition(
+                    buffer,
+                    header()._buffersBySize[size]._bufferListFull,
+                    header()._buffersBySize[size]._bufferListMiddle);
     }
 
 }}}

@@ -8,16 +8,6 @@
 namespace lut { namespace mm { namespace impl
 {
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    enum class BufferFullnessChange
-    {
-        Null,
-        Empty2Middle,
-        Middle2Empty,
-        Middle2Full,
-        Full2Middle,
-    };
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     class Buffer
     {
     public:

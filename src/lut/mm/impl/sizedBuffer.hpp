@@ -17,8 +17,11 @@ namespace lut { namespace mm { namespace impl
         ~SizedBuffer();
 
     public:
-        std::pair<void *, BufferFullnessChange> alloc();
-        BufferFullnessChange free(void *ptr);
+        template <typename BufferContainer>
+        void *alloc(BufferContainer *bufferContainer);
+
+        template <typename BufferContainer>
+        void free(void *ptr, BufferContainer *bufferContainer);
 
     private:
         using Offset = std::uint_fast32_t;
@@ -74,7 +77,8 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    std::pair<void *, BufferFullnessChange> SizedBuffer<size>::alloc()
+    template <typename BufferContainer>
+    void *SizedBuffer<size>::alloc(BufferContainer *bufferContainer)
     {
         assert(header()._next <= _blocksAmount*sizeof(Block));
         assert(header()._initialized <= _blocksAmount*sizeof(Block));
@@ -83,7 +87,7 @@ namespace lut { namespace mm { namespace impl
         if(header()._allocated >= _blocksAmount)
         {
             assert(header()._next == _blocksAmount);
-            return std::make_pair(nullptr, BufferFullnessChange::Null);
+            return nullptr;
         }
         assert(header()._next < _blocksAmount);
 
@@ -112,17 +116,20 @@ namespace lut { namespace mm { namespace impl
         switch(header()._allocated)
         {
         case 1:
-            return std::make_pair(block, BufferFullnessChange::Empty2Middle);
+            bufferContainer->template bufferEmpty2Middle<size>(this);
+            break;
         case _blocksAmount:
-            return std::make_pair(block, BufferFullnessChange::Middle2Full);
+            bufferContainer->template bufferMiddle2Full<size>(this);
+            break;
         }
 
-        return std::make_pair(block, BufferFullnessChange::Null);
+        return block;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    BufferFullnessChange SizedBuffer<size>::free(void *ptr)
+    template <typename BufferContainer>
+    void SizedBuffer<size>::free(void *ptr, BufferContainer *bufferContainer)
     {
         assert(ptr >= blocks() && ptr < (blocks()+_blocksAmount));
         assert(!(((char *)ptr - (char *)blocks()) % sizeof(Block)));
@@ -137,12 +144,12 @@ namespace lut { namespace mm { namespace impl
         switch(header()._allocated)
         {
         case 0:
-            return BufferFullnessChange::Middle2Empty;
+            bufferContainer->template bufferMiddle2Empty<size>(this);
+            break;
         case _blocksAmount-1:
-            return BufferFullnessChange::Full2Middle;
+            bufferContainer->template bufferFull2Middle<size>(this);
+            break;
         }
-
-        return BufferFullnessChange::Null;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
