@@ -97,17 +97,24 @@ namespace lut { namespace mm { namespace impl
     template <std::size_t size>
     void Allocator::free(void *ptr)
     {
-        Thread *at = thread(ptr);
-        if(!at)
-        {
-            return ::free(ptr);
-        }
-
-        if(at == Thread::instance())
+        Thread *at = Thread::instance();
+        if(reinterpret_cast<char *>(ptr) - reinterpret_cast<char *>(at) < sizeof(Thread))
         {
             return at->free<size>(ptr);
         }
-        return at->freeFromOtherThread<size>(ptr);
+
+        {
+            char *area = reinterpret_cast<char *>(&_threadsArea);
+            std::size_t offset = reinterpret_cast<char *>(ptr) - area;
+            if(offset >= sizeof(ThreadsArea))
+            {
+                return ::free(ptr);
+            }
+
+            at = reinterpret_cast<Thread *>(area) + offset/sizeof(Thread);
+        }
+
+        at->freeFromOtherThread<size>(ptr);
     }
 
 

@@ -29,11 +29,11 @@ std::atomic<std::size_t> cnt(0);
 
 struct pod
 {
-//    int i;
-//    int j;
-//    int k;
-//    int l;
-    char _data[12];
+    int i;
+    int j;
+    int k;
+    int l;
+//    char _data[12];
 };
 
 namespace
@@ -184,14 +184,14 @@ namespace
                 ps[i] = pa->alloc();
             }
 
-//            for(size_t i(0); i<amount; i++)
-//            {
-//                pod *pp = (pod *)ps[i];
-//                pp->i = 0x1;
-////                pp->j = 0x2;
-////                pp->k = 0x3;
-////                pp->l = 0x4;
-//            }
+            for(size_t i(0); i<amount; i++)
+            {
+                pod *pp = (pod *)ps[i];
+                pp->i = 0x1;
+//                pp->j = 0x2;
+//                pp->k = 0x3;
+//                pp->l = 0x4;
+            }
 
             for(size_t i(amount-1); i<amount; i--)
             {
@@ -206,12 +206,12 @@ namespace
 }
 
 //using Allocator = OriginalAllocator;
-//using Allocator = LocalAllocator;
+using Allocator = LocalAllocator;
 //using Allocator = MAllocator;
 //using Allocator = FSAllocator;
 //using Allocator = FSAllocator2;
 //using Allocator = BPAllocator;
-using Allocator = Local2Allocator;
+//using Allocator = Local2Allocator;
 
 Allocator *pallocator = new Allocator;
 
@@ -241,7 +241,7 @@ int lmain()
         cnt.fetch_add(-1, std::memory_order_relaxed);
     };
 
-    for(std::size_t i(0); i<20; i++)
+    for(std::size_t i(0); i<1; i++)
     {
         cnt.fetch_add(1);
         sched.spawn(f, &sched, 100000);
