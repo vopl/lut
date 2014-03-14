@@ -58,7 +58,6 @@ namespace lut { namespace mm { namespace impl
         Header &header();
 
     private:
-        void updateBufferDisposition(Buffer *buffer, BufferFullnessChange bfc, Header::BuffersBySize &buffersBySize);
         void relocateBufferDisposition(Buffer *buffer, Buffer *&bufferListSrc, Buffer *&bufferListDst);
 
     private:

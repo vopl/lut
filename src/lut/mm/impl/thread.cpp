@@ -109,27 +109,6 @@ namespace lut { namespace mm { namespace impl
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    void Thread::updateBufferDisposition(Buffer *buffer, BufferFullnessChange bfc, Header::BuffersBySize &buffersBySize)
-    {
-        if(BufferFullnessChange::Null == bfc)
-        {
-            return;
-        }
-
-        switch(bfc)
-        {
-        case BufferFullnessChange::Empty2Middle:
-            return relocateBufferDisposition(buffer, buffersBySize._bufferListEmpty, buffersBySize._bufferListMiddle);
-        case BufferFullnessChange::Middle2Empty:
-            return relocateBufferDisposition(buffer, buffersBySize._bufferListMiddle, buffersBySize._bufferListEmpty);
-        case BufferFullnessChange::Middle2Full:
-            return relocateBufferDisposition(buffer, buffersBySize._bufferListMiddle, buffersBySize._bufferListFull);
-        case BufferFullnessChange::Full2Middle:
-            return relocateBufferDisposition(buffer, buffersBySize._bufferListFull, buffersBySize._bufferListMiddle);
-        }
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     void Thread::relocateBufferDisposition(Buffer *buffer, Buffer *&bufferListSrc, Buffer *&bufferListDst)
     {
         if(buffer->_nextBufferInList)

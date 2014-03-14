@@ -161,12 +161,13 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     std::size_t Allocator::threadIndex(const void *addr)
     {
-        if(addr < &_threadsArea || addr > &_threadsArea + sizeof(ThreadsArea))
+        const char *area = reinterpret_cast<const char *>(&_threadsArea);
+        if(addr < area || addr >= area + sizeof(ThreadsArea))
         {
             return _badIndex;
         }
 
-        return (reinterpret_cast<const char *>(addr) - reinterpret_cast<const char *>(&_threadsArea)) / sizeof(Thread);
+        return (reinterpret_cast<const char *>(addr) - area) / sizeof(Thread);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

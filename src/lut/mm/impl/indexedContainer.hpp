@@ -131,12 +131,8 @@ namespace lut { namespace mm { namespace impl
 
         AddressInIndex bufferAddr = (offset - offsetof(IndexedContainer, _buffersArea)) / sizeof(Buffer);
 
-        if(index().isAllocated(bufferAddr))
-        {
-            return static_cast<DerivedBuffer *>(buffers() + bufferAddr);
-        }
-
-        return nullptr;
+        assert(index().isAllocated(bufferAddr));
+        return static_cast<DerivedBuffer *>(buffers() + bufferAddr);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
