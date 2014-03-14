@@ -38,8 +38,8 @@ struct pod
 
 namespace
 {
-#define NOINLINE __attribute__ ((noinline))
-//#define NOINLINE
+//#define NOINLINE __attribute__ ((noinline))
+#define NOINLINE
 
     struct LocalAllocator
     {

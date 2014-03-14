@@ -45,7 +45,7 @@ namespace lut { namespace mm { namespace impl
             Header();
         };
         Header &header();
-        Block *blocks();
+        char *blocksArea();
 
         Block* offset2Block(Offset i);
         Offset block2Offset(Block* p);
@@ -80,22 +80,36 @@ namespace lut { namespace mm { namespace impl
     template <typename BufferContainer>
     void *SizedBuffer<size>::alloc(BufferContainer *bufferContainer)
     {
-        assert(header()._next <= _blocksAmount*sizeof(Block));
-        assert(header()._initialized <= _blocksAmount*sizeof(Block));
-        assert(header()._allocated <= _blocksAmount*sizeof(Block));
+        Header &header = SizedBuffer::header();
 
-        if(header()._allocated >= _blocksAmount)
+        assert(header._next <= _blocksAmount*sizeof(Block));
+        assert(header._initialized <= _blocksAmount*sizeof(Block));
+        assert(header._allocated <= _blocksAmount*sizeof(Block));
+
+        if(header._allocated >= (_blocksAmount-1)*sizeof(Block))
         {
-            assert(header()._next == _blocksAmount);
-            return nullptr;
+            if(header._allocated >= _blocksAmount*sizeof(Block))
+            {
+                assert(header._next == _blocksAmount*sizeof(Block));
+                return nullptr;
+            }
+
+            Block *block = offset2Block(header._next);
+
+            assert(header._allocated == header._initialized);
+            header._next = block->next();
+            header._allocated = _blocksAmount*sizeof(Block);
+
+            bufferContainer->template bufferMiddle2Full<size>(this);
+            return block;
         }
-        assert(header()._next < _blocksAmount);
+        assert(header._next < _blocksAmount*sizeof(Block));
 
-        Block *block = offset2Block(header()._next);
+        Block *block = offset2Block(header._next);
 
-        if(header()._allocated == header()._initialized)
+        if(header._allocated == header._initialized)
         {
-            std::size_t protect = _blocksOffset + header()._initialized * sizeof(Block) + sizeof(Block);
+            std::size_t protect = _blocksOffset + header._initialized * sizeof(Block) + sizeof(Block);
             if((protect % Config::_pageSize) + sizeof(Block) >= Config::_pageSize)
             {
                 vm::protect(
@@ -103,24 +117,18 @@ namespace lut { namespace mm { namespace impl
                             Config::_pageSize,
                             true);
             }
-            header()._next++;
-            header()._initialized++;
+            header._next += sizeof(Block);
+            header._initialized += sizeof(Block);
         }
         else
         {
-            header()._next = block->next();
+            header._next = block->next();
         }
 
-        header()._allocated++;
-
-        switch(header()._allocated)
+        header._allocated += sizeof(Block);
+        if(1*sizeof(Block) == header._allocated)
         {
-        case 1:
             bufferContainer->template bufferEmpty2Middle<size>(this);
-            break;
-        case _blocksAmount:
-            bufferContainer->template bufferMiddle2Full<size>(this);
-            break;
         }
 
         return block;
@@ -131,24 +139,24 @@ namespace lut { namespace mm { namespace impl
     template <typename BufferContainer>
     void SizedBuffer<size>::free(void *ptr, BufferContainer *bufferContainer)
     {
-        assert(ptr >= blocks() && ptr < (blocks()+_blocksAmount));
-        assert(!(((char *)ptr - (char *)blocks()) % sizeof(Block)));
+        Header &header = SizedBuffer::header();
+
+        assert(ptr >= blocksArea() && ptr < (blocksArea()+_blocksAmount*sizeof(Block)));
+        assert(!(((char *)ptr - blocksArea()) % sizeof(Block)));
 
         Block *block = reinterpret_cast<Block *>(ptr);
-        Offset blockOffset = block2Offset(block);
 
-        block->next() = header()._next;
-        header()._next = blockOffset;
-        header()._allocated--;
+        block->next() = header._next;
+        header._next = block2Offset(block);
+        header._allocated -= sizeof(Block);
 
-        switch(header()._allocated)
+        if(0*sizeof(Block) == header._allocated)
         {
-        case 0:
             bufferContainer->template bufferMiddle2Empty<size>(this);
-            break;
-        case _blocksAmount-1:
+        }
+        else if((_blocksAmount-1)*sizeof(Block) == header._allocated)
+        {
             bufferContainer->template bufferFull2Middle<size>(this);
-            break;
         }
     }
 
@@ -177,23 +185,23 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    typename SizedBuffer<size>::Block *SizedBuffer<size>::blocks()
+    char *SizedBuffer<size>::blocksArea()
     {
-        return reinterpret_cast<Block *>(reinterpret_cast<char *>(this) + _blocksOffset);
+        return reinterpret_cast<char *>(this) + _blocksOffset;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
     typename SizedBuffer<size>::Block *SizedBuffer<size>::offset2Block(Offset i)
     {
-        return blocks() + i;
+        return reinterpret_cast<Block*>(blocksArea() + i);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
     typename SizedBuffer<size>::Offset SizedBuffer<size>::block2Offset(Block* p)
     {
-        return p - blocks();
+        return reinterpret_cast<char *>(p) - blocksArea();
     }
 
 }}}
