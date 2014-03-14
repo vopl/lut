@@ -10,13 +10,11 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     enum class BufferFullnessChange
     {
-        Empty2Empty,
+        Null,
         Empty2Middle,
         Middle2Empty,
-        Middle2Middle,
         Middle2Full,
         Full2Middle,
-        Full2Full,
     };
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -38,7 +36,9 @@ namespace lut { namespace mm { namespace impl
                 sizeof(std::aligned_storage<sizeof(_prevBufferInList), alignof(Buffer *)>::type) +
                 sizeof(std::aligned_storage<sizeof(_nextBufferInList), alignof(Buffer *)>::type);
 
-        char _area[Config::_pageSize * Config::_bufferPages - _areaOffset];
+        //char _area[Config::_pageSize * Config::_bufferPages - _areaOffset];
+        using Area = std::aligned_storage<Config::_pageSize * Config::_bufferPages - _areaOffset, alignof(Buffer *)>::type;
+        Area _area;
     };
 }}}
 

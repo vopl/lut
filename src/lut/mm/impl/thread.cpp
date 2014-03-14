@@ -111,39 +111,27 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     void Thread::updateBufferDisposition(Buffer *buffer, BufferFullnessChange bfc, Header::BuffersBySize &buffersBySize)
     {
-        Buffer **bufferListSrc;
-        Buffer **bufferListDst;
-
+        if(BufferFullnessChange::Null == bfc)
         {
-            switch(bfc)
-            {
-            case BufferFullnessChange::Empty2Empty:
-                return;
-            case BufferFullnessChange::Empty2Middle:
-                bufferListSrc = &buffersBySize._bufferListEmpty;
-                bufferListDst = &buffersBySize._bufferListMiddle;
-                break;
-            case BufferFullnessChange::Middle2Empty:
-                bufferListSrc = &buffersBySize._bufferListMiddle;
-                bufferListDst = &buffersBySize._bufferListEmpty;
-                break;
-            case BufferFullnessChange::Middle2Middle:
-                return;
-            case BufferFullnessChange::Middle2Full:
-                bufferListSrc = &buffersBySize._bufferListMiddle;
-                bufferListDst = &buffersBySize._bufferListFull;
-                break;
-            case BufferFullnessChange::Full2Middle:
-                bufferListSrc = &buffersBySize._bufferListFull;
-                bufferListDst = &buffersBySize._bufferListMiddle;
-                break;
-            case BufferFullnessChange::Full2Full:
-                return;
-            }
+            return;
         }
 
-        Buffer *newSrcHead = buffer->_prevBufferInList ? nullptr : buffer->_nextBufferInList;
+        switch(bfc)
+        {
+        case BufferFullnessChange::Empty2Middle:
+            return relocateBufferDisposition(buffer, buffersBySize._bufferListEmpty, buffersBySize._bufferListMiddle);
+        case BufferFullnessChange::Middle2Empty:
+            return relocateBufferDisposition(buffer, buffersBySize._bufferListMiddle, buffersBySize._bufferListEmpty);
+        case BufferFullnessChange::Middle2Full:
+            return relocateBufferDisposition(buffer, buffersBySize._bufferListMiddle, buffersBySize._bufferListFull);
+        case BufferFullnessChange::Full2Middle:
+            return relocateBufferDisposition(buffer, buffersBySize._bufferListFull, buffersBySize._bufferListMiddle);
+        }
+    }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    void Thread::relocateBufferDisposition(Buffer *buffer, Buffer *&bufferListSrc, Buffer *&bufferListDst)
+    {
         if(buffer->_nextBufferInList)
         {
             buffer->_nextBufferInList->_prevBufferInList = buffer->_prevBufferInList;
@@ -152,22 +140,24 @@ namespace lut { namespace mm { namespace impl
         {
             buffer->_prevBufferInList->_nextBufferInList = buffer->_prevBufferInList;
         }
-
-        (*bufferListSrc) = newSrcHead;
-
-        if((*bufferListDst))
+        else
         {
-            assert(!(*bufferListDst)->_prevBufferInList);
-            (*bufferListDst)->_prevBufferInList = buffer;
-            buffer->_nextBufferInList = (*bufferListDst);
+            bufferListSrc = buffer->_nextBufferInList;
+        }
+
+        if(bufferListDst)
+        {
+            assert(!bufferListDst->_prevBufferInList);
+            bufferListDst->_prevBufferInList = buffer;
+            buffer->_nextBufferInList = bufferListDst;
             buffer->_prevBufferInList = nullptr;
-            (*bufferListDst) = buffer;
+            bufferListDst = buffer;
         }
         else
         {
             buffer->_nextBufferInList = nullptr;
             buffer->_prevBufferInList = nullptr;
-            (*bufferListDst) = buffer;
+            bufferListDst = buffer;
         }
     }
 

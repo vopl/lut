@@ -21,11 +21,12 @@ namespace lut { namespace mm { namespace impl
         BufferFullnessChange free(void *ptr);
 
     private:
-        using Offset = std::uint32_t;
+        using Offset = std::uint_fast32_t;
 
         struct Block
         {
-            char _data[size < sizeof(Offset) ? sizeof(Offset) : size];
+            using Data = typename std::aligned_storage<size < sizeof(Offset) ? sizeof(Offset) : size, 1>::type;
+            Data _data;
 
             Offset &next();
         };
@@ -56,6 +57,7 @@ namespace lut { namespace mm { namespace impl
     template <std::size_t size>
     SizedBuffer<size>::SizedBuffer()
     {
+        assert(!(reinterpret_cast<std::uintptr_t>(this) % Config::_pageSize));
         std::size_t protectedBound = sizeof(typename std::aligned_storage<_blocksOffset, Config::_pageSize>::type);
         vm::protect(this, protectedBound, true);
 
@@ -80,24 +82,24 @@ namespace lut { namespace mm { namespace impl
 
         if(header()._allocated >= _blocksAmount)
         {
-            assert(header()._next == _blocksAmount * sizeof(Block));
-            return std::make_pair(nullptr, BufferFullnessChange::Full2Full);
+            assert(header()._next == _blocksAmount);
+            return std::make_pair(nullptr, BufferFullnessChange::Null);
         }
-        assert(header()._next < _blocksAmount * sizeof(Block));
+        assert(header()._next < _blocksAmount);
 
         Block *block = offset2Block(header()._next);
 
         if(header()._allocated == header()._initialized)
         {
-            std::size_t protect = header()._initialized * sizeof(Block) + _blocksOffset;
-            if((protect % Config::_pageSize) + sizeof(Block) > Config::_pageSize)
+            std::size_t protect = _blocksOffset + header()._initialized * sizeof(Block) + sizeof(Block);
+            if((protect % Config::_pageSize) + sizeof(Block) >= Config::_pageSize)
             {
                 vm::protect(
                             reinterpret_cast<char *>(this) + protect - (protect % Config::_pageSize),
                             Config::_pageSize,
                             true);
             }
-            header()._next = header()._next+sizeof(Block);
+            header()._next++;
             header()._initialized++;
         }
         else
@@ -115,7 +117,7 @@ namespace lut { namespace mm { namespace impl
             return std::make_pair(block, BufferFullnessChange::Middle2Full);
         }
 
-        return std::make_pair(block, BufferFullnessChange::Middle2Middle);
+        return std::make_pair(block, BufferFullnessChange::Null);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -140,14 +142,14 @@ namespace lut { namespace mm { namespace impl
             return BufferFullnessChange::Full2Middle;
         }
 
-        return BufferFullnessChange::Middle2Middle;
+        return BufferFullnessChange::Null;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
     typename SizedBuffer<size>::Offset &SizedBuffer<size>::Block::next()
     {
-        return *reinterpret_cast<Offset*>(_data);
+        return *reinterpret_cast<Offset*>(&_data);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -163,7 +165,7 @@ namespace lut { namespace mm { namespace impl
     template <std::size_t size>
     typename SizedBuffer<size>::Header &SizedBuffer<size>::header()
     {
-        return *reinterpret_cast<Header*>(_area);
+        return *reinterpret_cast<Header*>(&_area);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

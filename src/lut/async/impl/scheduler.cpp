@@ -23,6 +23,7 @@ namespace lut { namespace async { namespace impl
     ThreadReleaseResult Scheduler::releaseThread(const std::thread::id &id)
     {
         assert(0);
+        return ThreadReleaseResult::notInWork;
     }
 
     bool Scheduler::threadEntry_init(worker::Thread *thread)

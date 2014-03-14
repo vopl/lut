@@ -96,6 +96,7 @@ namespace lut { namespace mm { namespace impl
     bool BitIndex<maxVolume>::vmAccessHandler(std::uintptr_t offset)
     {
         assert(!"not impl yet");
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////////

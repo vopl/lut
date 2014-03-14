@@ -207,7 +207,7 @@ namespace lut { namespace mm { namespace impl
             return offsetof(BitIndexLevel, _subLevelLast) + _subLevelLast.usedLayout();
         }
 
-        return offsetof(BitIndexLevel, _subLevels[_lastUsedIndex]) + _subLevels[_lastUsedIndex].usedLayout();
+        return offsetof(BitIndexLevel, _subLevels) + sizeof(SubLevel)*_lastUsedIndex + _subLevels[_lastUsedIndex].usedLayout();
     }
 
 

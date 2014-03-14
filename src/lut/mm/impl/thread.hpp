@@ -59,6 +59,7 @@ namespace lut { namespace mm { namespace impl
 
     private:
         void updateBufferDisposition(Buffer *buffer, BufferFullnessChange bfc, Header::BuffersBySize &buffersBySize);
+        void relocateBufferDisposition(Buffer *buffer, Buffer *&bufferListSrc, Buffer *&bufferListDst);
 
     private:
         using StacksContainer = IndexedContainer<Stack, Config::_stacksAmount>;
@@ -86,27 +87,45 @@ namespace lut { namespace mm { namespace impl
 
         Header::BuffersBySize &buffersBySize = header()._buffersBySize[size-1];
 
-        SizedBuffer<size> *sizedBuffer;
+        SizedBuffer<size> *buffer;
 
         if(buffersBySize._bufferListMiddle)
         {
-            sizedBuffer = static_cast<SizedBuffer<size> *>(buffersBySize._bufferListMiddle);
+            buffer = static_cast<SizedBuffer<size> *>(buffersBySize._bufferListMiddle);
+        }
+        else if(buffersBySize._bufferListEmpty)
+        {
+            buffer = static_cast<SizedBuffer<size> *>(buffersBySize._bufferListEmpty);
         }
         else
         {
-            sizedBuffer = buffersContainer().alloc<SizedBuffer<size>>();
-            if(!sizedBuffer)
+            buffer = buffersContainer().alloc<SizedBuffer<size>>();
+            if(!buffer)
             {
                 return nullptr;
             }
 
-            buffersBySize._bufferListEmpty = sizedBuffer;
+            buffersBySize._bufferListEmpty = buffer;
         }
 
-        std::pair<void *, BufferFullnessChange> res = sizedBuffer->alloc();
+        std::pair<void *, BufferFullnessChange> res = buffer->alloc();
         assert(res.first);
 
-        updateBufferDisposition(sizedBuffer, res.second, buffersBySize);
+        //updateBufferDisposition(sizedBuffer, res.second, buffersBySize);
+        if(BufferFullnessChange::Null == res.second)
+        {
+            return res.first;
+        }
+
+        switch(res.second)
+        {
+        case BufferFullnessChange::Empty2Middle:
+            relocateBufferDisposition(buffer, buffersBySize._bufferListEmpty, buffersBySize._bufferListMiddle);
+            break;
+        case BufferFullnessChange::Middle2Full:
+            relocateBufferDisposition(buffer, buffersBySize._bufferListMiddle, buffersBySize._bufferListFull);
+            break;
+        }
 
         return res.first;
     }
@@ -118,14 +137,31 @@ namespace lut { namespace mm { namespace impl
             return ::free(ptr);
         }
 
-        SizedBuffer<size> *sizedBuffer = buffersContainer().bufferByPointer<SizedBuffer<size>>(ptr);
+        SizedBuffer<size> *buffer = buffersContainer().bufferByPointer<SizedBuffer<size>>(ptr);
 
-        if(!sizedBuffer)
+        if(!buffer)
         {
             return;
         }
 
-        updateBufferDisposition(sizedBuffer, sizedBuffer->free(ptr), header()._buffersBySize[size-1]);
+        //updateBufferDisposition(buffer, sizedBuffer->free(ptr), header()._buffersBySize[size-1]);
+        BufferFullnessChange bfc = buffer->free(ptr);
+        Header::BuffersBySize &buffersBySize = header()._buffersBySize[size-1];
+
+        if(BufferFullnessChange::Null == bfc)
+        {
+            return;
+        }
+
+        switch(bfc)
+        {
+        case BufferFullnessChange::Middle2Empty:
+            relocateBufferDisposition(buffer, buffersBySize._bufferListMiddle, buffersBySize._bufferListEmpty);
+            break;
+        case BufferFullnessChange::Full2Middle:
+            relocateBufferDisposition(buffer, buffersBySize._bufferListFull, buffersBySize._bufferListMiddle);
+            break;
+        }
     }
 
     template <std::size_t size> void Thread::freeFromOtherThread(void *ptr)
