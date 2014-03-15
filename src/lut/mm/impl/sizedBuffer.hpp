@@ -95,6 +95,7 @@ namespace lut { namespace mm { namespace impl
             }
 
             Block *block = offset2Block(header._next);
+            assert((reinterpret_cast<std::uintptr_t>(block) & 0xfff)!=8);
 
             assert(header._allocated == header._initialized);
             header._next = block->next();
@@ -109,14 +110,15 @@ namespace lut { namespace mm { namespace impl
 
         if(header._allocated == header._initialized)
         {
-            std::size_t protect = _blocksOffset + header._initialized * sizeof(Block) + sizeof(Block);
+            std::size_t protect = _blocksOffset + header._initialized;
             if((protect % Config::_pageSize) + sizeof(Block) >= Config::_pageSize)
             {
                 vm::protect(
-                            reinterpret_cast<char *>(this) + protect - (protect % Config::_pageSize),
+                            reinterpret_cast<char *>(this) + protect - (protect % Config::_pageSize) + Config::_pageSize,
                             Config::_pageSize,
                             true);
             }
+
             header._next += sizeof(Block);
             header._initialized += sizeof(Block);
         }

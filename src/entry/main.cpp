@@ -33,7 +33,7 @@ struct pod
     int j;
     int k;
     int l;
-//    char _data[12];
+    char _data[12];
 };
 
 namespace
@@ -206,12 +206,12 @@ namespace
 }
 
 //using Allocator = OriginalAllocator;
-using Allocator = LocalAllocator;
+//using Allocator = LocalAllocator;
 //using Allocator = MAllocator;
 //using Allocator = FSAllocator;
 //using Allocator = FSAllocator2;
 //using Allocator = BPAllocator;
-//using Allocator = Local2Allocator;
+using Allocator = Local2Allocator;
 
 Allocator *pallocator = new Allocator;
 
