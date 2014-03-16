@@ -24,8 +24,6 @@ namespace lut { namespace mm { namespace impl
         void free(void *ptr, BufferContainer *bufferContainer);
 
     private:
-        using Offset = std::uint32_t;
-
         struct Block
         {
             using Data = typename std::aligned_storage<(size < sizeof(Offset) ? sizeof(Offset) : size), 1>::type;
@@ -34,23 +32,12 @@ namespace lut { namespace mm { namespace impl
             Offset &next();
         };
 
-        static const Offset _badOffset = (Offset)-1;
-
-        struct Header
-        {
-            Offset _allocated;
-            Offset _next;
-            Offset _initialized;
-
-            Header();
-        };
-        Header &header();
         char *blocksArea();
 
         Block* offset2Block(Offset i);
         Offset block2Offset(Block* p);
 
-        static const std::size_t _blocksOffset = _areaOffset + sizeof(typename std::aligned_storage<sizeof(Header), alignof(Header)>::type);
+        static const std::size_t _blocksOffset = _areaOffset;
         static const std::size_t _blocksAmount = (sizeof(Buffer) - _blocksOffset) / sizeof(Block);
 
     };
@@ -64,14 +51,13 @@ namespace lut { namespace mm { namespace impl
         std::size_t protectedBound = sizeof(typename std::aligned_storage<_blocksOffset, Config::_pageSize>::type);
         vm::protect(this, protectedBound, true);
 
-        new (&header()) Header;
+        _allocated = _next = _initialized = 0;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
     SizedBuffer<size>::~SizedBuffer()
     {
-        header().~Header();
         vm::protect(this, sizeof(Buffer), false);
     }
 
@@ -80,37 +66,36 @@ namespace lut { namespace mm { namespace impl
     template <typename BufferContainer>
     void *SizedBuffer<size>::alloc(BufferContainer *bufferContainer)
     {
-        Header &header = SizedBuffer::header();
 
         assert(header._next <= _blocksAmount*sizeof(Block));
         assert(header._initialized <= _blocksAmount*sizeof(Block));
         assert(header._allocated <= _blocksAmount*sizeof(Block));
 
-        if(header._allocated >= (_blocksAmount-1)*sizeof(Block))
+        if(_allocated >= (_blocksAmount-1)*sizeof(Block))
         {
-            if(header._allocated >= _blocksAmount*sizeof(Block))
+            if(_allocated >= _blocksAmount*sizeof(Block))
             {
-                assert(header._next == _blocksAmount*sizeof(Block));
+                assert(_next == _blocksAmount*sizeof(Block));
                 return nullptr;
             }
 
-            Block *block = offset2Block(header._next);
+            Block *block = offset2Block(_next);
             assert((reinterpret_cast<std::uintptr_t>(block) & 0xfff)!=8);
 
-            assert(header._allocated == header._initialized);
-            header._allocated = _blocksAmount*sizeof(Block);
-            header._next = block->next();
+            assert(_allocated == _initialized);
+            _allocated = _blocksAmount*sizeof(Block);
+            _next = block->next();
 
             bufferContainer->template bufferMiddle2Full<size>(this);
             return block;
         }
-        assert(header._next < _blocksAmount*sizeof(Block));
+        assert(_next < _blocksAmount*sizeof(Block));
 
-        Block *block = offset2Block(header._next);
+        Block *block = offset2Block(_next);
 
-        if(header._allocated == header._initialized)
+        if(_allocated == _initialized)
         {
-            std::size_t protect = _blocksOffset + header._initialized;
+            std::size_t protect = _blocksOffset + _initialized;
             if((protect % Config::_pageSize) + sizeof(Block) >= Config::_pageSize)
             {
                 vm::protect(
@@ -119,18 +104,16 @@ namespace lut { namespace mm { namespace impl
                             true);
             }
 
-            header._allocated =
-                header._next =
-                header._initialized =
-                    header._initialized + sizeof(Block);
+            _allocated = _next = _initialized =
+                _initialized + sizeof(Block);
         }
         else
         {
-            header._allocated += sizeof(Block);
-            header._next = block->next();
+            _allocated += sizeof(Block);
+            _next = block->next();
         }
 
-        if(1*sizeof(Block) == header._allocated)
+        if(1*sizeof(Block) == _allocated)
         {
             bufferContainer->template bufferEmpty2Middle<size>(this);
         }
@@ -143,22 +126,20 @@ namespace lut { namespace mm { namespace impl
     template <typename BufferContainer>
     void SizedBuffer<size>::free(void *ptr, BufferContainer *bufferContainer)
     {
-        Header &header = SizedBuffer::header();
-
         assert(ptr >= blocksArea() && ptr < (blocksArea()+_blocksAmount*sizeof(Block)));
         assert(!(((char *)ptr - blocksArea()) % sizeof(Block)));
 
         Block *block = reinterpret_cast<Block *>(ptr);
 
-        block->next() = header._next;
-        header._allocated -= sizeof(Block);
-        header._next = block2Offset(block);
+        block->next() = _next;
+        _allocated -= sizeof(Block);
+        _next = block2Offset(block);
 
-        if(0*sizeof(Block) == header._allocated)
+        if(0*sizeof(Block) == _allocated)
         {
             bufferContainer->template bufferMiddle2Empty<size>(this);
         }
-        else if((_blocksAmount-1)*sizeof(Block) == header._allocated)
+        else if((_blocksAmount-1)*sizeof(Block) == _allocated)
         {
             bufferContainer->template bufferFull2Middle<size>(this);
         }
@@ -173,25 +154,9 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    SizedBuffer<size>::Header::Header()
-        : _allocated()
-        , _next()
-        , _initialized()
-    {
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <std::size_t size>
-    typename SizedBuffer<size>::Header &SizedBuffer<size>::header()
-    {
-        return *reinterpret_cast<Header*>(&_area);
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <std::size_t size>
     char *SizedBuffer<size>::blocksArea()
     {
-        return reinterpret_cast<char *>(this) + _blocksOffset;
+        return reinterpret_cast<char*>(&_area);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
