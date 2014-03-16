@@ -33,9 +33,9 @@ struct pod
     int j;
     int k;
     int l;
-    char _data[16];
-    char _data2[32];
-    char _data3[64];
+//    char _data[16];
+//    char _data2[32];
+//    char _data3[64];
 };
 
 namespace

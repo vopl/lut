@@ -30,10 +30,10 @@ namespace lut { namespace mm { namespace impl
 
     public:
         template <std::size_t size>
-        void *alloc();
+        static void *alloc();
 
         template <std::size_t size>
-        void free(void *ptr);
+        static void free(void *ptr);
 
     private:
         bool vmAccessHandler(void *addr);
@@ -104,7 +104,7 @@ namespace lut { namespace mm { namespace impl
         }
 
         {
-            char *area = reinterpret_cast<char *>(&_threadsArea);
+            char *area = reinterpret_cast<char *>(&_instance->_threadsArea);
             std::size_t offset = reinterpret_cast<char *>(ptr) - area;
             if(offset >= sizeof(ThreadsArea))
             {

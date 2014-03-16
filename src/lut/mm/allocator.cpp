@@ -34,11 +34,11 @@ namespace lut { namespace mm
 #define BAF_9238657287658752(N0) \
     template <> void *Allocator::allocAligned<N0>() \
     { \
-        return impl::Allocator::instance().alloc<N0>(); \
+        return impl::Allocator::alloc<N0>(); \
     } \
     template <> void Allocator::freeAligned<N0>(void *ptr) \
     { \
-        return impl::Allocator::instance().free<N0>(ptr); \
+        return impl::Allocator::free<N0>(ptr); \
     } \
 
 #define BAF_9238658994592102(N1) \
