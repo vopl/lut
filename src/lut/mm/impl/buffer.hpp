@@ -25,19 +25,22 @@ namespace lut { namespace mm { namespace impl
 
         using Offset = std::uint32_t;
 
+        char * _areaAddress;
+
         Offset _allocated;
         Offset _next;
         Offset _initialized;
 
-        static const std::size_t _areaOffset =
+        static const std::size_t _headerSize =
                 sizeof(std::aligned_storage<sizeof(_prevBufferInList), alignof(Buffer *)>::type) +
                 sizeof(std::aligned_storage<sizeof(_nextBufferInList), alignof(Buffer *)>::type) +
+                sizeof(std::aligned_storage<sizeof(_areaAddress), alignof(char *)>::type) +
                 sizeof(std::aligned_storage<sizeof(_allocated), alignof(Offset)>::type) +
                 sizeof(std::aligned_storage<sizeof(_next), alignof(Offset)>::type) +
                 sizeof(std::aligned_storage<sizeof(_initialized), alignof(Offset)>::type) +
                 0;
 
-        using Area = std::aligned_storage<Config::_pageSize * Config::_bufferPages - _areaOffset, 1>::type;
+        using Area = std::aligned_storage<Config::_pageSize * Config::_bufferPages - _headerSize, alignof(Offset)>::type;
         Area _area;
     };
 }}}

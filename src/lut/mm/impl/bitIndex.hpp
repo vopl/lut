@@ -103,7 +103,8 @@ namespace lut { namespace mm { namespace impl
     template <std::size_t maxVolume>
     void BitIndex<maxVolume>::updateProtection()
     {
-        std::size_t usedLayout = offsetof(BitIndex, _subLevel) + _subLevel.usedLayout();
+        static const std::size_t slo = offsetof(BitIndex, _subLevel);
+        std::size_t usedLayout = slo + _subLevel.usedLayout();
         if(usedLayout % Config::_pageSize)
         {
             usedLayout = usedLayout - usedLayout % Config::_pageSize + Config::_pageSize;

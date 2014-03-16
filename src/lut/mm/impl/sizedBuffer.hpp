@@ -37,9 +37,14 @@ namespace lut { namespace mm { namespace impl
         Block* offset2Block(Offset i);
         Offset block2Offset(Block* p);
 
-        static const std::size_t _blocksOffset = _areaOffset;
-        static const std::size_t _blocksAmount = (sizeof(Buffer) - _blocksOffset) / sizeof(Block);
+        static const std::size_t _blocksAlign =
+            sizeof(Block) <=1 ? 1 :
+            sizeof(Block) <=2 ? 2 :
+            sizeof(Block) <=4 ? 4 :
+            sizeof(Block) <=8 ? 8 : 16;
 
+        static const std::size_t _blocksOffset = (_headerSize % _blocksAlign) ? (_headerSize - _headerSize % _blocksAlign + _blocksAlign) : _headerSize;
+        static const std::size_t _blocksAmount = (sizeof(Buffer) - _blocksOffset) / sizeof(Block);
     };
 
 
@@ -51,6 +56,7 @@ namespace lut { namespace mm { namespace impl
         std::size_t protectedBound = sizeof(typename std::aligned_storage<_blocksOffset, Config::_pageSize>::type);
         vm::protect(this, protectedBound, true);
 
+        _areaAddress = reinterpret_cast<char *>(&_area);
         _allocated = _next = _initialized = 0;
     }
 
@@ -67,9 +73,9 @@ namespace lut { namespace mm { namespace impl
     void *SizedBuffer<size>::alloc(BufferContainer *bufferContainer)
     {
 
-        assert(header._next <= _blocksAmount*sizeof(Block));
-        assert(header._initialized <= _blocksAmount*sizeof(Block));
-        assert(header._allocated <= _blocksAmount*sizeof(Block));
+        assert(_next <= _blocksAmount*sizeof(Block));
+        assert(_initialized <= _blocksAmount*sizeof(Block));
+        assert(_allocated <= _blocksAmount*sizeof(Block));
 
         if(_allocated >= (_blocksAmount-1)*sizeof(Block))
         {
@@ -135,13 +141,20 @@ namespace lut { namespace mm { namespace impl
         _allocated -= sizeof(Block);
         _next = block2Offset(block);
 
-        if(0*sizeof(Block) == _allocated)
+        if(_allocated!=sizeof(Block))
+        {
+            if(_allocated!=(_blocksAmount-1)*sizeof(Block))
+            {
+                //empty
+            }
+            else
+            {
+                bufferContainer->template bufferFull2Middle<size>(this);
+            }
+        }
+        else
         {
             bufferContainer->template bufferMiddle2Empty<size>(this);
-        }
-        else if((_blocksAmount-1)*sizeof(Block) == _allocated)
-        {
-            bufferContainer->template bufferFull2Middle<size>(this);
         }
     }
 
@@ -156,7 +169,7 @@ namespace lut { namespace mm { namespace impl
     template <std::size_t size>
     char *SizedBuffer<size>::blocksArea()
     {
-        return reinterpret_cast<char*>(&_area);
+        return _areaAddress;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

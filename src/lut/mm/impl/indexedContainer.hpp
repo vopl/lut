@@ -121,18 +121,13 @@ namespace lut { namespace mm { namespace impl
     template <typename DerivedBuffer>
     DerivedBuffer *IndexedContainer<Buffer, amount>::bufferByPointer(const void *ptr)
     {
-        std::uintptr_t offset = reinterpret_cast<std::uintptr_t>(ptr) - reinterpret_cast<std::uintptr_t>(this);
-        assert(offset < sizeof(IndexedContainer));
+        std::uintptr_t buffersPointer = reinterpret_cast<std::uintptr_t>(&_buffersArea);
+        AddressInIndex bufferAddr = (reinterpret_cast<std::uintptr_t>(ptr) - buffersPointer) / sizeof(Buffer);
 
-        if(offset < offsetof(IndexedContainer, _buffersArea))
-        {
-            return nullptr;
-        }
-
-        AddressInIndex bufferAddr = (offset - offsetof(IndexedContainer, _buffersArea)) / sizeof(Buffer);
-
+        assert(bufferAddr < amount);
         assert(index().isAllocated(bufferAddr));
-        return static_cast<DerivedBuffer *>(buffers() + bufferAddr);
+
+        return static_cast<DerivedBuffer *>(reinterpret_cast<Buffer *>(buffersPointer) + bufferAddr);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
