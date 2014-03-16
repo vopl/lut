@@ -24,11 +24,11 @@ namespace lut { namespace mm { namespace impl
         void free(void *ptr, BufferContainer *bufferContainer);
 
     private:
-        using Offset = std::uint_fast32_t;
+        using Offset = std::uint32_t;
 
         struct Block
         {
-            using Data = typename std::aligned_storage<size < sizeof(Offset) ? sizeof(Offset) : size, 1>::type;
+            using Data = typename std::aligned_storage<(size < sizeof(Offset) ? sizeof(Offset) : size), 1>::type;
             Data _data;
 
             Offset &next();
@@ -38,9 +38,9 @@ namespace lut { namespace mm { namespace impl
 
         struct Header
         {
+            Offset _allocated;
             Offset _next;
             Offset _initialized;
-            Offset _allocated;
 
             Header();
         };
@@ -119,15 +119,17 @@ namespace lut { namespace mm { namespace impl
                             true);
             }
 
-            header._next += sizeof(Block);
-            header._initialized += sizeof(Block);
+            header._allocated =
+                header._next =
+                header._initialized =
+                    header._initialized + sizeof(Block);
         }
         else
         {
+            header._allocated += sizeof(Block);
             header._next = block->next();
         }
 
-        header._allocated += sizeof(Block);
         if(1*sizeof(Block) == header._allocated)
         {
             bufferContainer->template bufferEmpty2Middle<size>(this);
@@ -149,8 +151,8 @@ namespace lut { namespace mm { namespace impl
         Block *block = reinterpret_cast<Block *>(ptr);
 
         block->next() = header._next;
-        header._next = block2Offset(block);
         header._allocated -= sizeof(Block);
+        header._next = block2Offset(block);
 
         if(0*sizeof(Block) == header._allocated)
         {
@@ -172,9 +174,9 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
     SizedBuffer<size>::Header::Header()
-        : _next()
+        : _allocated()
+        , _next()
         , _initialized()
-        , _allocated()
     {
     }
 

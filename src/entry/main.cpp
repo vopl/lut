@@ -184,14 +184,14 @@ namespace
                 ps[i] = pa->alloc();
             }
 
-//            for(size_t i(0); i<amount; i++)
-//            {
-//                pod *pp = (pod *)ps[i];
-//                pp->i = 0x1;
-////                pp->j = 0x2;
-////                pp->k = 0x3;
-////                pp->l = 0x4;
-//            }
+            for(size_t i(0); i<amount; i++)
+            {
+                pod *pp = (pod *)ps[i];
+                pp->i = 0x1;
+//                pp->j = 0x2;
+//                pp->k = 0x3;
+//                pp->l = 0x4;
+            }
 
             for(size_t i(amount-1); i<amount; i--)
             {
