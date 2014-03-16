@@ -95,34 +95,8 @@ namespace lut { namespace mm { namespace impl
             return ::malloc(size);
         }
 
-        Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
-
-
-        assert(buffersBySize._bufferForAlloc);
-        return static_cast<SizedBuffer<size> *>(buffersBySize._bufferForAlloc)->alloc(this);
-
-//        SizedBuffer<size> *buffer;
-
-//        if(buffersBySize._bufferListMiddle)
-//        {
-//            buffer = static_cast<SizedBuffer<size> *>(buffersBySize._bufferListMiddle);
-//        }
-//        else if(buffersBySize._bufferListEmpty)
-//        {
-//            buffer = static_cast<SizedBuffer<size> *>(buffersBySize._bufferListEmpty);
-//        }
-//        else
-//        {
-//            buffer = buffersContainer().alloc<SizedBuffer<size>>();
-//            if(!buffer)
-//            {
-//                return nullptr;
-//            }
-
-//            buffersBySize._bufferListEmpty = buffer;
-//        }
-
-//        return buffer->alloc(this);
+        assert(header()._buffersBySize[size]._bufferForAlloc);
+        return static_cast<SizedBuffer<size> *>(header()._buffersBySize[size]._bufferForAlloc)->alloc(this);
     }
 
     template <std::size_t size> void Thread::free(void *ptr)
