@@ -98,8 +98,8 @@ namespace lut { namespace mm { namespace impl
             assert((reinterpret_cast<std::uintptr_t>(block) & 0xfff)!=8);
 
             assert(header._allocated == header._initialized);
-            header._next = block->next();
             header._allocated = _blocksAmount*sizeof(Block);
+            header._next = block->next();
 
             bufferContainer->template bufferMiddle2Full<size>(this);
             return block;

@@ -26,7 +26,6 @@ namespace lut { namespace mm { namespace impl
                 sizeof(std::aligned_storage<sizeof(_prevBufferInList), alignof(Buffer *)>::type) +
                 sizeof(std::aligned_storage<sizeof(_nextBufferInList), alignof(Buffer *)>::type);
 
-        //char _area[Config::_pageSize * Config::_bufferPages - _areaOffset];
         using Area = std::aligned_storage<Config::_pageSize * Config::_bufferPages - _areaOffset, alignof(Buffer *)>::type;
         Area _area;
     };
