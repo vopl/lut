@@ -108,10 +108,7 @@ namespace lut { namespace mm { namespace impl
 
         SizedBuffer<size> *buffer = buffersContainer().bufferByPointer<SizedBuffer<size>>(ptr);
 
-        if(!buffer)
-        {
-            return;
-        }
+        assert(buffer);
 
         buffer->free(ptr, this);
     }
