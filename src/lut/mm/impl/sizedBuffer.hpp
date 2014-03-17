@@ -97,7 +97,7 @@ namespace lut { namespace mm { namespace impl
         if(_allocated == _initialized)
         {
             std::size_t protect = _blocksOffset + _initialized;
-            if((protect % Config::_pageSize) + sizeof(Block) >= Config::_pageSize)
+            if((protect % Config::_pageSize) + sizeof(Block) > Config::_pageSize)
             {
                 vm::protect(
                             reinterpret_cast<char *>(this) + protect - (protect % Config::_pageSize) + Config::_pageSize,
@@ -132,10 +132,10 @@ namespace lut { namespace mm { namespace impl
         Block *block = reinterpret_cast<Block *>(ptr);
 
         block->_next = next();
-        _allocated -= 1;
         next(block);
+        _allocated -= 1;
 
-        if(_allocated!=1)
+        if(_allocated!=0)
         {
             if(_allocated!=(_blocksAmount-1))
             {
