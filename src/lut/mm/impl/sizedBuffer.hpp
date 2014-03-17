@@ -25,7 +25,7 @@ namespace lut { namespace mm { namespace impl
         void free(void *ptr, BufferContainer *bufferContainer);
 
     private:
-        union alignas(size <= alignof(void *) ? alignof(void *) : alignof(/*std::max_align_t*/long double)) Block
+        union Block
         {
             Block *_next;
             char _data[size];
