@@ -9,6 +9,7 @@
 #include "lut/mm/impl/stack.hpp"
 #include "lut/mm/impl/buffer.hpp"
 #include "lut/mm/impl/sizedBuffer.hpp"
+#include "lut/mm/impl/sizedBufferCalculator.hpp"
 
 namespace lut { namespace mm { namespace impl
 {
@@ -58,7 +59,7 @@ namespace lut { namespace mm { namespace impl
                 Buffer *_bufferForAlloc;
             };
 
-            BuffersBySize _buffersBySize[lut::mm::Allocator::_maxAllocatedBufferSize+1];
+            BuffersBySize _buffersBySize[SizedBufferCalculator<lut::mm::Allocator::_maxAllocatedBufferSize>::_implAmount];
 
             Header();
             ~Header();
@@ -182,25 +183,25 @@ namespace lut { namespace mm { namespace impl
                     buffersBySize._bufferListMiddle);
     }
 
-    template <std::size_t size>
+    template <std::size_t index>
     void Thread::createBufferForAlloc()
     {
-        Buffer *buffer = buffersContainer().alloc<SizedBuffer<size>>();
+        Buffer *buffer = buffersContainer().alloc<SizedBuffer<SizedBufferCalculator<index>::_implIndex2ImplSize>>();
         if(!buffer)
         {
             assert(0);
             return;
         }
 
-        Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
+        Header::BuffersBySize &buffersBySize = header()._buffersBySize[index];
         buffersBySize._bufferListEmpty = buffer;
         buffersBySize._bufferForAlloc = buffersBySize._bufferListEmpty;
 
-        createBufferForAlloc<size+1>();
+        createBufferForAlloc<index+1>();
     }
 
     template <>
-    inline void Thread::createBufferForAlloc<lut::mm::Allocator::_maxAllocatedBufferSize>()
+    inline void Thread::createBufferForAlloc<SizedBufferCalculator<lut::mm::Allocator::_maxAllocatedBufferSize>::_implAmount>()
     {
     }
 
