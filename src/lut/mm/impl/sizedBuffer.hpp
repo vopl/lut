@@ -5,6 +5,7 @@
 #include "lut/mm/impl/vm.hpp"
 
 #include <cstdint>
+#include <cstddef>
 
 namespace lut { namespace mm { namespace impl
 {
@@ -24,27 +25,22 @@ namespace lut { namespace mm { namespace impl
         void free(void *ptr, BufferContainer *bufferContainer);
 
     private:
-        union Block
+        union alignas(size <= alignof(void *) ? alignof(void *) : alignof(/*std::max_align_t*/long double)) Block
         {
             Block *_next;
-
-            using Data = typename std::aligned_storage<(size < sizeof(Offset) ? sizeof(Offset) : size), 1>::type;
-            Data _data;
+            char _data[size];
         };
 
         Block *blocksArea();
         Block *next();
         void next(Block *);
 
-        static const std::size_t _blocksAlign =
-            sizeof(Block) <=1 ? 1 :
-            sizeof(Block) <=2 ? 2 :
-            sizeof(Block) <=4 ? 4 :
-            sizeof(Block) <=8 ? 8 : 16;
+        static const std::size_t _blocksAlign = alignof(Block);
 
         static const std::size_t _blocksOffset = (_headerSize % _blocksAlign) ? (_headerSize - _headerSize % _blocksAlign + _blocksAlign) : _headerSize;
         static const std::size_t _blocksAmount = (sizeof(Buffer) - _blocksOffset) / sizeof(Block);
     };
+
 
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -55,7 +51,7 @@ namespace lut { namespace mm { namespace impl
         std::size_t protectedBound = sizeof(typename std::aligned_storage<_blocksOffset, Config::_pageSize>::type);
         vm::protect(this, protectedBound, true);
 
-        _areaAddress = reinterpret_cast<char *>(&_area);
+        _areaAddress = reinterpret_cast<char *>(this) + _blocksOffset;
         next(blocksArea());
         _allocated = _initialized = 0;
     }
@@ -131,7 +127,7 @@ namespace lut { namespace mm { namespace impl
     void SizedBuffer<size>::free(void *ptr, BufferContainer *bufferContainer)
     {
         assert(ptr >= blocksArea() && ptr < (blocksArea()+_blocksAmount*sizeof(Block)));
-        assert(!(((char *)ptr - blocksArea()) % sizeof(Block)));
+        assert(!(((char *)ptr - (char *)blocksArea()) % sizeof(Block)));
 
         Block *block = reinterpret_cast<Block *>(ptr);
 
