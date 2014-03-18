@@ -25,7 +25,7 @@ namespace lut { namespace mm { namespace impl
 
         char * _areaAddress;
 
-        using Offset = std::uintptr_t;
+        using Offset = std::uint32_t;
         using Counter = std::uint32_t;
 
         Offset  _next;

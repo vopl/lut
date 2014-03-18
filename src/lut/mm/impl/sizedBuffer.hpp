@@ -154,14 +154,14 @@ namespace lut { namespace mm { namespace impl
     template <std::size_t size>
     typename SizedBuffer<size>::Block *SizedBuffer<size>::next()
     {
-        return reinterpret_cast<Block *>(_next);
+        return reinterpret_cast<Block *>(_areaAddress + _next);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
     void SizedBuffer<size>::next(Block *block)
     {
-        _next = reinterpret_cast<Offset>(block);
+        _next = reinterpret_cast<char *>(block) - _areaAddress;
     }
 
 }}}
