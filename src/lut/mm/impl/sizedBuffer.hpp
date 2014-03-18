@@ -27,7 +27,7 @@ namespace lut { namespace mm { namespace impl
     private:
         union Block
         {
-            Block *_next;
+            Offset _next;
             char _data[size];
         };
 
@@ -86,7 +86,7 @@ namespace lut { namespace mm { namespace impl
 
             assert(_allocated == _initialized);
             _allocated = _blocksAmount;
-            next(block->_next);
+            _next = block->_next;
 
             bufferContainer->template bufferMiddle2Full<size>(this);
             return block;
@@ -110,7 +110,7 @@ namespace lut { namespace mm { namespace impl
         }
         else
         {
-            next(block->_next);
+            _next = block->_next;
         }
 
         if(!_allocated++)
@@ -131,7 +131,7 @@ namespace lut { namespace mm { namespace impl
 
         Block *block = reinterpret_cast<Block *>(ptr);
 
-        block->_next = next();
+        block->_next = _next;
         next(block);
         _allocated -= 1;
 
@@ -163,14 +163,14 @@ namespace lut { namespace mm { namespace impl
     template <std::size_t size>
     typename SizedBuffer<size>::Block *SizedBuffer<size>::next()
     {
-        return reinterpret_cast<Block *>(_next);
+        return reinterpret_cast<Block *>(reinterpret_cast<char *>(this) + _next);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
     void SizedBuffer<size>::next(Block *block)
     {
-        _next = reinterpret_cast<Offset>(block);
+        _next = reinterpret_cast<char *>(block) - reinterpret_cast<char *>(this);
     }
 
 }}}
