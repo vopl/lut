@@ -166,6 +166,10 @@ namespace
 namespace
 {
 
+#define MAXAMOUNT 2500
+            using pvoid = void *;
+            pvoid ps[MAXAMOUNT];
+
     template <class Allocator>
     size_t atest(Allocator *pa)
     {
@@ -173,12 +177,8 @@ namespace
         //std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         size_t res(0);
-        for(size_t t(0); t<1000000; t++)
+        for(size_t t(0); t<100000; t++)
         {
-#define MAXAMOUNT 250
-            using pvoid = void *;
-            pvoid ps[MAXAMOUNT];
-
             size_t amount = rand()%MAXAMOUNT;
 
             for(size_t i(0); i<amount; i++)

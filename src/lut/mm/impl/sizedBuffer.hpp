@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <immintrin.h>
 
 namespace lut { namespace mm { namespace impl
 {
@@ -25,6 +26,12 @@ namespace lut { namespace mm { namespace impl
         template <typename BufferContainer>
         void free(void *ptr, BufferContainer *bufferContainer);
 
+        void freeFromOtherThread(void *ptr);
+
+    private:
+        template <typename BufferContainer>
+        void execFreeFromOtherThread(BufferContainer *bufferContainer);
+
     private:
         union Block
         {
@@ -33,8 +40,9 @@ namespace lut { namespace mm { namespace impl
         };
 
         Block *blocksArea();
-        Block *next();
-        void next(Block *);
+
+        Block *offsetToBlock(Offset offset);
+        Offset blockToOffset(Block *block);
 
         static const std::size_t _blocksAlign = alignof(Block);
 
@@ -53,8 +61,12 @@ namespace lut { namespace mm { namespace impl
         vm::protect(this, protectedBound, true);
 
         _areaAddress = reinterpret_cast<char *>(this) + _blocksOffset;
-        next(blocksArea());
+        _next = blockToOffset(blocksArea());
+        assert(_next);
         _allocated = _initialized = 0;
+
+        _forFreeHolder._first = _forFreeHolder._last = 0;
+        _forFreeHolder._amount = 0;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -69,29 +81,42 @@ namespace lut { namespace mm { namespace impl
     template <typename BufferContainer>
     void *SizedBuffer<size>::alloc(BufferContainer *bufferContainer)
     {
-
-        assert(next() >= blocksArea() && next() <= blocksArea() + _blocksAmount);
+        assert(offsetToBlock(_next) >= blocksArea() && offsetToBlock(_next) <= blocksArea() + _blocksAmount);
         assert(_initialized <= _blocksAmount);
         assert(_allocated < _blocksAmount);
 
         if(unlikely(_allocated == _blocksAmount-1))
         {
-            Block *block = next();
+            execFreeFromOtherThread(bufferContainer);
 
-            assert(_allocated == _initialized);
-            _allocated = _blocksAmount;
-            _next = block->_next;
+            if(unlikely(_allocated == _blocksAmount-1))
+            {
+                Block *block = offsetToBlock(_next);
 
-            bufferContainer->template bufferMiddle2Full<size>(this);
-            return block;
+                assert(_allocated == _initialized);
+                _allocated = _blocksAmount;
+                _next = blockToOffset(blocksArea() + _allocated);
+                assert(_next);
+
+                bufferContainer->template bufferMiddle2Full<size>(this);
+                return block;
+            }
         }
 
-        Block *block = next();
+        Block *block = offsetToBlock(_next);
 
         if(unlikely(_allocated == _initialized))
         {
-            std::size_t protect = _blocksOffset + _initialized;
-            if((protect % Config::_pageSize) + sizeof(Block) > Config::_pageSize)
+            const std::size_t protect = _blocksOffset + _initialized*sizeof(Block);
+            const std::size_t inPage = protect % Config::_pageSize;
+            if(unlikely(!inPage))
+            {
+                vm::protect(
+                            reinterpret_cast<char *>(this) + protect,
+                            Config::_pageSize,
+                            true);
+            }
+            else if(unlikely(inPage > Config::_pageSize - sizeof(Block)))
             {
                 vm::protect(
                             reinterpret_cast<char *>(this) + protect - (protect % Config::_pageSize) + Config::_pageSize,
@@ -99,20 +124,23 @@ namespace lut { namespace mm { namespace impl
                             true);
             }
 
-            next(blocksArea() + _allocated + 1);
+            _next = blockToOffset(blocksArea() + _allocated + 1);
+            assert(_next);
             _initialized++;
         }
         else
         {
             _next = block->_next;
+            assert(_next);
         }
 
-        if(unlikely(_allocated == 0))
+        _allocated++;
+
+        if(unlikely(_allocated == 1))
         {
             bufferContainer->template bufferEmpty2Middle<size>(this);
         }
 
-        _allocated++;
 
         return block;
     }
@@ -122,13 +150,16 @@ namespace lut { namespace mm { namespace impl
     template <typename BufferContainer>
     void SizedBuffer<size>::free(void *ptr, BufferContainer *bufferContainer)
     {
+        freeFromOtherThread(bufferContainer);
+
         assert(ptr >= blocksArea() && ptr < (blocksArea()+_blocksAmount*sizeof(Block)));
         assert(!(((char *)ptr - (char *)blocksArea()) % sizeof(Block)));
 
         Block *block = reinterpret_cast<Block *>(ptr);
 
         block->_next = _next;
-        next(block);
+        _next = blockToOffset(block);
+        assert(_next);
         _allocated -= 1;
 
         if(unlikely(0 == _allocated))
@@ -143,6 +174,83 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
+    void SizedBuffer<size>::freeFromOtherThread(void *ptr)
+    {
+        Block *block = reinterpret_cast<Block *>(ptr);
+
+        //while(_XBEGIN_STARTED != _xbegin())
+        {
+            if(_forFreeHolder._amount)
+            {
+                block->_next = _forFreeHolder._first;
+                assert(block->_next);
+                _forFreeHolder._first = blockToOffset(block);
+            }
+            else
+            {
+                block->_next = 0;
+                _forFreeHolder._first = _forFreeHolder._last = blockToOffset(block);
+            }
+
+            _forFreeHolder._amount++;
+            //_xend();
+        }
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <std::size_t size>
+    template <typename BufferContainer>
+    void SizedBuffer<size>::execFreeFromOtherThread(BufferContainer *bufferContainer)
+    {
+        ForFreeHolder forFreeHolder;
+
+        {
+            //while(_XBEGIN_STARTED != _xbegin());
+
+            forFreeHolder = _forFreeHolder;
+            _forFreeHolder._first = _forFreeHolder._last = 0;
+            _forFreeHolder._amount = 0;
+            //_xend();
+        }
+
+        if(unlikely(forFreeHolder._amount))
+        {
+            Block *first = offsetToBlock(forFreeHolder._first);
+            Block *last = offsetToBlock(forFreeHolder._last);
+
+            last->_next = _next;
+            _next = blockToOffset(first);
+            assert(_next);
+            _allocated -= forFreeHolder._amount;
+
+            if(_allocated)
+            {
+                if(unlikely(forFreeHolder._amount + _allocated == _blocksAmount))
+                {
+                    bufferContainer->template bufferFull2Middle<size>(this);
+                }
+//                else
+//                {
+//                    bufferContainer->template bufferMiddle2Middle<size>(this);
+//                }
+            }
+            else
+            {
+                if(unlikely(forFreeHolder._amount == _blocksAmount))
+                {
+                    bufferContainer->template bufferFull2Empty<size>(this);
+                }
+                else
+                {
+                    bufferContainer->template bufferFull2Middle<size>(this);
+                }
+            }
+
+        }
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <std::size_t size>
     typename SizedBuffer<size>::Block *SizedBuffer<size>::blocksArea()
     {
         return reinterpret_cast<Block *>(_areaAddress);
@@ -150,16 +258,16 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    typename SizedBuffer<size>::Block *SizedBuffer<size>::next()
+    typename SizedBuffer<size>::Block *SizedBuffer<size>::offsetToBlock(Offset offset)
     {
-        return reinterpret_cast<Block *>(_next);
+        return reinterpret_cast<Block *>(offset);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    void SizedBuffer<size>::next(Block *block)
+    typename SizedBuffer<size>::Offset SizedBuffer<size>::blockToOffset(Block *block)
     {
-        _next = reinterpret_cast<Offset>(block);
+        return reinterpret_cast<Offset>(block);
     }
 
 }}}

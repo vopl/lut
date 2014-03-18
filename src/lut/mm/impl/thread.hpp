@@ -40,6 +40,8 @@ namespace lut { namespace mm { namespace impl
         template <std::size_t size> void bufferMiddle2Full(Buffer *buffer);
         template <std::size_t size> void bufferMiddle2Empty(Buffer *buffer);
         template <std::size_t size> void bufferFull2Middle(Buffer *buffer);
+        template <std::size_t size> void bufferFull2Empty(Buffer *buffer);
+
 
     private:
         template <std::size_t size> void createBufferForAlloc();
@@ -100,6 +102,7 @@ namespace lut { namespace mm { namespace impl
         return static_cast<SizedBuffer<size> *>(header()._buffersBySize[size]._bufferForAlloc)->alloc(this);
     }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void Thread::free(void *ptr)
     {
         if(unlikely(size > lut::mm::Allocator::_maxAllocatedBufferSize))
@@ -114,15 +117,22 @@ namespace lut { namespace mm { namespace impl
         buffer->free(ptr, this);
     }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void Thread::freeFromOtherThread(void *ptr)
     {
         if(size > lut::mm::Allocator::_maxAllocatedBufferSize)
         {
             return ::free(ptr);
         }
-        assert(0);
+
+        SizedBuffer<size> *buffer = buffersContainer().bufferByPointer<SizedBuffer<size>>(ptr);
+
+        assert(buffer);
+
+        buffer->freeFromOtherThread(ptr);
     }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void Thread::bufferEmpty2Middle(Buffer *buffer)
     {
         Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
@@ -132,6 +142,7 @@ namespace lut { namespace mm { namespace impl
                     buffersBySize._bufferListMiddle);
     }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void Thread::bufferMiddle2Full(Buffer *buffer)
     {
         Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
@@ -148,6 +159,7 @@ namespace lut { namespace mm { namespace impl
             }
             else if(buffersBySize._bufferListEmpty)
             {
+                assert(buffersBySize._bufferListEmpty->_allocated == 0);
                 buffersBySize._bufferForAlloc = buffersBySize._bufferListEmpty;
             }
             else
@@ -160,11 +172,13 @@ namespace lut { namespace mm { namespace impl
                 }
 
                 buffersBySize._bufferListEmpty = buffer;
+                assert(buffersBySize._bufferListEmpty->_allocated == 0);
                 buffersBySize._bufferForAlloc = buffersBySize._bufferListEmpty;
             }
         }
     }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void Thread::bufferMiddle2Empty(Buffer *buffer)
     {
         Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
@@ -172,8 +186,10 @@ namespace lut { namespace mm { namespace impl
                     buffer,
                     buffersBySize._bufferListMiddle,
                     buffersBySize._bufferListEmpty);
+        assert(buffersBySize._bufferListEmpty->_allocated == 0);
     }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void Thread::bufferFull2Middle(Buffer *buffer)
     {
         Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
@@ -183,6 +199,17 @@ namespace lut { namespace mm { namespace impl
                     buffersBySize._bufferListMiddle);
     }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <std::size_t size> void Thread::bufferFull2Empty(Buffer *buffer)
+    {
+        Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
+        relocateBufferDisposition(
+                    buffer,
+                    buffersBySize._bufferListFull,
+                    buffersBySize._bufferListEmpty);
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t index>
     void Thread::createBufferForAlloc()
     {
@@ -195,11 +222,13 @@ namespace lut { namespace mm { namespace impl
 
         Header::BuffersBySize &buffersBySize = header()._buffersBySize[index];
         buffersBySize._bufferListEmpty = buffer;
-        buffersBySize._bufferForAlloc = buffersBySize._bufferListEmpty;
+        buffersBySize._bufferForAlloc = buffer;
+        assert(buffersBySize._bufferListEmpty->_allocated == 0);
 
         createBufferForAlloc<index+1>();
     }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <>
     inline void Thread::createBufferForAlloc<SizedBufferCalculator<lut::mm::Allocator::_maxAllocatedBufferSize>::_implAmount>()
     {

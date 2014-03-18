@@ -23,7 +23,7 @@ namespace lut { namespace mm
 
     struct ConfigHeap
     {
-        static const std::size_t    _bufferPages {64};
+        static const std::size_t    _bufferPages {2};
         static const std::size_t    _buffersAmount {1024};
     };
 

@@ -119,10 +119,11 @@ namespace lut { namespace mm { namespace impl
         }
         if(buffer->_prevBufferInList)
         {
-            buffer->_prevBufferInList->_nextBufferInList = buffer->_prevBufferInList;
+            buffer->_prevBufferInList->_nextBufferInList = buffer->_nextBufferInList;
         }
-        else
+        if(bufferListSrc == buffer)
         {
+            assert(!buffer->_prevBufferInList);
             bufferListSrc = buffer->_nextBufferInList;
         }
 
