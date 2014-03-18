@@ -3,6 +3,7 @@
 
 #include "lut/mm/impl/buffer.hpp"
 #include "lut/mm/impl/vm.hpp"
+#include "lut/mm/impl/branchHint.hpp"
 
 #include <cstdint>
 #include <cstddef>
@@ -73,10 +74,7 @@ namespace lut { namespace mm { namespace impl
         assert(_initialized <= _blocksAmount);
         assert(_allocated < _blocksAmount);
 
-#define likely(x)      __builtin_expect(!!(x), 1)
-#define unlikely(x)    __builtin_expect(!!(x), 0)
-
-        if(unlikely(_allocated ==  (_blocksAmount-1)))
+        if(unlikely(_allocated == _blocksAmount-1))
         {
             Block *block = next();
 
@@ -133,11 +131,11 @@ namespace lut { namespace mm { namespace impl
         next(block);
         _allocated -= 1;
 
-        if(unlikely(_allocated==0))
+        if(unlikely(0 == _allocated))
         {
             bufferContainer->template bufferMiddle2Empty<size>(this);
         }
-        else if(unlikely(_allocated==(_blocksAmount-1)))
+        else if(unlikely(_blocksAmount-1 == _allocated))
         {
             bufferContainer->template bufferFull2Middle<size>(this);
         }
@@ -154,14 +152,14 @@ namespace lut { namespace mm { namespace impl
     template <std::size_t size>
     typename SizedBuffer<size>::Block *SizedBuffer<size>::next()
     {
-        return reinterpret_cast<Block *>(_areaAddress + _next);
+        return reinterpret_cast<Block *>(_next);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
     void SizedBuffer<size>::next(Block *block)
     {
-        _next = reinterpret_cast<char *>(block) - _areaAddress;
+        _next = reinterpret_cast<Offset>(block);
     }
 
 }}}

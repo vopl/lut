@@ -86,7 +86,8 @@ namespace lut { namespace mm { namespace impl
     void *Allocator::alloc()
     {
         Thread *thread = Thread::instance();
-        if(!thread)
+
+        if(unlikely(!thread))
         {
             return ::malloc(size);
         }
@@ -98,7 +99,7 @@ namespace lut { namespace mm { namespace impl
     void Allocator::free(void *ptr)
     {
         Thread *at = Thread::instance();
-        if(reinterpret_cast<char *>(ptr) - reinterpret_cast<char *>(at) < sizeof(Thread))
+        if(likely(reinterpret_cast<char *>(ptr) - reinterpret_cast<char *>(at) < sizeof(Thread)))
         {
             return at->free<size>(ptr);
         }
