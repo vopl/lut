@@ -212,8 +212,8 @@ namespace
 //using Allocator = MAllocator;
 //using Allocator = FSAllocator;
 //using Allocator = FSAllocator2;
-//using Allocator = BPAllocator;
-using Allocator = Local2Allocator;
+using Allocator = BPAllocator;
+//using Allocator = Local2Allocator;
 
 Allocator *pallocator = new Allocator;
 

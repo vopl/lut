@@ -71,18 +71,14 @@ namespace lut { namespace mm { namespace impl
 
         assert(next() >= blocksArea() && next() <= blocksArea() + _blocksAmount);
         assert(_initialized <= _blocksAmount);
-        assert(_allocated <= _blocksAmount);
+        assert(_allocated < _blocksAmount);
 
-        if(_allocated >= (_blocksAmount-1))
+#define likely(x)      __builtin_expect(!!(x), 1)
+#define unlikely(x)    __builtin_expect(!!(x), 0)
+
+        if(unlikely(_allocated ==  (_blocksAmount-1)))
         {
-            if(_allocated >= _blocksAmount)
-            {
-                assert(next() == blocksArea() + _blocksAmount);
-                return nullptr;
-            }
-
             Block *block = next();
-            assert((reinterpret_cast<std::uintptr_t>(block) & 0xfff)!=8);
 
             assert(_allocated == _initialized);
             _allocated = _blocksAmount;
@@ -94,7 +90,7 @@ namespace lut { namespace mm { namespace impl
 
         Block *block = next();
 
-        if(_allocated == _initialized)
+        if(unlikely(_allocated == _initialized))
         {
             std::size_t protect = _blocksOffset + _initialized;
             if((protect % Config::_pageSize) + sizeof(Block) > Config::_pageSize)
@@ -113,10 +109,12 @@ namespace lut { namespace mm { namespace impl
             _next = block->_next;
         }
 
-        if(!_allocated++)
+        if(unlikely(_allocated == 0))
         {
             bufferContainer->template bufferEmpty2Middle<size>(this);
         }
+
+        _allocated++;
 
         return block;
     }
@@ -135,20 +133,13 @@ namespace lut { namespace mm { namespace impl
         next(block);
         _allocated -= 1;
 
-        if(_allocated!=0)
-        {
-            if(_allocated!=(_blocksAmount-1))
-            {
-                //empty
-            }
-            else
-            {
-                bufferContainer->template bufferFull2Middle<size>(this);
-            }
-        }
-        else
+        if(unlikely(_allocated==0))
         {
             bufferContainer->template bufferMiddle2Empty<size>(this);
+        }
+        else if(unlikely(_allocated==(_blocksAmount-1)))
+        {
+            bufferContainer->template bufferFull2Middle<size>(this);
         }
     }
 
