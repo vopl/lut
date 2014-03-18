@@ -170,6 +170,7 @@ namespace lut { namespace mm { namespace impl
                     assert(0);
                     return;
                 }
+                assert(buffer == buffersContainer().bufferByPointer<SizedBuffer<size>>(buffer));
 
                 buffersBySize._bufferListEmpty = buffer;
                 assert(buffersBySize._bufferListEmpty->_allocated == 0);
@@ -182,6 +183,18 @@ namespace lut { namespace mm { namespace impl
     template <std::size_t size> void Thread::bufferMiddle2Empty(Buffer *buffer)
     {
         Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
+
+        while(buffersBySize._bufferListEmpty)
+        {
+            Buffer *empty = buffersBySize._bufferListEmpty;
+            if(unlikely(empty == buffersBySize._bufferForAlloc))
+            {
+                buffersBySize._bufferForAlloc = buffer;
+            }
+            buffersBySize._bufferListEmpty = buffersBySize._bufferListEmpty->_nextBufferInList;
+            buffersContainer().free(empty);
+        }
+
         relocateBufferDisposition(
                     buffer,
                     buffersBySize._bufferListMiddle,
@@ -203,6 +216,18 @@ namespace lut { namespace mm { namespace impl
     template <std::size_t size> void Thread::bufferFull2Empty(Buffer *buffer)
     {
         Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
+
+        while(buffersBySize._bufferListEmpty)
+        {
+            Buffer *empty = buffersBySize._bufferListEmpty;
+            if(unlikely(empty == buffersBySize._bufferForAlloc))
+            {
+                buffersBySize._bufferForAlloc = buffer;
+            }
+            buffersBySize._bufferListEmpty = buffersBySize._bufferListEmpty->_nextBufferInList;
+            buffersContainer().free(empty);
+        }
+
         relocateBufferDisposition(
                     buffer,
                     buffersBySize._bufferListFull,
@@ -219,6 +244,7 @@ namespace lut { namespace mm { namespace impl
             assert(0);
             return;
         }
+        assert(buffer == buffersContainer().bufferByPointer<SizedBuffer<SizedBufferCalculator<index>::_implIndex2ImplSize>>(buffer));
 
         Header::BuffersBySize &buffersBySize = header()._buffersBySize[index];
         buffersBySize._bufferListEmpty = buffer;

@@ -4,6 +4,7 @@
 #include "lut/mm/config.hpp"
 #include "lut/mm/impl/bitIndex.hpp"
 #include "lut/mm/impl/utils.hpp"
+#include "lut/mm/impl/branchHint.hpp"
 
 #include <type_traits>
 
@@ -98,6 +99,11 @@ namespace lut { namespace mm { namespace impl
         static_assert(std::is_base_of<Buffer, DerivedBuffer>::value, "derivedBuffer must be inherited from buffer");
 
         AddressInIndex addr = index().alloc();
+        if(unlikely(badAddressInIndex == addr))
+        {
+            assert(!"no space");
+            return 0;
+        }
         DerivedBuffer *ptr = static_cast<DerivedBuffer *>(buffers() + addr);
         new (ptr) DerivedBuffer;
         return ptr;

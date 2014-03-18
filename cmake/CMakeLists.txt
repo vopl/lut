@@ -15,7 +15,7 @@ set(CMAKE_VERBOSE_MAKEFILE On CACHE BOOLEAN "verbose makefile")
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
-    set(CMAKE_BUILD_TYPE Debug)
+    #set(CMAKE_BUILD_TYPE Debug)
 #    set(CMAKE_BUILD_TYPE Debug CACHE STRING "build type")
 endif()
 

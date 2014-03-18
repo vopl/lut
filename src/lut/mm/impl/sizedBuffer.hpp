@@ -150,8 +150,6 @@ namespace lut { namespace mm { namespace impl
     template <typename BufferContainer>
     void SizedBuffer<size>::free(void *ptr, BufferContainer *bufferContainer)
     {
-        freeFromOtherThread(bufferContainer);
-
         assert(ptr >= blocksArea() && ptr < (blocksArea()+_blocksAmount*sizeof(Block)));
         assert(!(((char *)ptr - (char *)blocksArea()) % sizeof(Block)));
 
@@ -178,10 +176,20 @@ namespace lut { namespace mm { namespace impl
     {
         Block *block = reinterpret_cast<Block *>(ptr);
 
-        //while(_XBEGIN_STARTED != _xbegin())
+        bool totallyInOtherThread;
+
         {
+            while(_XBEGIN_STARTED != _xbegin());
+
             if(_forFreeHolder._amount)
             {
+                assert(
+                            (_forFreeHolder._first != _forFreeHolder._last &&
+                                                     offsetToBlock(_forFreeHolder._first)->_next &&
+                                                     !offsetToBlock(_forFreeHolder._last)->_next) ||
+                            (_forFreeHolder._first == _forFreeHolder._last &&
+                                                     !offsetToBlock(_forFreeHolder._last)->_next));
+
                 block->_next = _forFreeHolder._first;
                 assert(block->_next);
                 _forFreeHolder._first = blockToOffset(block);
@@ -193,8 +201,15 @@ namespace lut { namespace mm { namespace impl
             }
 
             _forFreeHolder._amount++;
-            //_xend();
+            totallyInOtherThread = _blocksAmount == _forFreeHolder._amount;
+            _xend();
         }
+
+        if(unlikely(totallyInOtherThread))
+        {
+            assert(!"provide to thread");
+        }
+
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -205,12 +220,12 @@ namespace lut { namespace mm { namespace impl
         ForFreeHolder forFreeHolder;
 
         {
-            //while(_XBEGIN_STARTED != _xbegin());
+            while(_XBEGIN_STARTED != _xbegin());
 
             forFreeHolder = _forFreeHolder;
             _forFreeHolder._first = _forFreeHolder._last = 0;
             _forFreeHolder._amount = 0;
-            //_xend();
+            _xend();
         }
 
         if(unlikely(forFreeHolder._amount))
@@ -218,14 +233,17 @@ namespace lut { namespace mm { namespace impl
             Block *first = offsetToBlock(forFreeHolder._first);
             Block *last = offsetToBlock(forFreeHolder._last);
 
+            assert(!last->_next);
             last->_next = _next;
             _next = blockToOffset(first);
             assert(_next);
+
+            Counter wasAllocated = _allocated;
             _allocated -= forFreeHolder._amount;
 
             if(_allocated)
             {
-                if(unlikely(forFreeHolder._amount + _allocated == _blocksAmount))
+                if(unlikely(wasAllocated == _blocksAmount))
                 {
                     bufferContainer->template bufferFull2Middle<size>(this);
                 }
@@ -242,7 +260,7 @@ namespace lut { namespace mm { namespace impl
                 }
                 else
                 {
-                    bufferContainer->template bufferFull2Middle<size>(this);
+                    bufferContainer->template bufferMiddle2Empty<size>(this);
                 }
             }
 
