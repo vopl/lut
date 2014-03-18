@@ -99,7 +99,7 @@ namespace lut { namespace mm { namespace impl
                             true);
             }
 
-            next(blocksArea() + _allocated);
+            next(blocksArea() + _allocated + 1);
             _initialized++;
         }
         else

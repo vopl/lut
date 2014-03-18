@@ -102,8 +102,6 @@ namespace lut { namespace mm { namespace impl
 
     template <std::size_t size> void Thread::free(void *ptr)
     {
-#define likely(x)      __builtin_expect(!!(x), 1)
-#define unlikely(x)    __builtin_expect(!!(x), 0)
         if(unlikely(size > lut::mm::Allocator::_maxAllocatedBufferSize))
         {
             return ::free(ptr);
