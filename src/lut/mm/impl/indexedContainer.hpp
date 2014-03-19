@@ -102,6 +102,7 @@ namespace lut { namespace mm { namespace impl
         if(unlikely(badAddressInIndex == addr))
         {
             assert(!"no space");
+            fprintf(stderr, "no space left in mm\n");
             return 0;
         }
         DerivedBuffer *ptr = static_cast<DerivedBuffer *>(buffers() + addr);

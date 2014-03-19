@@ -42,6 +42,8 @@ namespace lut { namespace mm { namespace impl
         template <std::size_t size> void bufferFull2Middle(Buffer *buffer);
         template <std::size_t size> void bufferFull2Empty(Buffer *buffer);
 
+        template <std::size_t size> void bufferAwaitFreeFromOtherThread(Buffer *buffer);
+        template <std::size_t size> void bufferNotAwaitFreeFromOtherThread(Buffer *buffer);
 
     private:
         template <std::size_t size> void createBufferForAlloc();
@@ -62,6 +64,8 @@ namespace lut { namespace mm { namespace impl
             };
 
             BuffersBySize _buffersBySize[SizedBufferCalculator<lut::mm::Allocator::_maxAllocatedBufferSize>::_implAmount];
+
+            alignas(Config::_cacheLineSize) Buffer *_bufferListAwaitFreeFromOtherThread;
 
             Header();
             ~Header();
@@ -98,8 +102,19 @@ namespace lut { namespace mm { namespace impl
             return ::malloc(size);
         }
 
-        assert(header()._buffersBySize[size]._bufferForAlloc);
-        return static_cast<SizedBuffer<size> *>(header()._buffersBySize[size]._bufferForAlloc)->alloc(this);
+//        Header::BuffersBySize buffersBySize = header()._buffersBySize[SizedBufferCalculator<size>::_implSize2ImplIndex];
+
+//        if(likely(buffersBySize._bufferListMiddle))
+//        {
+//            return static_cast<SizedBuffer<size> *>(buffersBySize._bufferListMiddle)->alloc(this);
+//        }
+//        if(likely(buffersBySize._bufferListEmpty))
+//        {
+//            return static_cast<SizedBuffer<size> *>(buffersBySize._bufferListEmpty)->alloc(this);
+//        }
+
+        assert(header()._buffersBySize[SizedBufferCalculator<size>::_implSize2ImplIndex]._bufferForAlloc);
+        return static_cast<SizedBuffer<size> *>(header()._buffersBySize[SizedBufferCalculator<size>::_implSize2ImplIndex]._bufferForAlloc)->alloc(this);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -129,13 +144,13 @@ namespace lut { namespace mm { namespace impl
 
         assert(buffer);
 
-        buffer->freeFromOtherThread(ptr);
+        buffer->freeFromOtherThread(ptr, this);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void Thread::bufferEmpty2Middle(Buffer *buffer)
     {
-        Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
+        Header::BuffersBySize &buffersBySize = header()._buffersBySize[SizedBufferCalculator<size>::_implSize2ImplIndex];
         relocateBufferDisposition(
                     buffer,
                     buffersBySize._bufferListEmpty,
@@ -145,7 +160,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void Thread::bufferMiddle2Full(Buffer *buffer)
     {
-        Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
+        Header::BuffersBySize &buffersBySize = header()._buffersBySize[SizedBufferCalculator<size>::_implSize2ImplIndex];
         relocateBufferDisposition(
                     buffer,
                     buffersBySize._bufferListMiddle,
@@ -182,7 +197,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void Thread::bufferMiddle2Empty(Buffer *buffer)
     {
-        Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
+        Header::BuffersBySize &buffersBySize = header()._buffersBySize[SizedBufferCalculator<size>::_implSize2ImplIndex];
 
         while(buffersBySize._bufferListEmpty)
         {
@@ -205,7 +220,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void Thread::bufferFull2Middle(Buffer *buffer)
     {
-        Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
+        Header::BuffersBySize &buffersBySize = header()._buffersBySize[SizedBufferCalculator<size>::_implSize2ImplIndex];
         relocateBufferDisposition(
                     buffer,
                     buffersBySize._bufferListFull,
@@ -215,7 +230,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void Thread::bufferFull2Empty(Buffer *buffer)
     {
-        Header::BuffersBySize &buffersBySize = header()._buffersBySize[size];
+        Header::BuffersBySize &buffersBySize = header()._buffersBySize[SizedBufferCalculator<size>::_implSize2ImplIndex];
 
         while(buffersBySize._bufferListEmpty)
         {
@@ -232,6 +247,38 @@ namespace lut { namespace mm { namespace impl
                     buffer,
                     buffersBySize._bufferListFull,
                     buffersBySize._bufferListEmpty);
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <std::size_t size> void Thread::bufferAwaitFreeFromOtherThread(Buffer *buffer)
+    {
+        Header &hdr = header();
+
+        buffer->_prevBufferInList2 = nullptr;
+        buffer->_nextBufferInList2 = hdr._bufferListAwaitFreeFromOtherThread;
+        hdr._bufferListAwaitFreeFromOtherThread = buffer;
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <std::size_t size> void Thread::bufferNotAwaitFreeFromOtherThread(Buffer *buffer)
+    {
+        Header &hdr = header();
+
+        if(buffer == hdr._bufferListAwaitFreeFromOtherThread)
+        {
+            hdr._bufferListAwaitFreeFromOtherThread = buffer->_nextBufferInList2;
+        }
+
+        if(buffer->_prevBufferInList2)
+        {
+            buffer->_prevBufferInList2->_nextBufferInList2 = buffer->_nextBufferInList2;
+        }
+        if(buffer->_nextBufferInList2)
+        {
+            buffer->_nextBufferInList2->_prevBufferInList2 = buffer->_prevBufferInList2;
+        }
+        buffer->_prevBufferInList2 = nullptr;
+        buffer->_nextBufferInList2 = nullptr;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

@@ -26,7 +26,8 @@ namespace lut { namespace mm { namespace impl
         template <typename BufferContainer>
         void free(void *ptr, BufferContainer *bufferContainer);
 
-        void freeFromOtherThread(void *ptr);
+        template <typename BufferContainer>
+        void freeFromOtherThread(void *ptr, BufferContainer *bufferContainer);
 
     private:
         template <typename BufferContainer>
@@ -150,6 +151,10 @@ namespace lut { namespace mm { namespace impl
     template <typename BufferContainer>
     void SizedBuffer<size>::free(void *ptr, BufferContainer *bufferContainer)
     {
+        freeFromOtherThread(ptr, bufferContainer);
+        execFreeFromOtherThread(bufferContainer);
+        return;
+
         assert(ptr >= blocksArea() && ptr < (blocksArea()+_blocksAmount*sizeof(Block)));
         assert(!(((char *)ptr - (char *)blocksArea()) % sizeof(Block)));
 
@@ -172,44 +177,59 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
-    void SizedBuffer<size>::freeFromOtherThread(void *ptr)
+    template <typename BufferContainer>
+    void SizedBuffer<size>::freeFromOtherThread(void *ptr, BufferContainer *bufferContainer)
     {
         Block *block = reinterpret_cast<Block *>(ptr);
 
-        bool totallyInOtherThread;
-
         {
-            while(_XBEGIN_STARTED != _xbegin());
+            unsigned int status = 1234;
 
-            if(_forFreeHolder._amount)
+//            std::size_t i(0);
+//            for(; ; ++i)
             {
-                assert(
-                            (_forFreeHolder._first != _forFreeHolder._last &&
-                                                     offsetToBlock(_forFreeHolder._first)->_next &&
-                                                     !offsetToBlock(_forFreeHolder._last)->_next) ||
-                            (_forFreeHolder._first == _forFreeHolder._last &&
-                                                     !offsetToBlock(_forFreeHolder._last)->_next));
+                status = _xbegin();
+                if(likely(_XBEGIN_STARTED == status))
+                {
+                    if(unlikely(_forFreeHolder._amount))
+                    {
+                        block->_next = _forFreeHolder._first;
+                        _forFreeHolder._first = blockToOffset(block);
+                        _forFreeHolder._amount++;
+                    }
+                    else
+                    {
+                        block->_next = 0;
+                        _forFreeHolder._first = _forFreeHolder._last = blockToOffset(block);
+                        _forFreeHolder._amount = 1;
 
-                block->_next = _forFreeHolder._first;
-                assert(block->_next);
-                _forFreeHolder._first = blockToOffset(block);
+                        bufferContainer->template bufferAwaitFreeFromOtherThread<size>(this);
+                    }
+
+                    _xend();
+//                    break;
+                }
+                else
+                {
+                    assert(0);
+                    if(unlikely(_forFreeHolder._amount))
+                    {
+                        block->_next = _forFreeHolder._first;
+                        _forFreeHolder._first = blockToOffset(block);
+                        _forFreeHolder._amount++;
+                    }
+                    else
+                    {
+                        block->_next = 0;
+                        _forFreeHolder._first = _forFreeHolder._last = blockToOffset(block);
+                        _forFreeHolder._amount = 1;
+
+                        bufferContainer->template bufferAwaitFreeFromOtherThread<size>(this);
+                    }
+//                    break;
+                }
             }
-            else
-            {
-                block->_next = 0;
-                _forFreeHolder._first = _forFreeHolder._last = blockToOffset(block);
-            }
-
-            _forFreeHolder._amount++;
-            totallyInOtherThread = _blocksAmount == _forFreeHolder._amount;
-            _xend();
         }
-
-        if(unlikely(totallyInOtherThread))
-        {
-            assert(!"provide to thread");
-        }
-
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -220,12 +240,41 @@ namespace lut { namespace mm { namespace impl
         ForFreeHolder forFreeHolder;
 
         {
-            while(_XBEGIN_STARTED != _xbegin());
+            unsigned int status = 1234;
 
-            forFreeHolder = _forFreeHolder;
-            _forFreeHolder._first = _forFreeHolder._last = 0;
-            _forFreeHolder._amount = 0;
-            _xend();
+//            std::size_t i(0);
+//            for(; ; ++i)
+            {
+                status = _xbegin();
+                if(likely(_XBEGIN_STARTED == status))
+                {
+
+                    forFreeHolder = _forFreeHolder;
+                    _forFreeHolder._first = _forFreeHolder._last = 0;
+                    _forFreeHolder._amount = 0;
+
+                    if(unlikely(forFreeHolder._amount))
+                    {
+                        bufferContainer->template bufferNotAwaitFreeFromOtherThread<size>(this);
+                    }
+
+                    _xend();
+//                    break;
+                }
+                else
+                {
+                    assert(0);
+                    forFreeHolder = _forFreeHolder;
+                    _forFreeHolder._first = _forFreeHolder._last = 0;
+                    _forFreeHolder._amount = 0;
+
+                    if(unlikely(forFreeHolder._amount))
+                    {
+                        bufferContainer->template bufferNotAwaitFreeFromOtherThread<size>(this);
+                    }
+//                    break;
+                }
+            }
         }
 
         if(unlikely(forFreeHolder._amount))
@@ -241,7 +290,7 @@ namespace lut { namespace mm { namespace impl
             Counter wasAllocated = _allocated;
             _allocated -= forFreeHolder._amount;
 
-            if(_allocated)
+            if(likely(_allocated))
             {
                 if(unlikely(wasAllocated == _blocksAmount))
                 {
@@ -263,7 +312,6 @@ namespace lut { namespace mm { namespace impl
                     bufferContainer->template bufferMiddle2Empty<size>(this);
                 }
             }
-
         }
     }
 

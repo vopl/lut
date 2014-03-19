@@ -20,6 +20,9 @@ namespace lut { namespace mm { namespace impl
                 value == 0 ?
                     8 :
                     value * 16;
+
+        static const std::size_t _implSize2ImplIndex =
+                value/16;
     };
 
 }}}

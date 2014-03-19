@@ -21,10 +21,7 @@ namespace lut { namespace mm { namespace impl
         Buffer *_prevBufferInList;
         Buffer *_nextBufferInList;
 
-    protected:
-        static const std::size_t _cacheLineSize = 64;
     public:
-
         char * _areaAddress;
 
         using Offset = std::uintptr_t;
@@ -41,9 +38,12 @@ namespace lut { namespace mm { namespace impl
             Counter _amount;
         };
 
-        alignas(_cacheLineSize) ForFreeHolder _forFreeHolder;
+        alignas(Config::_cacheLineSize) ForFreeHolder _forFreeHolder;
 
-        static const std::size_t _headerSize = _cacheLineSize * 2;
+        Buffer *_prevBufferInList2;
+        Buffer *_nextBufferInList2;
+
+        static const std::size_t _headerSize = Config::_cacheLineSize * 2;
 
         using Area = std::aligned_storage<Config::_pageSize * Config::_bufferPages - _headerSize, 1>::type;
         Area _area;

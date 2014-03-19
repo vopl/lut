@@ -9,6 +9,7 @@ namespace lut { namespace mm
     struct ConfigMemory
     {
         static const std::size_t    _pageSize {4096};
+        static const std::size_t    _cacheLineSize = 64;
     };
 
     struct ConfigStack
@@ -23,7 +24,7 @@ namespace lut { namespace mm
 
     struct ConfigHeap
     {
-        static const std::size_t    _bufferPages {2};
+        static const std::size_t    _bufferPages {64};
         static const std::size_t    _buffersAmount {1024};
     };
 
