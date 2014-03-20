@@ -7,7 +7,8 @@
 
 #include <cstdint>
 #include <cstddef>
-#include <immintrin.h>
+#include <atomic>
+#include <xmmintrin.h>
 
 namespace lut { namespace mm { namespace impl
 {
@@ -152,7 +153,7 @@ namespace lut { namespace mm { namespace impl
     void SizedBuffer<size>::free(void *ptr, BufferContainer *bufferContainer)
     {
         freeFromOtherThread(ptr, bufferContainer);
-        execFreeFromOtherThread(bufferContainer);
+        //execFreeFromOtherThread(bufferContainer);
         return;
 
         assert(ptr >= blocksArea() && ptr < (blocksArea()+_blocksAmount*sizeof(Block)));
@@ -175,6 +176,10 @@ namespace lut { namespace mm { namespace impl
         }
     }
 
+    namespace
+    {
+        std::atomic_flag af{false};
+    }
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size>
     template <typename BufferContainer>
@@ -182,54 +187,80 @@ namespace lut { namespace mm { namespace impl
     {
         Block *block = reinterpret_cast<Block *>(ptr);
 
+        Counter was_amount =  __atomic_load_n(&_forFreeHolder._amount, __ATOMIC_RELAXED);
+        for(;;)
         {
-            unsigned int status = 1234;
-
-//            std::size_t i(0);
-//            for(; ; ++i)
+            if(was_amount)
             {
-                status = _xbegin();
-                if(likely(_XBEGIN_STARTED == status))
+                block->_next = __atomic_load_n(&_forFreeHolder._first, __ATOMIC_RELAXED);
                 {
-                    if(unlikely(_forFreeHolder._amount))
+                    if(af.test_and_set(std::memory_order_acquire))
                     {
-                        block->_next = _forFreeHolder._first;
-                        _forFreeHolder._first = blockToOffset(block);
-                        _forFreeHolder._amount++;
-                    }
-                    else
-                    {
-                        block->_next = 0;
-                        _forFreeHolder._first = _forFreeHolder._last = blockToOffset(block);
-                        _forFreeHolder._amount = 1;
-
-                        bufferContainer->template bufferAwaitFreeFromOtherThread<size>(this);
+                        _mm_pause();
+                        was_amount = __atomic_load_n(&_forFreeHolder._amount, __ATOMIC_RELAXED);
+                        continue;
                     }
 
-                    _xend();
-//                    break;
+                    Counter cur_amount = __atomic_load_n(&_forFreeHolder._amount, __ATOMIC_RELAXED);
+                    if(was_amount != cur_amount)
+                    {
+                        af.clear(std::memory_order_relaxed);
+                        was_amount = cur_amount;
+                        continue;
+                    }
+
+                    _forFreeHolder._first = blockToOffset(block);
+                    _forFreeHolder._amount = cur_amount+1;
+                    af.clear(std::memory_order_release);
                 }
-                else
+                break;
+            }
+            else
+            {
+                block->_next = 0;
                 {
-                    assert(0);
-                    if(unlikely(_forFreeHolder._amount))
+                    if(af.test_and_set(std::memory_order_acquire))
                     {
-                        block->_next = _forFreeHolder._first;
-                        _forFreeHolder._first = blockToOffset(block);
-                        _forFreeHolder._amount++;
+                        _mm_pause();
+                        was_amount = __atomic_load_n(&_forFreeHolder._amount, __ATOMIC_RELAXED);
+                        continue;
                     }
-                    else
-                    {
-                        block->_next = 0;
-                        _forFreeHolder._first = _forFreeHolder._last = blockToOffset(block);
-                        _forFreeHolder._amount = 1;
 
-                        bufferContainer->template bufferAwaitFreeFromOtherThread<size>(this);
+                    Counter cur_amount = __atomic_load_n(&_forFreeHolder._amount, __ATOMIC_RELAXED);
+                    if(was_amount != cur_amount)
+                    {
+                        af.clear(std::memory_order_relaxed);
+                        was_amount = cur_amount;
+                        continue;
                     }
-//                    break;
+
+                    _forFreeHolder._first = _forFreeHolder._last = blockToOffset(block);
+                    _forFreeHolder._amount = 1;
+                    af.clear(std::memory_order_release);
                 }
+
+                bufferContainer->template bufferAwaitFreeFromOtherThread<size>(this);
+                break;
             }
         }
+
+
+//        {
+//            if(unlikely(_forFreeHolder._amount))
+//            {
+//                block->_next = _forFreeHolder._first;
+//                _forFreeHolder._first = blockToOffset(block);
+//                _forFreeHolder._amount++;
+//            }
+//            else
+//            {
+//                block->_next = 0;
+//                _forFreeHolder._first = _forFreeHolder._last = blockToOffset(block);
+//                _forFreeHolder._amount = 1;
+
+//                bufferContainer->template bufferAwaitFreeFromOtherThread<size>(this);
+//            }
+//        }
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -239,43 +270,41 @@ namespace lut { namespace mm { namespace impl
     {
         ForFreeHolder forFreeHolder;
 
+        Counter was_amount = __atomic_load_n(&_forFreeHolder._amount, __ATOMIC_RELAXED);
+
+        if(!was_amount)
         {
-            unsigned int status = 1234;
-
-//            std::size_t i(0);
-//            for(; ; ++i)
-            {
-                status = _xbegin();
-                if(likely(_XBEGIN_STARTED == status))
-                {
-
-                    forFreeHolder = _forFreeHolder;
-                    _forFreeHolder._first = _forFreeHolder._last = 0;
-                    _forFreeHolder._amount = 0;
-
-                    if(unlikely(forFreeHolder._amount))
-                    {
-                        bufferContainer->template bufferNotAwaitFreeFromOtherThread<size>(this);
-                    }
-
-                    _xend();
-//                    break;
-                }
-                else
-                {
-                    assert(0);
-                    forFreeHolder = _forFreeHolder;
-                    _forFreeHolder._first = _forFreeHolder._last = 0;
-                    _forFreeHolder._amount = 0;
-
-                    if(unlikely(forFreeHolder._amount))
-                    {
-                        bufferContainer->template bufferNotAwaitFreeFromOtherThread<size>(this);
-                    }
-//                    break;
-                }
-            }
+            return;
         }
+
+        while(af.test_and_set(std::memory_order_acquire))
+        {
+            _mm_pause();
+        }
+
+        {
+            forFreeHolder = _forFreeHolder;
+            _forFreeHolder._first = _forFreeHolder._last = 0;
+            _forFreeHolder._amount = 0;
+        }
+
+        af.clear(std::memory_order_release);
+
+        if(unlikely(forFreeHolder._amount))
+        {
+            bufferContainer->template bufferNotAwaitFreeFromOtherThread<size>(this);
+        }
+
+//        {
+//            forFreeHolder = _forFreeHolder;
+//            _forFreeHolder._first = _forFreeHolder._last = 0;
+//            _forFreeHolder._amount = 0;
+
+//            if(unlikely(forFreeHolder._amount))
+//            {
+//                bufferContainer->template bufferNotAwaitFreeFromOtherThread<size>(this);
+//            }
+//        }
 
         if(unlikely(forFreeHolder._amount))
         {
