@@ -1,14 +1,11 @@
 #ifndef _LUT_ASYNC_IMPL_SCHEDULER_HPP_
 #define _LUT_ASYNC_IMPL_SCHEDULER_HPP_
 
-#include "lut/async/threadState.hpp"
 #include "lut/async/impl/task.hpp"
-#include "lut/async/impl/worker/thread.hpp"
-#include "lut/async/impl/worker/effort.hpp"
+#include "lut/async/impl/ctx/root.hpp"
+#include "lut/async/impl/ctx/coro.hpp"
+#include "lut/async/impl/effortContainer.hpp"
 
-#include <vector>
-#include <thread>
-#include <mutex>
 
 namespace lut { namespace async { namespace impl
 {
@@ -18,30 +15,25 @@ namespace lut { namespace async { namespace impl
         Scheduler();
         ~Scheduler();
 
-        ThreadReleaseResult releaseThread(const std::thread::id &id);
-
-    public:
-        bool threadEntry_init(worker::Thread *thread);
-        bool threadEntry_deinit(worker::Thread *thread);
-
-        bool threadEntry_provideWork(worker::Thread *thread);
-        void threadEntry_workContinued(worker::Thread *thread);
-
     public:
         void spawn(Task *task);
         void yield();
+        void utilize();
 
-    private://threads
-        std::mutex _threadsMtx;
-        typedef std::vector<worker::Thread *> TVThreads;
-        TVThreads _threads;
-
-    private://threads in wait
-        std::mutex _threadsWaitMtx;
-        TVThreads _threadsWait;
+    public:
+        void coroCompleted();
 
     private:
-        worker::Effort      _effort;
+        ctx::Coro *dequeueReadyCoro();
+
+    private:
+        ctx::Root           _rootContext;
+        ctx::Coro           *_currentCoro;
+
+        EffortContainer<ctx::Coro>  _emptyCoros;
+        EffortContainer<ctx::Coro>  _readyCoros;
+        EffortContainer<Task>       _tasks;
+
     };
 }}}
 

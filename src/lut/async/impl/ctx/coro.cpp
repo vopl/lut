@@ -1,10 +1,11 @@
 #include "lut/async/stable.hpp"
 #include "lut/async/impl/ctx/coro.hpp"
 #include "lut/async/impl/ctx/stackAllocator.hpp"
+#include "lut/async/impl/scheduler.hpp"
 
 namespace lut { namespace async { namespace impl { namespace ctx
 {
-    Coro *Coro::alloc()
+    Coro *Coro::alloc(Scheduler *scheduler)
     {
         const lut::mm::Stack *stack = StackAllocator::stackAlloc();
         if(!stack)
@@ -22,13 +23,14 @@ namespace lut { namespace async { namespace impl { namespace ctx
             coro = reinterpret_cast<Coro *>(stack->_userspaceBegin);
         }
 
-        new(coro) Coro(stack);
+        new(coro) Coro(scheduler, stack);
 
         return coro;
     }
 
-    Coro::Coro(const lut::mm::Stack *stack)
-        : _stack(stack)
+    Coro::Coro(Scheduler *scheduler, const lut::mm::Stack *stack)
+        : _scheduler(scheduler)
+        , _stack(stack)
     {
         if(stack->_stackGrowsDown)
         {
@@ -108,6 +110,8 @@ namespace lut { namespace async { namespace impl { namespace ctx
                 _task->free();
                 _task = nullptr;
             }
+
+            _scheduler->coroCompleted();
         }
     }
 

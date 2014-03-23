@@ -6,6 +6,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Allocator::Allocator()
     {
+        vm::threadInit(&Allocator::s_vmAccessHandler);
         assert((std::uintptr_t)this == ((std::uintptr_t)this & (~(Config::_pageSize-1))));
 
         vm::protect(&_headerArea, sizeof(HeaderArea), true);
@@ -20,14 +21,14 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Allocator::~Allocator()
     {
+        assert(this == _instance);
+
         buffersContainer().~BuffersContainer();
         stacksContainer().~StacksContainer();
 
         header().~Header();
         vm::protect(&_headerArea, sizeof(HeaderArea), false);
-
-        assert(this == _instance);
-        _instance = nullptr;
+        vm::threadDeinit(&Allocator::s_vmAccessHandler);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -79,6 +80,12 @@ namespace lut { namespace mm { namespace impl
         }
 
         return buffersContainer().vmAccessHandler(offset - offsetof(Allocator, _buffersContainerArea));
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    bool Allocator::s_vmAccessHandler(void *addr)
+    {
+        return _instance->vmAccessHandler(reinterpret_cast<char *>(addr) - reinterpret_cast<char *>(_instance));
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

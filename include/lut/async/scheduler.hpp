@@ -1,7 +1,6 @@
 #ifndef _LUT_ASYNC_SCHEDULER_HPP_
 #define _LUT_ASYNC_SCHEDULER_HPP_
 
-#include "lut/async/threadState.hpp"
 #include "lut/async/details/taskInstance.hpp"
 #include "lut/async/hiddenImpl.hpp"
 
@@ -24,16 +23,12 @@ namespace lut { namespace async
         Scheduler();
         ~Scheduler();
 
-    public://threads
-        ThreadUtilizationResult utilizeThisThread(ThreadState *stateEvt = NULL);
-        ThreadReleaseResult releaseThisThread();
-        ThreadReleaseResult releaseThread(std::thread::native_handle_type id);
-
     public://code
         template<class F, class... Args>
         void spawn(F &&f, Args &&...args);
 
         void yield();
+        void utilize();
 
     private:
         void spawn(details::Task *task);

@@ -7,15 +7,12 @@ namespace lut { namespace async { namespace impl
     Task::Task(details::Task *face, details::Task::ActionExecutor faceActionExecutor)
         : _face(face)
         , _faceActionExecutor(faceActionExecutor)
-        , _coro()
-        , _priority()
     {
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Task::~Task()
     {
-        assert(0);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

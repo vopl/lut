@@ -32,6 +32,7 @@ namespace lut { namespace mm { namespace impl
 
     public:
         bool vmAccessHandler(std::uintptr_t offset);
+        static bool s_vmAccessHandler(void *addr);
 
     public:
         template <std::size_t size> void bufferEmpty2Middle(Buffer *buffer);

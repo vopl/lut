@@ -5,6 +5,15 @@
 #include "lut/async/impl/task.hpp"
 #include "lut/mm/stack.hpp"
 
+namespace lut { namespace async { namespace impl
+{
+    class Scheduler;
+
+    template <typename T>
+    class EffortContainer;
+
+}}}
+
 namespace lut { namespace async { namespace impl { namespace ctx
 {
     class Coro
@@ -12,11 +21,11 @@ namespace lut { namespace async { namespace impl { namespace ctx
     {
         Coro &operator=(const Coro &) = delete;
 
-        Coro(const lut::mm::Stack *stack);
+        Coro(Scheduler *scheduler, const lut::mm::Stack *stack);
         ~Coro();
 
     public:
-        static Coro *alloc();
+        static Coro *alloc(Scheduler *scheduler);
         void free();
 
         void setCode(Task *task);
@@ -29,9 +38,13 @@ namespace lut { namespace async { namespace impl { namespace ctx
         void contextProc();
 
     private:
-        Engine                  _engine;
+        Scheduler *             _scheduler;
         const lut::mm::Stack *  _stack;
         Task *                  _task;
+
+    private:
+        friend class ::lut::async::impl::EffortContainer<Coro>;
+        Coro *  _nextInList;
     };
 }}}}
 

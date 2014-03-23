@@ -2,7 +2,6 @@
 
 #include "lut/async/stable.hpp"
 #include "lut/async/scheduler.hpp"
-#include "lut/async/threadPool.hpp"
 
 #include <signal.h>
 #include <string.h>
@@ -224,13 +223,10 @@ int lmain()
 
     lut::async::Scheduler sched;
 
-    lut::async::ThreadPool tp(sched, 1);
-
 
     auto f = [&](lut::async::Scheduler *sched, std::size_t iters){
 
         atest<Allocator>(pallocator);
-        exit(0);
 
         char *c = (char *)alloca(4096);
         c[0] = 220;
@@ -251,6 +247,7 @@ int lmain()
 
     while(cnt.load(std::memory_order_relaxed))
     {
+        sched.utilize();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 

@@ -135,8 +135,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${PINC}/config.h)
 
 ############################################################
 set(INC
-    ${PINC}/threadState.hpp
-    ${PINC}/threadPool.hpp
     ${PINC}/scheduler.hpp
     ${PINC}/hiddenImpl.hpp
 )
@@ -144,8 +142,6 @@ source_group(include FILES ${INC})
 ############################################################
 set(SRC
     ${PSRC}/stable.hpp
-    ${PSRC}/threadPool.cpp
-    ${PSRC}/threadState.cpp
     ${PSRC}/scheduler.cpp
 )
 source_group(src FILES ${SRC})
@@ -182,6 +178,7 @@ set(SRC_IMPL
     ${PSRC}/impl/sizeofImplGen.cpp
     ${PSRC}/impl/task.hpp
     ${PSRC}/impl/task.cpp
+    ${PSRC}/impl/effortContainer.hpp
 )
 source_group(src/impl FILES ${SRC_IMPL})
 
@@ -226,20 +223,6 @@ source_group(src/impl/ctx FILES ${SRC_IMPL_CTX})
 
 
 
-
-############################################################
-set(SRC_IMPL_WORKER
-)
-source_group(include/impl/worker FILES ${INC_IMPL_WORKER})
-############################################################
-set(SRC_IMPL_WORKER
-    ${PSRC}/impl/worker/thread.hpp
-    ${PSRC}/impl/worker/thread.cpp
-    ${PSRC}/impl/worker/effort.hpp
-    ${PSRC}/impl/worker/effort.cpp
-    ${PSRC}/impl/worker/effortContainer.hpp
-)
-source_group(src/impl/worker FILES ${SRC_IMPL_WORKER})
 
 
 
@@ -313,7 +296,6 @@ add_library(${PROJECT} STATIC
     ${INC_DETAILS_IMPL}     ${SRC_DETAILS_IMPL}
     ${INC_IMPL}             ${SRC_IMPL}
     ${INC_IMPL_CTX}         ${SRC_IMPL_CTX}
-    ${INC_IMPL_WORKER}      ${SRC_IMPL_WORKER}
 
     ${SRC_PCH}
     ${PINC}/sizeofImpl.hpp)
