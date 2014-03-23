@@ -31,19 +31,7 @@ namespace lut { namespace mm { namespace impl
         Counter _allocated;
         Counter _initialized;
 
-        struct ForFreeHolder
-        {
-            Offset _first;
-            Offset _last;
-            Counter _amount;
-        };
-
-        alignas(Config::_cacheLineSize) ForFreeHolder _forFreeHolder;
-
-        Buffer *_prevBufferInList2;
-        Buffer *_nextBufferInList2;
-
-        static const std::size_t _headerSize = Config::_cacheLineSize * 2;
+        static const std::size_t _headerSize = sizeof(void *) * 5;
 
         using Area = std::aligned_storage<Config::_pageSize * Config::_bufferPages - _headerSize, 1>::type;
         Area _area;

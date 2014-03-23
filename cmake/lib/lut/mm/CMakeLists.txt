@@ -41,8 +41,6 @@ source_group(include/mm/impl FILES ${INC_IMPL})
 set(SRC_IMPL
     ${PSRC}/impl/allocator.hpp
     ${PSRC}/impl/allocator.cpp
-    ${PSRC}/impl/thread.hpp
-    ${PSRC}/impl/thread.cpp
     ${PSRC}/impl/indexedContainer.hpp
     ${PSRC}/impl/stackState.hpp
     ${PSRC}/impl/stackLayout.hpp

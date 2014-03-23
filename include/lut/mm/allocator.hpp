@@ -10,11 +10,6 @@ namespace lut { namespace mm
 
     struct Allocator
     {
-
-    public:
-        static bool threadInit();
-        static bool threadDeinit();
-
     public:
         static const Stack *stackAlloc();
         static void stackFree(const Stack *stack);

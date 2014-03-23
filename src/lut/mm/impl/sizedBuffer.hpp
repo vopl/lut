@@ -26,13 +26,6 @@ namespace lut { namespace mm { namespace impl
         template <typename BufferContainer>
         void free(void *ptr, BufferContainer *bufferContainer);
 
-        template <typename BufferContainer>
-        void freeFromOtherThread(void *ptr, BufferContainer *bufferContainer);
-
-    private:
-        template <typename BufferContainer>
-        void execFreeFromOtherThread(BufferContainer *bufferContainer);
-
     private:
         union Block
         {
@@ -65,9 +58,6 @@ namespace lut { namespace mm { namespace impl
         _next = blockToOffset(blocksArea());
         assert(_next);
         _allocated = _initialized = 0;
-
-        _forFreeHolder._first = _forFreeHolder._last = 0;
-        _forFreeHolder._amount = 0;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -88,20 +78,15 @@ namespace lut { namespace mm { namespace impl
 
         if(unlikely(_allocated == _blocksAmount-1))
         {
-            execFreeFromOtherThread(bufferContainer);
+            Block *block = offsetToBlock(_next);
 
-            if(unlikely(_allocated == _blocksAmount-1))
-            {
-                Block *block = offsetToBlock(_next);
+            assert(_allocated == _initialized);
+            _allocated = _blocksAmount;
+            _next = blockToOffset(blocksArea() + _allocated);
+            assert(_next);
 
-                assert(_allocated == _initialized);
-                _allocated = _blocksAmount;
-                _next = blockToOffset(blocksArea() + _allocated);
-                assert(_next);
-
-                bufferContainer->template bufferMiddle2Full<size>(this);
-                return block;
-            }
+            bufferContainer->template bufferMiddle2Full<size>(this);
+            return block;
         }
 
         Block *block = offsetToBlock(_next);
@@ -151,10 +136,6 @@ namespace lut { namespace mm { namespace impl
     template <typename BufferContainer>
     void SizedBuffer<size>::free(void *ptr, BufferContainer *bufferContainer)
     {
-        freeFromOtherThread(ptr, bufferContainer);
-        execFreeFromOtherThread(bufferContainer);
-        return;
-
         assert(ptr >= blocksArea() && ptr < (blocksArea()+_blocksAmount*sizeof(Block)));
         assert(!(((char *)ptr - (char *)blocksArea()) % sizeof(Block)));
 
@@ -172,146 +153,6 @@ namespace lut { namespace mm { namespace impl
         else if(unlikely(_blocksAmount-1 == _allocated))
         {
             bufferContainer->template bufferFull2Middle<size>(this);
-        }
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <std::size_t size>
-    template <typename BufferContainer>
-    void SizedBuffer<size>::freeFromOtherThread(void *ptr, BufferContainer *bufferContainer)
-    {
-        Block *block = reinterpret_cast<Block *>(ptr);
-
-        {
-            unsigned int status = 1234;
-
-//            std::size_t i(0);
-//            for(; ; ++i)
-            {
-                status = _xbegin();
-                if(likely(_XBEGIN_STARTED == status))
-                {
-                    if(unlikely(_forFreeHolder._amount))
-                    {
-                        block->_next = _forFreeHolder._first;
-                        _forFreeHolder._first = blockToOffset(block);
-                        _forFreeHolder._amount++;
-                    }
-                    else
-                    {
-                        block->_next = 0;
-                        _forFreeHolder._first = _forFreeHolder._last = blockToOffset(block);
-                        _forFreeHolder._amount = 1;
-
-                        bufferContainer->template bufferAwaitFreeFromOtherThread<size>(this);
-                    }
-
-                    _xend();
-//                    break;
-                }
-                else
-                {
-                    assert(0);
-                    if(unlikely(_forFreeHolder._amount))
-                    {
-                        block->_next = _forFreeHolder._first;
-                        _forFreeHolder._first = blockToOffset(block);
-                        _forFreeHolder._amount++;
-                    }
-                    else
-                    {
-                        block->_next = 0;
-                        _forFreeHolder._first = _forFreeHolder._last = blockToOffset(block);
-                        _forFreeHolder._amount = 1;
-
-                        bufferContainer->template bufferAwaitFreeFromOtherThread<size>(this);
-                    }
-//                    break;
-                }
-            }
-        }
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    template <std::size_t size>
-    template <typename BufferContainer>
-    void SizedBuffer<size>::execFreeFromOtherThread(BufferContainer *bufferContainer)
-    {
-        ForFreeHolder forFreeHolder;
-
-        {
-            unsigned int status = 1234;
-
-//            std::size_t i(0);
-//            for(; ; ++i)
-            {
-                status = _xbegin();
-                if(likely(_XBEGIN_STARTED == status))
-                {
-
-                    forFreeHolder = _forFreeHolder;
-                    _forFreeHolder._first = _forFreeHolder._last = 0;
-                    _forFreeHolder._amount = 0;
-
-                    if(unlikely(forFreeHolder._amount))
-                    {
-                        bufferContainer->template bufferNotAwaitFreeFromOtherThread<size>(this);
-                    }
-
-                    _xend();
-//                    break;
-                }
-                else
-                {
-                    assert(0);
-                    forFreeHolder = _forFreeHolder;
-                    _forFreeHolder._first = _forFreeHolder._last = 0;
-                    _forFreeHolder._amount = 0;
-
-                    if(unlikely(forFreeHolder._amount))
-                    {
-                        bufferContainer->template bufferNotAwaitFreeFromOtherThread<size>(this);
-                    }
-//                    break;
-                }
-            }
-        }
-
-        if(unlikely(forFreeHolder._amount))
-        {
-            Block *first = offsetToBlock(forFreeHolder._first);
-            Block *last = offsetToBlock(forFreeHolder._last);
-
-            assert(!last->_next);
-            last->_next = _next;
-            _next = blockToOffset(first);
-            assert(_next);
-
-            Counter wasAllocated = _allocated;
-            _allocated -= forFreeHolder._amount;
-
-            if(likely(_allocated))
-            {
-                if(unlikely(wasAllocated == _blocksAmount))
-                {
-                    bufferContainer->template bufferFull2Middle<size>(this);
-                }
-//                else
-//                {
-//                    bufferContainer->template bufferMiddle2Middle<size>(this);
-//                }
-            }
-            else
-            {
-                if(unlikely(forFreeHolder._amount == _blocksAmount))
-                {
-                    bufferContainer->template bufferFull2Empty<size>(this);
-                }
-                else
-                {
-                    bufferContainer->template bufferMiddle2Empty<size>(this);
-                }
-            }
         }
     }
 

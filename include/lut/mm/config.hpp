@@ -28,16 +28,10 @@ namespace lut { namespace mm
         static const std::size_t    _buffersAmount {1024};
     };
 
-    struct ConfigThreads
-    {
-        static const std::size_t    _maxThreadsAmount {2};
-    };
-
     struct Config
         : public ConfigMemory
         , public ConfigStack
         , public ConfigHeap
-        , public ConfigThreads
     {
     };
 

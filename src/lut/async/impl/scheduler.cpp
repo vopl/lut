@@ -30,10 +30,10 @@ namespace lut { namespace async { namespace impl
     {
         assert(worker::Thread::getCurrent() == thread);
 
-        if(!ctx::StackAllocator::threadInit())
-        {
-            return false;
-        }
+//        if(!ctx::StackAllocator::threadInit())
+//        {
+//            return false;
+//        }
 
         std::lock_guard<std::mutex> l(_threadsMtx);
 
@@ -57,7 +57,7 @@ namespace lut { namespace async { namespace impl
             {
                 _threads.erase(iter);
 
-                ctx::StackAllocator::threadDeinit();
+//                ctx::StackAllocator::threadDeinit();
                 return true;
             }
         }

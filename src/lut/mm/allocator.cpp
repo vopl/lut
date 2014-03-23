@@ -6,40 +6,30 @@
 namespace lut { namespace mm
 {
 
-    bool Allocator::threadInit()
-    {
-        return impl::Allocator::instance().threadInit();
-    }
-
-    bool Allocator::threadDeinit()
-    {
-        return impl::Allocator::instance().threadDeinit();
-    }
-
     const Stack *Allocator::stackAlloc()
     {
-        return impl::Allocator::instance().stackAlloc();
+        return impl::Allocator::instance()->stackAlloc();
     }
 
     void Allocator::stackFree(const Stack *stack)
     {
-        return impl::Allocator::instance().stackFree(stack);
+        return impl::Allocator::instance()->stackFree(stack);
     }
 
     void Allocator::stackCompact(const Stack *stack)
     {
-        return impl::Allocator::instance().stackCompact(stack);
+        return impl::Allocator::instance()->stackCompact(stack);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
 #define BAF_9238657287658752_0(N) \
     template <> void *Allocator::allocAligned<N>() \
     { \
-        return impl::Allocator::alloc<impl::SizedBufferCalculator<N>::_faceSize2ImplSize>(); \
+        return impl::Allocator::instance()->alloc<impl::SizedBufferCalculator<N>::_faceSize2ImplSize>(); \
     } \
     template <> void Allocator::freeAligned<N>(void *ptr) \
     { \
-        return impl::Allocator::free<impl::SizedBufferCalculator<N>::_faceSize2ImplSize>(ptr); \
+        return impl::Allocator::instance()->free<impl::SizedBufferCalculator<N>::_faceSize2ImplSize>(ptr); \
     } \
 
 

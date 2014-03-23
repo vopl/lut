@@ -1,201 +1,98 @@
 #include "lut/mm/stable.hpp"
 #include "lut/mm/impl/allocator.hpp"
-#include "lut/mm/impl/vm.hpp"
-#include "lut/mm/config.hpp"
 
 namespace lut { namespace mm { namespace impl
 {
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Allocator::Allocator()
     {
+        assert((std::uintptr_t)this == ((std::uintptr_t)this & (~(Config::_pageSize-1))));
+
         vm::protect(&_headerArea, sizeof(HeaderArea), true);
-        new(&_headerArea) Header;
+        new(&header()) Header;
+
+        new(&stacksContainer()) StacksContainer;
+        new(&buffersContainer()) BuffersContainer;
+
+        createBufferForAlloc<0>();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Allocator::~Allocator()
     {
-        assert(!header()._threadsUseMask.count());
+        buffersContainer().~BuffersContainer();
+        stacksContainer().~StacksContainer();
+
         header().~Header();
         vm::protect(&_headerArea, sizeof(HeaderArea), false);
+
+        assert(this == _instance);
+        _instance = nullptr;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    Allocator &Allocator::instance()
+    Allocator *Allocator::instance()
     {
-        return *_instance;
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    bool Allocator::threadInit()
-    {
-        Thread *t;
-        std::size_t tIndex;
-        {
-            std::unique_lock<std::mutex> l(header()._mtx);
-
-            if(header()._threadsUseMask.count() >= Config::_maxThreadsAmount)
-            {
-                return false;
-            }
-
-            tIndex = 0;
-            for(; tIndex<header()._threadsUseMask.size(); ++tIndex)
-            {
-                if(!header()._threadsUseMask.test(tIndex))
-                {
-                    break;
-                }
-            }
-
-            header()._threadsUseMask.set(tIndex);
-
-            t = thread(tIndex);
-            t = new(t) Thread;
-        }
-
-        if(!vm::threadInit(&Allocator::s_vmAccessHandler))
-        {
-            std::unique_lock<std::mutex> l(header()._mtx);
-
-            header()._threadsUseMask.reset(tIndex);
-            t->~Thread();
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    bool Allocator::threadDeinit()
-    {
-        Thread *t = Thread::instance();
-        if(!t)
-        {
-            return false;
-        }
-
-        std::size_t tIndex = threadIndex(t);
-        if(_badIndex == tIndex)
-        {
-            return false;
-        }
-
-        {
-            std::unique_lock<std::mutex> l(header()._mtx);
-
-            if(!header()._threadsUseMask.test(tIndex))
-            {
-                return false;
-            }
-
-            header()._threadsUseMask.reset(tIndex);
-            t->~Thread();
-        }
-
-        return vm::threadDeinit(&Allocator::s_vmAccessHandler);
+        return _instance;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     const lut::mm::Stack *Allocator::stackAlloc()
     {
-        return Thread::instance()->stackAlloc();
+        Stack *inst = stacksContainer().alloc();
+        if(!inst)
+        {
+            return nullptr;
+        }
+
+        return Stack::impl2Face(inst);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     void Allocator::stackFree(const lut::mm::Stack *stack)
     {
-        Thread *t = thread(stack);
-        assert(t);
-        if(!t)
-        {
-            return;
-        }
-
-        if(t == Thread::instance())
-        {
-            return t->stackFree(stack);
-        }
-        return t->stackFreeFromOverThread(stack);
+        Stack *inst = Stack::face2Impl(stack);
+        stacksContainer().free(inst);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     void Allocator::stackCompact(const lut::mm::Stack *stack)
     {
-        Thread *t = thread(stack);
-        assert(t);
-        if(!t)
-        {
-            return;
-        }
-
-        return t->stackCompact(stack);
+        Stack *inst = Stack::face2Impl(stack);
+        inst->compact();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    bool Allocator::vmAccessHandler(void *addr)
+    bool Allocator::vmAccessHandler(std::uintptr_t offset)
     {
-        Thread *t = thread(addr);
-        assert(t);
-        if(!t)
+        assert(offset < sizeof(Allocator));
+
+        if(offset < offsetof(Allocator, _stacksContainerArea))
         {
+            assert(!"must be already protected");
             return false;
         }
 
-        return t->vmAccessHandler(reinterpret_cast<std::uintptr_t>(addr) - reinterpret_cast<std::uintptr_t>(t));
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    bool Allocator::s_vmAccessHandler(void *addr)
-    {
-        return instance().vmAccessHandler(addr);
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    Allocator::Header &Allocator::header()
-    {
-        return *reinterpret_cast<Header *>(&_headerArea);
-    }
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    std::size_t Allocator::threadIndex(const void *addr)
-    {
-        char *area = reinterpret_cast<char *>(&_threadsArea);
-        std::size_t offset = reinterpret_cast<const char *>(addr) - area;
-        if(offset >= sizeof(ThreadsArea))
+        if(offset < offsetof(Allocator, _buffersContainerArea))
         {
-            return _badIndex;
+            return stacksContainer().vmAccessHandler(offset - offsetof(Allocator, _stacksContainerArea));
         }
 
-        return offset / sizeof(Thread);
+        return buffersContainer().vmAccessHandler(offset - offsetof(Allocator, _buffersContainerArea));
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    Thread *Allocator::thread(const void *addr)
+    Allocator::Header::Header()
     {
-        char *area = reinterpret_cast<char *>(&_threadsArea);
-        std::size_t offset = reinterpret_cast<const char *>(addr) - area;
-        if(offset >= sizeof(ThreadsArea))
-        {
-            return nullptr;
-        }
-
-        return reinterpret_cast<Thread *>(area + offset - offset % sizeof(Thread));
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    Thread *Allocator::thread(std::size_t index)
+    Allocator::Header::~Header()
     {
-        assert(_badIndex != index);
-        return reinterpret_cast<Thread *>(&_threadsArea) + index;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    Allocator *Allocator::_instance;
-
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    Allocator::Instantiator Allocator::_instantiator {};
+    Allocator *Allocator::_instance{nullptr};
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Allocator::Instantiator::Instantiator()
@@ -210,6 +107,60 @@ namespace lut { namespace mm { namespace impl
 
         vm::free(Allocator::_instance, sizeof(Allocator));
         Allocator::_instance = nullptr;
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    Allocator::Instantiator Allocator::_instantiator {};
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    Allocator::Header &Allocator::header()
+    {
+        return *reinterpret_cast<Header *>(&_headerArea);
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    void Allocator::relocateBufferDisposition(Buffer *buffer, Buffer *&bufferListSrc, Buffer *&bufferListDst)
+    {
+        if(buffer->_nextBufferInList)
+        {
+            buffer->_nextBufferInList->_prevBufferInList = buffer->_prevBufferInList;
+        }
+        if(buffer->_prevBufferInList)
+        {
+            buffer->_prevBufferInList->_nextBufferInList = buffer->_nextBufferInList;
+        }
+        if(bufferListSrc == buffer)
+        {
+            assert(!buffer->_prevBufferInList);
+            bufferListSrc = buffer->_nextBufferInList;
+        }
+
+        if(bufferListDst)
+        {
+            assert(!bufferListDst->_prevBufferInList);
+            bufferListDst->_prevBufferInList = buffer;
+            buffer->_nextBufferInList = bufferListDst;
+            buffer->_prevBufferInList = nullptr;
+            bufferListDst = buffer;
+        }
+        else
+        {
+            buffer->_nextBufferInList = nullptr;
+            buffer->_prevBufferInList = nullptr;
+            bufferListDst = buffer;
+        }
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    Allocator::StacksContainer &Allocator::stacksContainer()
+    {
+        return *reinterpret_cast<StacksContainer *>(&_stacksContainerArea);
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    Allocator::BuffersContainer &Allocator::buffersContainer()
+    {
+        return *reinterpret_cast<BuffersContainer *>(&_buffersContainerArea);
     }
 
 }}}
