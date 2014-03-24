@@ -138,6 +138,7 @@ set(INC
     ${PINC}/scheduler.hpp
     ${PINC}/hiddenImpl.hpp
     ${PINC}/mutex.hpp
+    ${PINC}/recursiveMutex.hpp
     ${PINC}/semaphore.hpp
     ${PINC}/event.hpp
     ${PINC}/conditionVariable.hpp
@@ -149,6 +150,7 @@ set(SRC
     ${PSRC}/stable.hpp
     ${PSRC}/scheduler.cpp
     ${PSRC}/mutex.cpp
+    ${PSRC}/recursiveMutex.cpp
     ${PSRC}/semaphore.cpp
     ${PSRC}/event.cpp
     ${PSRC}/conditionVariable.cpp
@@ -173,6 +175,7 @@ source_group(include/details FILES ${INC_DETAILS})
 ############################################################
 set(SRC_DETAILS
     ${PSRC}/details/task.cpp
+    ${PSRC}/details/acquire.cpp
 )
 source_group(src/details FILES ${SRC_DETAILS})
 
@@ -190,11 +193,15 @@ set(SRC_IMPL
     ${PSRC}/impl/task.cpp
     ${PSRC}/impl/effortContainer.hpp
 
+    ${PSRC}/impl/syncronizer.hpp
     ${PSRC}/impl/mutex.hpp
+    ${PSRC}/impl/recursiveMutex.hpp
     ${PSRC}/impl/semaphore.hpp
     ${PSRC}/impl/event.hpp
     ${PSRC}/impl/conditionVariable.hpp
+    ${PSRC}/impl/syncronizer.cpp
     ${PSRC}/impl/mutex.cpp
+    ${PSRC}/impl/recursiveMutex.cpp
     ${PSRC}/impl/semaphore.cpp
     ${PSRC}/impl/event.cpp
     ${PSRC}/impl/conditionVariable.cpp
@@ -295,6 +302,7 @@ add_custom_command(OUTPUT ${PINC}/sizeofImpl.hpp
                         ${PSRC}/impl/scheduler.hpp
                         ${PSRC}/impl/task.hpp
                         ${PSRC}/impl/mutex.hpp
+                        ${PSRC}/impl/recursiveMutex.hpp
                         ${PSRC}/impl/semaphore.hpp
                         ${PSRC}/impl/event.hpp
                         ${PSRC}/impl/conditionVariable.hpp

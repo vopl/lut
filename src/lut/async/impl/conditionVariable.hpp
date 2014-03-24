@@ -1,6 +1,9 @@
 #ifndef _LUT_ASYNC_IMPL_CONDITIONVARIABLE_HPP_
 #define _LUT_ASYNC_IMPL_CONDITIONVARIABLE_HPP_
 
+#include "lut/async/conditionVariable.hpp"
+#include "lut/async/impl/syncronizer.hpp"
+
 namespace lut { namespace async { namespace impl
 {
 
@@ -27,7 +30,36 @@ namespace lut { namespace async { namespace impl
     public:
         bool isSignalled() const;
 
+    public:
+        template <typename Lock>
+        class BindedLock
+            : public Syncronizer
+        {
+        public:
+            BindedLock(ConditionVariable &cv, Lock &lock);
+            ~BindedLock();
+
+        private:
+            ConditionVariable &_cv;
+            Lock &_lock;
+        };
     };
+
+
+
+
+    template <typename Lock>
+    ConditionVariable::BindedLock<Lock>::BindedLock(ConditionVariable &cv, Lock &lock)
+        : _cv(cv)
+        , _lock(lock)
+    {
+    }
+
+    template <typename Lock>
+    ConditionVariable::BindedLock<Lock>::~BindedLock()
+    {
+    }
+
 
 }}}
 

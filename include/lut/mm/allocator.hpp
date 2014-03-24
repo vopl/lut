@@ -19,18 +19,10 @@ namespace lut { namespace mm
         static const std::size_t _maxAllocatedBufferSize = 1024;
 
     public:
-        template <std::size_t size, std::size_t align =
-                  size <=1 ? 1 :
-                  size <=2 ? 2 :
-                  size <=4 ? 4 :
-                  size <=8 ? 8 : 16>
+        template <std::size_t size, std::size_t align = 1>
         static void *alloc();
 
-        template <std::size_t size, std::size_t align =
-                  size <=1 ? 1 :
-                  size <=2 ? 2 :
-                  size <=4 ? 4 :
-                  size <=8 ? 8 : 16>
+        template <std::size_t size, std::size_t align = 1>
         static void free(void *ptr);
 
     private:

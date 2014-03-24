@@ -1,13 +1,16 @@
 #ifndef _LUT_ASYNC_IMPL_EVENT_HPP_
 #define _LUT_ASYNC_IMPL_EVENT_HPP_
 
+#include "lut/async/impl/syncronizer.hpp"
+
 namespace lut { namespace async { namespace impl
 {
 
     class Event
+        : public Syncronizer
     {
     public:
-        Event(bool autoReset = true);
+        Event(bool autoReset);
         ~Event();
 
     public:
@@ -20,6 +23,11 @@ namespace lut { namespace async { namespace impl
 
     public:
         bool isSignalled() const;
+
+    private:
+        bool _autoReset;
+        bool _state;
+
     };
 
 }}}

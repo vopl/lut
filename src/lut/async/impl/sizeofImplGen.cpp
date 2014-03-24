@@ -6,6 +6,7 @@
 #include "lut/async/impl/task.hpp"
 
 #include "lut/async/impl/mutex.hpp"
+#include "lut/async/impl/recursiveMutex.hpp"
 #include "lut/async/impl/semaphore.hpp"
 #include "lut/async/impl/event.hpp"
 #include "lut/async/impl/conditionVariable.hpp"
@@ -40,6 +41,7 @@ int main()
            ONE(Task)
 
            ONE(Mutex)
+           ONE(RecursiveMutex)
            ONE(Semaphore)
            ONE(Event)
            ONE(ConditionVariable)

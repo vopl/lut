@@ -38,9 +38,68 @@ namespace lut { namespace async
         bool isSignalled() const;
 
     public:
+        template <typename Lock>
+        class BindedLock
+        {
+        public:
+            BindedLock(ConditionVariable &cv, Lock &lock);
+            ~BindedLock();
+            void acquire();
+
+        public:
+            ConditionVariable &conditionVariable() const;
+            Lock &lock() const;
+
+        private:
+            ConditionVariable &_cv;
+            Lock &_lock;
+        };
+
+        template <typename Lock>
+        BindedLock<Lock> bind(Lock &lock);
+
+    public:
         using HiddenImpl<impl::ConditionVariable>::pimpl;
         using HiddenImpl<impl::ConditionVariable>::impl;
     };
+
+
+    template <typename Lock>
+    ConditionVariable::BindedLock<Lock>::BindedLock(ConditionVariable &cv, Lock &lock)
+        : _cv(cv)
+        , _lock(lock)
+    {
+    }
+
+    template <typename Lock>
+    ConditionVariable::BindedLock<Lock>::~BindedLock()
+    {
+
+    }
+
+    template <typename Lock>
+    void ConditionVariable::BindedLock<Lock>::acquire()
+    {
+        return _cv.acquire(_lock);
+    }
+
+    template <typename Lock>
+    ConditionVariable &ConditionVariable::BindedLock<Lock>::conditionVariable() const
+    {
+        return _cv;
+    }
+
+    template <typename Lock>
+    Lock &ConditionVariable::BindedLock<Lock>::lock() const
+    {
+        return _lock;
+    }
+
+    template <typename Lock>
+    ConditionVariable::BindedLock<Lock> ConditionVariable::bind(Lock &lock)
+    {
+        return BindedLock<Lock>(*this, lock);
+    }
 
 }}
 
