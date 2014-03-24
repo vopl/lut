@@ -31,6 +31,9 @@ namespace lut { namespace async
         T *pimpl();
         T &impl();
 
+        const T *pimpl() const;
+        const T &impl() const;
+
     private:
         char _data[sizeofImpl<T>::_value];
     };
@@ -61,7 +64,7 @@ namespace lut { namespace async
     template <class T>
     T *HiddenImpl<T>::pimpl()
     {
-        return static_cast<T*>(static_cast<void*>(&_data));
+        return reinterpret_cast<T*>(&_data);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -71,6 +74,19 @@ namespace lut { namespace async
         return *pimpl();
     }
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <class T>
+    const T *HiddenImpl<T>::pimpl() const
+    {
+        return reinterpret_cast<const T*>(&_data);
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <class T>
+    const T &HiddenImpl<T>::impl() const
+    {
+        return *pimpl();
+    }
 }}
 
 #endif

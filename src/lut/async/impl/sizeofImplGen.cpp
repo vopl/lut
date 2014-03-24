@@ -5,6 +5,11 @@
 #include "lut/async/impl/scheduler.hpp"
 #include "lut/async/impl/task.hpp"
 
+#include "lut/async/impl/mutex.hpp"
+#include "lut/async/impl/semaphore.hpp"
+#include "lut/async/impl/event.hpp"
+#include "lut/async/impl/conditionVariable.hpp"
+
 #include <iostream>
 using namespace std;
 
@@ -33,6 +38,11 @@ int main()
 
            ONE(Scheduler)
            ONE(Task)
+
+           ONE(Mutex)
+           ONE(Semaphore)
+           ONE(Event)
+           ONE(ConditionVariable)
 
            "}}\n"
            "\n"

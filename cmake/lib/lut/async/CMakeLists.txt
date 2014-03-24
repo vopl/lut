@@ -137,12 +137,21 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${PINC}/config.h)
 set(INC
     ${PINC}/scheduler.hpp
     ${PINC}/hiddenImpl.hpp
+    ${PINC}/mutex.hpp
+    ${PINC}/semaphore.hpp
+    ${PINC}/event.hpp
+    ${PINC}/conditionVariable.hpp
+    ${PINC}/acquire.hpp
 )
 source_group(include FILES ${INC})
 ############################################################
 set(SRC
     ${PSRC}/stable.hpp
     ${PSRC}/scheduler.cpp
+    ${PSRC}/mutex.cpp
+    ${PSRC}/semaphore.cpp
+    ${PSRC}/event.cpp
+    ${PSRC}/conditionVariable.cpp
 )
 source_group(src FILES ${SRC})
 
@@ -158,6 +167,7 @@ source_group(src FILES ${SRC})
 set(INC_DETAILS
     ${PINC}/details/task.hpp
     ${PINC}/details/taskInstance.hpp
+    ${PINC}/details/acquire.hpp
 )
 source_group(include/details FILES ${INC_DETAILS})
 ############################################################
@@ -179,6 +189,15 @@ set(SRC_IMPL
     ${PSRC}/impl/task.hpp
     ${PSRC}/impl/task.cpp
     ${PSRC}/impl/effortContainer.hpp
+
+    ${PSRC}/impl/mutex.hpp
+    ${PSRC}/impl/semaphore.hpp
+    ${PSRC}/impl/event.hpp
+    ${PSRC}/impl/conditionVariable.hpp
+    ${PSRC}/impl/mutex.cpp
+    ${PSRC}/impl/semaphore.cpp
+    ${PSRC}/impl/event.cpp
+    ${PSRC}/impl/conditionVariable.cpp
 )
 source_group(src/impl FILES ${SRC_IMPL})
 
@@ -275,6 +294,10 @@ add_custom_command(OUTPUT ${PINC}/sizeofImpl.hpp
                         ${PSRC}/impl/sizeofImplGen.cpp
                         ${PSRC}/impl/scheduler.hpp
                         ${PSRC}/impl/task.hpp
+                        ${PSRC}/impl/mutex.hpp
+                        ${PSRC}/impl/semaphore.hpp
+                        ${PSRC}/impl/event.hpp
+                        ${PSRC}/impl/conditionVariable.hpp
                     VERBATIM)
                     
 set_source_files_properties(${PSRC}/impl/sizeofImplGen.cpp PROPERTIES HEADER_FILE_ONLY ON)
