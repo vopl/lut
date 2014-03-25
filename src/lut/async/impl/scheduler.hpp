@@ -30,6 +30,7 @@ namespace lut { namespace async { namespace impl
         void coroCompleted();
 
     private:
+        void switchToNext();
         ctx::Coro *dequeueReadyCoro();
 
     private:

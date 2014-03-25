@@ -4,8 +4,6 @@
 #include "lut/async.hpp"
 #include "lut/async/mutex.hpp"
 #include "lut/async/event.hpp"
-#include "lut/async/conditionVariable.hpp"
-#include "lut/async/semaphore.hpp"
 #include "lut/async/acquire.hpp"
 #include "lut/mm.hpp"
 
@@ -229,68 +227,74 @@ int lmain()
 
     lut::async::Mutex mtx1, mtx2;
     lut::async::Event evt1(true), evt2(false);
-    lut::async::Semaphore sem1(2), sem2(3);
-    lut::async::ConditionVariable cv1, cv2;
 
 
-    auto f = [&](std::size_t iters){
+    auto f = [&](std::size_t num)
+    {
 
         //atest<Allocator>(pallocator);
 
         char *c = (char *)alloca(4096);
         c[0] = 220;
 
-        for(std::size_t i(0); i<iters; i++)
+        for(std::size_t i(0); i<100; i++)
         {
-
-//            mtx1.acquire();
-//            evt1.acquire();
-//            sem1.acquire();
-//            cv1.acquire(mtx2);
-
-//            mtx1.release();
-//            sem1.release();
-
-            //cv1.notifyAll();
-
+            if(1 == num)
             {
-                mtx2.lock();
-                lut::async::ConditionVariable::BindedLock<lut::async::Mutex> cvb1 = cv1.bind(mtx2);
-                lut::async::acquireAll(mtx1, sem1, evt1, cvb1);
-                mtx2.unlock();
-
-                mtx1.unlock();
-                sem1.leave();
-            }
-
-            {
-                mtx2.lock();
-                lut::async::ConditionVariable::BindedLock<lut::async::Mutex> cvb1 = cv1.bind(mtx2);
-                switch(lut::async::acquireAny(mtx1, sem1, evt1, cvb1))
+                std::cout<<num<<", mtx2.locked():"<<mtx2.locked()<<std::endl;
+                if(mtx2.locked())
                 {
-                case 0:
-                    mtx1.unlock();
-                    break;
-                case 1:
-                    sem1.leave();
-                    break;
+                    std::cout<<num<<", pre mtx2.unlock()"<<std::endl;
+                    mtx2.unlock();
+                    std::cout<<num<<", post mtx2.unlock()"<<std::endl;
                 }
-                mtx2.unlock();
+                std::cout<<num<<", pre mtx1.lock()"<<std::endl;
+                mtx1.lock();
+                std::cout<<num<<", post mtx1.lock()"<<std::endl;
+            }
+            else
+            {
+                std::cout<<num<<", mtx1.locked():"<<mtx1.locked()<<std::endl;
+                if(mtx1.locked())
+                {
+                    std::cout<<num<<", pre mtx1.unlock()"<<std::endl;
+                    mtx1.unlock();
+                    std::cout<<num<<", post mtx1.unlock()"<<std::endl;
+                }
+                std::cout<<num<<", pre mtx2.lock()"<<std::endl;
+                mtx2.lock();
+                std::cout<<num<<", post mtx2.lock()"<<std::endl;
             }
 
+            std::cout<<num<<", pre yield"<<std::endl;
             lut::async::yield();
+            std::cout<<num<<", post yield"<<std::endl;
         }
+
+        if(mtx2.locked())
+        {
+            mtx2.unlock();
+        }
+
+        if(mtx1.locked())
+        {
+            mtx1.unlock();
+        }
+
+        std::cout<<num<<", "<<std::endl;
+
 
         cnt.fetch_add(-1, std::memory_order_relaxed);
     };
 
-    for(std::size_t i(0); i<2; i++)
-    {
-        cnt.fetch_add(1);
-        lut::async::spawn(f, 100000);
-    }
+    lut::async::spawn(f, 1);
+    lut::async::spawn(f, 2);
 
-    lut::async::utilize();
+
+    for(std::size_t i(0);; i++)
+    {
+        lut::async::utilize();
+    }
 
     return 0;
 }

@@ -19,6 +19,9 @@ namespace lut { namespace async { namespace impl
         virtual void lock() override;
         bool tryLock();
         void unlock();
+
+    private:
+        bool _locked;
     };
 
 }}}

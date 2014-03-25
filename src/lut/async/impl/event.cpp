@@ -5,7 +5,7 @@ namespace lut { namespace async { namespace impl
 {
     Event::Event(bool autoReset)
         : _autoReset(autoReset)
-        , _state()
+        , _signalled()
     {
     }
 
@@ -15,32 +15,54 @@ namespace lut { namespace async { namespace impl
 
     bool Event::locked() const
     {
-        assert(0);
+        return !_signalled;
     }
 
     void Event::lock()
     {
-        assert(0);
+        if(tryLock())
+        {
+            return;
+        }
+
+        SyncronizerPtr syncronizers[1] = {this};
+        SyncronizerWaiter syncronizerWaiter(syncronizers, 1);
+
+        syncronizerWaiter.all();
     }
 
     bool Event::tryLock()
     {
-        assert(0);
+        if(_signalled)
+        {
+            if(_autoReset)
+            {
+                return true;
+            }
+            _signalled = false;
+            return true;
+        }
+
+        return false;
     }
 
     void Event::set()
     {
-        assert(0);
+        if(!_signalled)
+        {
+            _signalled = true;
+            Syncronizer::unlock();
+        }
     }
 
     void Event::reset()
     {
-        assert(0);
+        _signalled = false;
     }
 
     bool Event::signalled() const
     {
-        assert(0);
+        return _signalled;
     }
 
 }}}

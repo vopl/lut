@@ -5,6 +5,7 @@
 namespace lut { namespace async { namespace impl
 {
     Mutex::Mutex()
+        : _locked()
     {
     }
 
@@ -29,7 +30,7 @@ namespace lut { namespace async { namespace impl
     {
         if(!locked())
         {
-            lock();
+            _locked = true;
             return true;
         }
 
@@ -39,13 +40,13 @@ namespace lut { namespace async { namespace impl
     void Mutex::unlock()
     {
         assert(locked());
+        _locked = false;
         Syncronizer::unlock();
     }
 
     bool Mutex::locked() const
     {
-        assert(0);
-        return false;
+        return _locked;
     }
 
 }}}

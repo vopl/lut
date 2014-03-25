@@ -2,10 +2,7 @@
 #define _LUT_ASYNC_DETAILS_ACQUIRE_HPP_
 
 #include "lut/async/mutex.hpp"
-#include "lut/async/recursiveMutex.hpp"
-#include "lut/async/semaphore.hpp"
 #include "lut/async/event.hpp"
-#include "lut/async/conditionVariable.hpp"
 
 #include <cstdint>
 #include <tuple>
@@ -19,21 +16,8 @@ namespace lut { namespace async { namespace impl
 namespace lut { namespace async { namespace details
 {
 
-    impl::SyncronizerPtr syncronizerCreate(Mutex &v);
-    impl::SyncronizerPtr syncronizerCreate(RecursiveMutex &v);
-    impl::SyncronizerPtr syncronizerCreate(Semaphore &v);
-    impl::SyncronizerPtr syncronizerCreate(Event &v);
-    impl::SyncronizerPtr syncronizerCreate(ConditionVariable::BindedLock<Mutex> &v);
-    impl::SyncronizerPtr syncronizerCreate(ConditionVariable::BindedLock<RecursiveMutex> &v);
-    impl::SyncronizerPtr syncronizerCreate(ConditionVariable::BindedLock<Semaphore> &v);
-
-    void syncronizerDestroy(impl::SyncronizerPtr syncronizer, Mutex &v);
-    void syncronizerDestroy(impl::SyncronizerPtr syncronizer, RecursiveMutex &v);
-    void syncronizerDestroy(impl::SyncronizerPtr syncronizer, Semaphore &v);
-    void syncronizerDestroy(impl::SyncronizerPtr syncronizer, Event &v);
-    void syncronizerDestroy(impl::SyncronizerPtr syncronizer, ConditionVariable::BindedLock<Mutex> &v);
-    void syncronizerDestroy(impl::SyncronizerPtr syncronizer, ConditionVariable::BindedLock<RecursiveMutex> &v);
-    void syncronizerDestroy(impl::SyncronizerPtr syncronizer, ConditionVariable::BindedLock<Semaphore> &v);
+    impl::SyncronizerPtr syncronizer(Mutex &v);
+    impl::SyncronizerPtr syncronizer(Event &v);
 
     std::size_t acquireAny(impl::SyncronizerPtr *syncronizers, std::size_t amount);
     void acquireAll(impl::SyncronizerPtr *syncronizers, std::size_t amount);
@@ -45,15 +29,8 @@ namespace lut { namespace async { namespace details
     template <typename First, typename... Acquirable>
     void collect(impl::SyncronizerPtr *syncronizers, First &first, Acquirable&... acquirables)
     {
-        *syncronizers = syncronizerCreate(first);
+        *syncronizers = syncronizer(first);
         return collect(syncronizers+1, acquirables...);
-    }
-
-    template <typename First, typename... Acquirable>
-    void uncollect(impl::SyncronizerPtr *syncronizers, First &first, Acquirable&... acquirables)
-    {
-        syncronizerDestroy(*syncronizers, first);
-        return uncollect(syncronizers+1, acquirables...);
     }
 
     template <typename... Acquirable>
@@ -63,7 +40,6 @@ namespace lut { namespace async { namespace details
         impl::SyncronizerPtr syncronizers[amount];
         collect(syncronizers, acquirables...);
         std::size_t res = acquireAny(syncronizers, amount);
-        uncollect(syncronizers, acquirables...);
         return res;
     }
 
@@ -74,7 +50,6 @@ namespace lut { namespace async { namespace details
         impl::SyncronizerPtr syncronizers[amount];
         collect(syncronizers, acquirables...);
         acquireAll(syncronizers, amount);
-        uncollect(syncronizers, acquirables...);
     }
 }}}
 

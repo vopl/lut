@@ -138,10 +138,7 @@ set(INC
     ${INCDIR}/lut/async.hpp
     ${PINC}/hiddenImpl.hpp
     ${PINC}/mutex.hpp
-    ${PINC}/recursiveMutex.hpp
-    ${PINC}/semaphore.hpp
     ${PINC}/event.hpp
-    ${PINC}/conditionVariable.hpp
     ${PINC}/acquire.hpp
 )
 source_group(include FILES ${INC})
@@ -150,10 +147,7 @@ set(SRC
     ${SRCDIR}/lut/async.cpp
     ${PSRC}/stable.hpp
     ${PSRC}/mutex.cpp
-    ${PSRC}/recursiveMutex.cpp
-    ${PSRC}/semaphore.cpp
     ${PSRC}/event.cpp
-    ${PSRC}/conditionVariable.cpp
 )
 source_group(src FILES ${SRC})
 
@@ -196,18 +190,12 @@ set(SRC_IMPL
     ${PSRC}/impl/syncronizerWaiter.hpp
     ${PSRC}/impl/syncronizer.hpp
     ${PSRC}/impl/mutex.hpp
-    ${PSRC}/impl/recursiveMutex.hpp
-    ${PSRC}/impl/semaphore.hpp
     ${PSRC}/impl/event.hpp
-    ${PSRC}/impl/conditionVariable.hpp
 
     ${PSRC}/impl/syncronizerWaiter.cpp
     ${PSRC}/impl/syncronizer.cpp
     ${PSRC}/impl/mutex.cpp
-    ${PSRC}/impl/recursiveMutex.cpp
-    ${PSRC}/impl/semaphore.cpp
     ${PSRC}/impl/event.cpp
-    ${PSRC}/impl/conditionVariable.cpp
 )
 source_group(src/impl FILES ${SRC_IMPL})
 
@@ -304,10 +292,7 @@ add_custom_command(OUTPUT ${PINC}/sizeofImpl.hpp
                         ${PSRC}/impl/scheduler.hpp
                         ${PSRC}/impl/task.hpp
                         ${PSRC}/impl/mutex.hpp
-                        ${PSRC}/impl/recursiveMutex.hpp
-                        ${PSRC}/impl/semaphore.hpp
                         ${PSRC}/impl/event.hpp
-                        ${PSRC}/impl/conditionVariable.hpp
                     VERBATIM)
                     
 set_source_files_properties(${PSRC}/impl/sizeofImplGen.cpp PROPERTIES HEADER_FILE_ONLY ON)

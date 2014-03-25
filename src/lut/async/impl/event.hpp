@@ -24,7 +24,7 @@ namespace lut { namespace async { namespace impl
 
     private:
         bool _autoReset;
-        bool _state;
+        bool _signalled;
 
     };
 

@@ -37,45 +37,17 @@ namespace lut { namespace async { namespace impl
     {
         assert(_currentCoro);
         ctx::Coro *coro = _currentCoro;
+
         _readyCoros.enqueue(coro);
 
-        ctx::Coro *nextCoro = dequeueReadyCoro();
-        while(nextCoro)
-        {
-            if(nextCoro == coro)
-            {
-                return;
-            }
-
-            _currentCoro = nextCoro;
-            coro->switchTo(nextCoro);
-            nextCoro = dequeueReadyCoro();
-        }
-
-        _currentCoro = nullptr;
-        coro->switchTo(&_rootContext);
+        switchToNext();
     }
 
     void Scheduler::hold()
     {
         assert(_currentCoro);
-        ctx::Coro *coro = _currentCoro;
 
-        ctx::Coro *nextCoro = dequeueReadyCoro();
-        while(nextCoro)
-        {
-            if(nextCoro == coro)
-            {
-                return;
-            }
-
-            _currentCoro = nextCoro;
-            coro->switchTo(nextCoro);
-            nextCoro = dequeueReadyCoro();
-        }
-
-        _currentCoro = nullptr;
-        coro->switchTo(&_rootContext);
+        switchToNext();
     }
 
     void Scheduler::ready(ctx::Coro *coro)
@@ -87,12 +59,11 @@ namespace lut { namespace async { namespace impl
     {
         assert(!_currentCoro);
 
-        ctx::Coro *nextCoro = dequeueReadyCoro();
-        while(nextCoro)
+        ctx::Coro *next = dequeueReadyCoro();
+        if(next)
         {
-            _currentCoro = nextCoro;
-            _rootContext.switchTo(nextCoro);
-            nextCoro = dequeueReadyCoro();
+            _currentCoro = next;
+            _rootContext.switchTo(next);
         }
     }
 
@@ -107,21 +78,28 @@ namespace lut { namespace async { namespace impl
         ctx::Coro *coro = _currentCoro;
         _emptyCoros.enqueue(coro);
 
-        ctx::Coro *nextCoro = dequeueReadyCoro();
-        while(nextCoro)
+        switchToNext();
+    }
+
+    void Scheduler::switchToNext()
+    {
+        ctx::Coro *current = _currentCoro;
+        ctx::Coro *next = dequeueReadyCoro();
+        if(next)
         {
-            if(nextCoro == coro)
+            if(next == current)
             {
                 return;
             }
 
-            _currentCoro = nextCoro;
-            coro->switchTo(nextCoro);
-            nextCoro = dequeueReadyCoro();
+            _currentCoro = next;
+            current->switchTo(next);
         }
-
-        _currentCoro = nullptr;
-        coro->switchTo(&_rootContext);
+        else
+        {
+            _currentCoro = nullptr;
+            current->switchTo(&_rootContext);
+        }
     }
 
     ctx::Coro *Scheduler::dequeueReadyCoro()
