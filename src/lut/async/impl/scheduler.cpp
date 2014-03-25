@@ -1,6 +1,5 @@
 #include "lut/async/stable.hpp"
 #include "lut/async/impl/scheduler.hpp"
-#include "lut/async/impl/ctx/stackAllocator.hpp"
 #include "lut/async/impl/ctx/coro.hpp"
 
 #include <algorithm>
@@ -24,6 +23,11 @@ namespace lut { namespace async { namespace impl
         }
     }
 
+    Scheduler &Scheduler::instance()
+    {
+        return _instance;
+    }
+
     void Scheduler::spawn(Task *task)
     {
         _tasks.enqueue(task);
@@ -34,6 +38,28 @@ namespace lut { namespace async { namespace impl
         assert(_currentCoro);
         ctx::Coro *coro = _currentCoro;
         _readyCoros.enqueue(coro);
+
+        ctx::Coro *nextCoro = dequeueReadyCoro();
+        while(nextCoro)
+        {
+            if(nextCoro == coro)
+            {
+                return;
+            }
+
+            _currentCoro = nextCoro;
+            coro->switchTo(nextCoro);
+            nextCoro = dequeueReadyCoro();
+        }
+
+        _currentCoro = nullptr;
+        coro->switchTo(&_rootContext);
+    }
+
+    void Scheduler::hold()
+    {
+        assert(_currentCoro);
+        ctx::Coro *coro = _currentCoro;
 
         ctx::Coro *nextCoro = dequeueReadyCoro();
         while(nextCoro)
@@ -112,4 +138,5 @@ namespace lut { namespace async { namespace impl
         return nullptr;
     }
 
+    Scheduler Scheduler::_instance{};
 }}}

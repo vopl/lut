@@ -2,9 +2,10 @@
 #define _LUT_ASYNC_DETAILS_TASKINSTANCE_HPP_
 
 #include "lut/async/details/task.hpp"
-#include "lut/mm/allocator.hpp"
+#include "lut/mm.hpp"
+
 #include <cstddef>
-#include <boost/pool/pool.hpp>
+#include <functional>
 
 namespace lut { namespace async { namespace details
 {
@@ -34,7 +35,7 @@ namespace lut { namespace async { namespace details
     template<class F, class... Args>
     TaskInstance<F, Args...> *TaskInstance<F, Args...>::alloc(F &&f, Args &&...args)
     {
-        return new(mm::Allocator::alloc<sizeof(TaskInstance)>()) TaskInstance(std::forward<F>(f), std::forward<Args>(args)...);
+        return new(mm::alloc<sizeof(TaskInstance)>()) TaskInstance(std::forward<F>(f), std::forward<Args>(args)...);
     }
 
 
@@ -53,7 +54,7 @@ namespace lut { namespace async { namespace details
             {
                 self->~TaskInstance();
 
-                mm::Allocator::free<sizeof(TaskInstance)>(self);
+                mm::free<sizeof(TaskInstance)>(self);
                 return;
             }
         default:

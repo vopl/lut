@@ -3,7 +3,7 @@
 
 #include "lut/mm/impl/stack.hpp"
 #include "lut/mm/config.hpp"
-#include "lut/mm/allocator.hpp"
+#include "lut/mm.hpp"
 
 #include "lut/mm/impl/indexedContainer.hpp"
 #include "lut/mm/impl/stack.hpp"
@@ -71,7 +71,7 @@ namespace lut { namespace mm { namespace impl
                 Buffer *_bufferForAlloc;
             };
 
-            BuffersBySize _buffersBySize[SizedBufferCalculator<lut::mm::Allocator::_maxAllocatedBufferSize>::_implAmount];
+            BuffersBySize _buffersBySize[SizedBufferCalculator<lut::mm::maxAllocatedBufferSize>::_implAmount];
 
             Header();
             ~Header();
@@ -103,7 +103,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void *Allocator::alloc()
     {
-        if(size > lut::mm::Allocator::_maxAllocatedBufferSize)
+        if(size > lut::mm::maxAllocatedBufferSize)
         {
             return ::malloc(size);
         }
@@ -126,7 +126,7 @@ namespace lut { namespace mm { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <std::size_t size> void Allocator::free(void *ptr)
     {
-        if(unlikely(size > lut::mm::Allocator::_maxAllocatedBufferSize))
+        if(unlikely(size > lut::mm::maxAllocatedBufferSize))
         {
             return ::free(ptr);
         }
@@ -262,7 +262,7 @@ namespace lut { namespace mm { namespace impl
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <>
-    inline void Allocator::createBufferForAlloc<SizedBufferCalculator<lut::mm::Allocator::_maxAllocatedBufferSize>::_implAmount>()
+    inline void Allocator::createBufferForAlloc<SizedBufferCalculator<lut::mm::maxAllocatedBufferSize>::_implAmount>()
     {
     }
 

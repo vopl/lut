@@ -5,8 +5,9 @@
 #include "lut/async/impl/semaphore.hpp"
 #include "lut/async/impl/event.hpp"
 #include "lut/async/impl/conditionVariable.hpp"
+#include "lut/async/impl/acquireWaiter.hpp"
 
-#include "lut/mm/allocator.hpp"
+#include "lut/mm.hpp"
 
 
 namespace lut { namespace async { namespace details
@@ -35,19 +36,19 @@ namespace lut { namespace async { namespace details
     impl::SyncronizerPtr syncronizerCreate(ConditionVariable::BindedLock<Mutex> &v)
     {
         using Target = impl::ConditionVariable::BindedLock<impl::Mutex>;
-        return new(mm::Allocator::alloc<sizeof(Target)>()) Target(v.conditionVariable().impl(), v.lock().impl());
+        return new(mm::alloc<sizeof(Target)>()) Target(v.conditionVariable().impl(), v.lock().impl());
     }
 
     impl::SyncronizerPtr syncronizerCreate(ConditionVariable::BindedLock<RecursiveMutex> &v)
     {
         using Target = impl::ConditionVariable::BindedLock<impl::RecursiveMutex>;
-        return new(mm::Allocator::alloc<sizeof(Target)>()) Target(v.conditionVariable().impl(), v.lock().impl());
+        return new(mm::alloc<sizeof(Target)>()) Target(v.conditionVariable().impl(), v.lock().impl());
     }
 
     impl::SyncronizerPtr syncronizerCreate(ConditionVariable::BindedLock<Semaphore> &v)
     {
         using Target = impl::ConditionVariable::BindedLock<impl::Semaphore>;
-        return new(mm::Allocator::alloc<sizeof(Target)>()) Target(v.conditionVariable().impl(), v.lock().impl());
+        return new(mm::alloc<sizeof(Target)>()) Target(v.conditionVariable().impl(), v.lock().impl());
     }
 
     void syncronizerDestroy(impl::SyncronizerPtr syncronizer, Mutex &v)
@@ -75,7 +76,7 @@ namespace lut { namespace async { namespace details
         using Target = impl::ConditionVariable::BindedLock<impl::Mutex>;
         Target *target = static_cast<Target *>(syncronizer);
         target->~Target();
-        return mm::Allocator::free<sizeof(Target)>(target);
+        return mm::free<sizeof(Target)>(target);
     }
 
     void syncronizerDestroy(impl::SyncronizerPtr syncronizer, ConditionVariable::BindedLock<RecursiveMutex> &v)
@@ -83,7 +84,7 @@ namespace lut { namespace async { namespace details
         using Target = impl::ConditionVariable::BindedLock<impl::RecursiveMutex>;
         Target *target = static_cast<Target *>(syncronizer);
         target->~Target();
-        return mm::Allocator::free<sizeof(Target)>(target);
+        return mm::free<sizeof(Target)>(target);
     }
 
     void syncronizerDestroy(impl::SyncronizerPtr syncronizer, ConditionVariable::BindedLock<Semaphore> &v)
@@ -91,57 +92,19 @@ namespace lut { namespace async { namespace details
         using Target = impl::ConditionVariable::BindedLock<impl::Semaphore>;
         Target *target = static_cast<Target *>(syncronizer);
         target->~Target();
-        return mm::Allocator::free<sizeof(Target)>(target);
+        return mm::free<sizeof(Target)>(target);
     }
 
     std::size_t acquireAny(impl::SyncronizerPtr *syncronizers, std::size_t amount)
     {
-        assert(0);
+        impl::AcquireWaiter acquireWaiter(syncronizers, amount);
+        return acquireWaiter.any();
     }
 
     void acquireAll(impl::SyncronizerPtr *syncronizers, std::size_t amount)
     {
-        assert(0);
-
-//        std::size_t acquired = 0;
-
-//        for(std::size_t idx(0); idx<amount; ++idx)
-//        {
-//            if(syncronizers[idx]->registerWaiter(currentCoro))
-//            {
-//                acquired++;
-//            }
-//        }
-
-//        if(acquired < amount)
-//        {
-//            acquired = 0;
-
-//            for(std::size_t idx(0); acquired<amount; ++idx)
-//            {
-//                if(idx == amount)
-//                {
-//                    idx = 0;
-//                }
-
-//                if(syncronizers[idx]->canAcquire())
-//                {
-//                    acquired++;
-//                }
-//                else
-//                {
-//                    deactivate();
-//                    acquired = 0;
-//                }
-//            }
-//        }
-
-//        assert(amount = acquired);
-
-//        for(std::size_t idx(0); idx<amount; ++idx)
-//        {
-//            syncronizers[idx]->unregisterWaiterAndCommitAcquire(currentCoro);
-//        }
+        impl::AcquireWaiter acquireWaiter(syncronizers, amount);
+        return acquireWaiter.all();
     }
 
 }}}

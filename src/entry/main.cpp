@@ -156,12 +156,12 @@ namespace
 
         void *NOINLINE alloc()
         {
-            return lut::mm::Allocator::alloc<sizeof(pod)>();
+            return lut::mm::alloc<sizeof(pod)>();
         }
 
         void NOINLINE free(void *p)
         {
-            lut::mm::Allocator::free<sizeof(pod)>(p);
+            lut::mm::free<sizeof(pod)>(p);
         }
     };
 }

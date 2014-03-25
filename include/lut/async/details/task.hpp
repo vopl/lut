@@ -36,6 +36,7 @@ namespace lut { namespace async { namespace details
         using HiddenImpl<impl::Task>::impl;
     };
 
+    void spawn(details::Task *task);
 }}}
 
 #endif

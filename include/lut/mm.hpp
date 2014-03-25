@@ -1,37 +1,30 @@
-#include "lut/mm/stable.hpp"
-#include "lut/mm/allocator.hpp"
-#include "lut/mm/impl/allocator.hpp"
-#include "lut/mm/impl/sizedBufferCalculator.hpp"
+#ifndef _LUT_MM_HPP_
+#define _LUT_MM_HPP_
+
+#include "lut/mm/stack.hpp"
+
+#include <type_traits>
 
 namespace lut { namespace mm
 {
 
-    const Stack *Allocator::stackAlloc()
-    {
-        return impl::Allocator::instance()->stackAlloc();
-    }
+    const Stack *stackAlloc();
+    void stackFree(const Stack *stack);
+    void stackCompact(const Stack *stack);
 
-    void Allocator::stackFree(const Stack *stack)
-    {
-        return impl::Allocator::instance()->stackFree(stack);
-    }
+    const std::size_t maxAllocatedBufferSize = 1024;
 
-    void Allocator::stackCompact(const Stack *stack)
-    {
-        return impl::Allocator::instance()->stackCompact(stack);
-    }
+    template <std::size_t size>
+    void *alloc();
+
+    template <std::size_t size>
+    void free(void *ptr);
+
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
 #define BAF_9238657287658752_0(N) \
-    template <> void *Allocator::allocAligned<N>() \
-    { \
-        return impl::Allocator::instance()->alloc<impl::SizedBufferCalculator<N>::_faceSize2ImplSize>(); \
-    } \
-    template <> void Allocator::freeAligned<N>(void *ptr) \
-    { \
-        return impl::Allocator::instance()->free<impl::SizedBufferCalculator<N>::_faceSize2ImplSize>(ptr); \
-    } \
-
+    template <> void *alloc<N>(); \
+    template <> void free<N>(void *ptr);
 
 #define BAF_9238657287658752_1(N) \
     BAF_9238657287658752_0((N)*10 + 0) \
@@ -83,4 +76,17 @@ namespace lut { namespace mm
 #undef BAF_9238657287658752_1
 #undef BAF_9238657287658752_2
 
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <std::size_t size> void *alloc()
+    {
+        return ::malloc(size);
+    }
+
+    template <std::size_t size> void free(void *ptr)
+    {
+        return ::free(ptr);
+    }
+
 }}
+
+#endif

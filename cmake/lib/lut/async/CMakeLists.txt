@@ -135,6 +135,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${PINC}/config.h)
 
 ############################################################
 set(INC
+    ${INCDIR}/lut/async.hpp
     ${PINC}/scheduler.hpp
     ${PINC}/hiddenImpl.hpp
     ${PINC}/mutex.hpp
@@ -147,6 +148,7 @@ set(INC
 source_group(include FILES ${INC})
 ############################################################
 set(SRC
+    ${SRCDIR}/lut/async.cpp
     ${PSRC}/stable.hpp
     ${PSRC}/scheduler.cpp
     ${PSRC}/mutex.cpp
@@ -193,12 +195,15 @@ set(SRC_IMPL
     ${PSRC}/impl/task.cpp
     ${PSRC}/impl/effortContainer.hpp
 
+    ${PSRC}/impl/acquireWaiter.hpp
     ${PSRC}/impl/syncronizer.hpp
     ${PSRC}/impl/mutex.hpp
     ${PSRC}/impl/recursiveMutex.hpp
     ${PSRC}/impl/semaphore.hpp
     ${PSRC}/impl/event.hpp
     ${PSRC}/impl/conditionVariable.hpp
+
+    ${PSRC}/impl/acquireWaiter.cpp
     ${PSRC}/impl/syncronizer.cpp
     ${PSRC}/impl/mutex.cpp
     ${PSRC}/impl/recursiveMutex.cpp
@@ -223,7 +228,6 @@ set(SRC_IMPL_CTX
     ${PSRC}/impl/ctx/root.cpp
     ${PSRC}/impl/ctx/coro.hpp
     ${PSRC}/impl/ctx/coro.cpp
-    ${PSRC}/impl/ctx/stackAllocator.hpp
 )
 if(ASYNCSCHEDULER_CONTEXTENGINE_WINFIBER)
     list(APPEND SRC_IMPL_CTX ${PSRC}/impl/ctx/engine_winfiber.hpp)

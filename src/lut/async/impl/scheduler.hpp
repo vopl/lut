@@ -16,8 +16,12 @@ namespace lut { namespace async { namespace impl
         ~Scheduler();
 
     public:
+        static Scheduler &instance();
+
+    public:
         void spawn(Task *task);
         void yield();
+        void hold();
         void utilize();
 
     public:
@@ -27,6 +31,7 @@ namespace lut { namespace async { namespace impl
         ctx::Coro *dequeueReadyCoro();
 
     private:
+        static Scheduler    _instance;
         ctx::Root           _rootContext;
         ctx::Coro           *_currentCoro;
 
