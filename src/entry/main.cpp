@@ -226,7 +226,7 @@ int lmain()
     setvbuf(stderr, NULL, _IONBF, 0);
 
     lut::async::Mutex mtx1, mtx2;
-    lut::async::Event evt1(true), evt2(false);
+    lut::async::Event evt1(true), evt2(true);
 
 
     auto f = [&](std::size_t num)
@@ -241,29 +241,13 @@ int lmain()
         {
             if(1 == num)
             {
-                std::cout<<num<<", mtx2.locked():"<<mtx2.locked()<<std::endl;
-                if(mtx2.locked())
-                {
-                    std::cout<<num<<", pre mtx2.unlock()"<<std::endl;
-                    mtx2.unlock();
-                    std::cout<<num<<", post mtx2.unlock()"<<std::endl;
-                }
-                std::cout<<num<<", pre mtx1.lock()"<<std::endl;
-                mtx1.lock();
-                std::cout<<num<<", post mtx1.lock()"<<std::endl;
+                evt2.set();
+                evt1.acquire();
             }
             else
             {
-                std::cout<<num<<", mtx1.locked():"<<mtx1.locked()<<std::endl;
-                if(mtx1.locked())
-                {
-                    std::cout<<num<<", pre mtx1.unlock()"<<std::endl;
-                    mtx1.unlock();
-                    std::cout<<num<<", post mtx1.unlock()"<<std::endl;
-                }
-                std::cout<<num<<", pre mtx2.lock()"<<std::endl;
-                mtx2.lock();
-                std::cout<<num<<", post mtx2.lock()"<<std::endl;
+                evt1.set();
+                evt2.acquire();
             }
 
             std::cout<<num<<", pre yield"<<std::endl;
