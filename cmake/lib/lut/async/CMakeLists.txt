@@ -136,7 +136,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${PINC}/config.h)
 ############################################################
 set(INC
     ${INCDIR}/lut/async.hpp
-    ${PINC}/scheduler.hpp
     ${PINC}/hiddenImpl.hpp
     ${PINC}/mutex.hpp
     ${PINC}/recursiveMutex.hpp
@@ -150,7 +149,6 @@ source_group(include FILES ${INC})
 set(SRC
     ${SRCDIR}/lut/async.cpp
     ${PSRC}/stable.hpp
-    ${PSRC}/scheduler.cpp
     ${PSRC}/mutex.cpp
     ${PSRC}/recursiveMutex.cpp
     ${PSRC}/semaphore.cpp

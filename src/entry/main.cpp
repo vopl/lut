@@ -1,12 +1,13 @@
 #include <iostream>
 
 #include "lut/async/stable.hpp"
-#include "lut/async/scheduler.hpp"
+#include "lut/async.hpp"
 #include "lut/async/mutex.hpp"
 #include "lut/async/event.hpp"
 #include "lut/async/conditionVariable.hpp"
 #include "lut/async/semaphore.hpp"
 #include "lut/async/acquire.hpp"
+#include "lut/mm.hpp"
 
 #include <signal.h>
 #include <string.h>
@@ -226,15 +227,13 @@ int lmain()
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
-    lut::async::Scheduler sched;
-
     lut::async::Mutex mtx1, mtx2;
     lut::async::Event evt1(true), evt2(false);
     lut::async::Semaphore sem1(2), sem2(3);
     lut::async::ConditionVariable cv1, cv2;
 
 
-    auto f = [&](lut::async::Scheduler *sched, std::size_t iters){
+    auto f = [&](std::size_t iters){
 
         //atest<Allocator>(pallocator);
 
@@ -255,13 +254,13 @@ int lmain()
             //cv1.notifyAll();
 
             {
-                //mtx2.acquire();
+                mtx2.acquire();
                 lut::async::ConditionVariable::BindedLock<lut::async::Mutex> cvb1 = cv1.bind(mtx2);
                 lut::async::acquireAll(mtx1, sem1, evt1, cvb1);
-                //mtx2.release();
+                mtx2.release();
 
-                //mtx1.release();
-                //sem1.release();
+                mtx1.release();
+                sem1.release();
             }
 
             {
@@ -279,7 +278,7 @@ int lmain()
                 mtx2.release();
             }
 
-            sched->yield();
+            lut::async::yield();
         }
 
         cnt.fetch_add(-1, std::memory_order_relaxed);
@@ -288,10 +287,10 @@ int lmain()
     for(std::size_t i(0); i<2; i++)
     {
         cnt.fetch_add(1);
-        sched.spawn(f, &sched, 100000);
+        lut::async::spawn(f, 100000);
     }
 
-    sched.utilize();
+    lut::async::utilize();
 
     return 0;
 }

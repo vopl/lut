@@ -2,7 +2,6 @@
 
 #define GENERATE_SIZEOFIMPL 1
 
-#include "lut/async/impl/scheduler.hpp"
 #include "lut/async/impl/task.hpp"
 
 #include "lut/async/impl/mutex.hpp"
@@ -37,7 +36,6 @@ int main()
            "    namespace impl { class " #name "; } \n" \
            "    template <> struct sizeofImpl<impl::" #name "> { static const std::size_t _value =  " << sizeof(lut::async::impl::name) << ";};\n\n"
 
-           ONE(Scheduler)
            ONE(Task)
 
            ONE(Mutex)
