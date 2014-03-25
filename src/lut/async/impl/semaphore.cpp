@@ -14,24 +14,50 @@ namespace lut { namespace async { namespace impl
     {
     }
 
-    void Semaphore::acquire()
+    bool Semaphore::locked() const
     {
         assert(0);
     }
 
-    bool Semaphore::tryAcquire()
+    void Semaphore::lock()
     {
-        assert(0);
+        if(tryLock())
+        {
+            return;
+        }
+
+        SyncronizerPtr syncronizers[1] = {this};
+        SyncronizerWaiter syncronizerWaiter(syncronizers, 1);
+
+        syncronizerWaiter.all();
     }
 
-    void Semaphore::release()
+    bool Semaphore::tryLock()
     {
-        assert(0);
+        if(_counter)
+        {
+            assert(!locked());
+
+            _counter--;
+            return true;
+        }
+
+        return false;
+    }
+
+    void Semaphore::unlock()
+    {
+        _counter++;
+        if(1 == _counter)
+        {
+            assert(locked());
+            Syncronizer::unlock();
+        }
     }
 
     std::size_t Semaphore::counter() const
     {
-        assert(0);
+        return _counter;
     }
 
 }}}

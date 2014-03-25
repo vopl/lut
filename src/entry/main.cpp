@@ -254,28 +254,28 @@ int lmain()
             //cv1.notifyAll();
 
             {
-                mtx2.acquire();
+                mtx2.lock();
                 lut::async::ConditionVariable::BindedLock<lut::async::Mutex> cvb1 = cv1.bind(mtx2);
                 lut::async::acquireAll(mtx1, sem1, evt1, cvb1);
-                mtx2.release();
+                mtx2.unlock();
 
-                mtx1.release();
-                sem1.release();
+                mtx1.unlock();
+                sem1.leave();
             }
 
             {
-                mtx2.acquire();
+                mtx2.lock();
                 lut::async::ConditionVariable::BindedLock<lut::async::Mutex> cvb1 = cv1.bind(mtx2);
                 switch(lut::async::acquireAny(mtx1, sem1, evt1, cvb1))
                 {
                 case 0:
-                    mtx1.release();
+                    mtx1.unlock();
                     break;
                 case 1:
-                    sem1.release();
+                    sem1.leave();
                     break;
                 }
-                mtx2.release();
+                mtx2.unlock();
             }
 
             lut::async::yield();

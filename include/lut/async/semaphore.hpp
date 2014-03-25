@@ -22,11 +22,11 @@ namespace lut { namespace async
         ~Semaphore();
 
     public:
-        void acquire();
-        bool tryAcquire();
+        void enter();
+        bool tryEnter();
 
     public:
-        void release();
+        void leave();
 
     public:
         std::size_t counter() const;

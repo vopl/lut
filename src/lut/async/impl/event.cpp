@@ -13,12 +13,17 @@ namespace lut { namespace async { namespace impl
     {
     }
 
-    void Event::acquire()
+    bool Event::locked() const
     {
         assert(0);
     }
 
-    bool Event::tryAcquire()
+    void Event::lock()
+    {
+        assert(0);
+    }
+
+    bool Event::tryLock()
     {
         assert(0);
     }
@@ -33,7 +38,7 @@ namespace lut { namespace async { namespace impl
         assert(0);
     }
 
-    bool Event::isSignalled() const
+    bool Event::signalled() const
     {
         assert(0);
     }

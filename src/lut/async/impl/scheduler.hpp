@@ -22,9 +22,11 @@ namespace lut { namespace async { namespace impl
         void spawn(Task *task);
         void yield();
         void hold();
+        void ready(ctx::Coro *coro);
         void utilize();
 
     public:
+        ctx::Coro *currentCoro();
         void coroCompleted();
 
     private:

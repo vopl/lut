@@ -15,18 +15,18 @@ namespace lut { namespace async
 
     }
 
-    void Semaphore::acquire()
+    void Semaphore::enter()
     {
-        return impl().acquire();
+        return impl().lock();
     }
 
-    bool Semaphore::tryAcquire()
+    bool Semaphore::tryEnter()
     {
-        return impl().tryAcquire();
+        return impl().tryLock();
     }
-    void Semaphore::release()
+    void Semaphore::leave()
     {
-        return impl().release();
+        return impl().unlock();
     }
     std::size_t Semaphore::counter() const
     {

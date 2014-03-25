@@ -1,7 +1,7 @@
 #ifndef _LUT_ASYNC_IMPL_SYNCRONIZER_HPP_
 #define _LUT_ASYNC_IMPL_SYNCRONIZER_HPP_
 
-#include "lut/async/impl/acquireWaiter.hpp"
+#include "lut/async/impl/syncronizerWaiter.hpp"
 #include <vector>
 
 namespace lut { namespace async { namespace impl
@@ -14,23 +14,25 @@ namespace lut { namespace async { namespace impl
         ~Syncronizer();
 
     public:
-        bool registerWaiter(AcquireWaiter *acquireWaiter, std::size_t waiterData);
-        void unregisterWaiterAndCommitAcquire(AcquireWaiter *acquireWaiter, std::size_t waiterData);
-        void unregisterWaiter(AcquireWaiter *acquireWaiter, std::size_t waiterData);
+        bool registerWaiter(SyncronizerWaiter *waiter, std::size_t data);
+        void unregisterWaiterAndCommitAcquire(SyncronizerWaiter *waiter, std::size_t data);
+        void unregisterWaiter(SyncronizerWaiter *waiter, std::size_t data);
 
-    protected:
-        bool _acqiured;
+        virtual bool locked() const = 0;
+        virtual void lock() = 0;
+        void unlock();
 
-        struct AcquireWaiterWithData
+    private:
+        struct WaiterWithData
         {
-            AcquireWaiter *_acquireWaiter;
-            std::size_t _waiterData;
+            SyncronizerWaiter *_waiter;
+            std::size_t _data;
 
-            AcquireWaiterWithData(AcquireWaiter *acquireWaiter, std::size_t waiterData);
-            bool operator==(const AcquireWaiterWithData &with) const;
+            WaiterWithData(SyncronizerWaiter *waiter, std::size_t data);
+            bool operator==(const WaiterWithData &with) const;
         };
 
-        using TVWaiters = std::vector<AcquireWaiterWithData>;
+        using TVWaiters = std::vector<WaiterWithData>;
         TVWaiters _waiters;
     };
 

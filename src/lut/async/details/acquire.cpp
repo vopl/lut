@@ -5,7 +5,7 @@
 #include "lut/async/impl/semaphore.hpp"
 #include "lut/async/impl/event.hpp"
 #include "lut/async/impl/conditionVariable.hpp"
-#include "lut/async/impl/acquireWaiter.hpp"
+#include "lut/async/impl/syncronizerWaiter.hpp"
 
 #include "lut/mm.hpp"
 
@@ -97,14 +97,14 @@ namespace lut { namespace async { namespace details
 
     std::size_t acquireAny(impl::SyncronizerPtr *syncronizers, std::size_t amount)
     {
-        impl::AcquireWaiter acquireWaiter(syncronizers, amount);
-        return acquireWaiter.any();
+        impl::SyncronizerWaiter syncronizerWaiter(syncronizers, amount);
+        return syncronizerWaiter.any();
     }
 
     void acquireAll(impl::SyncronizerPtr *syncronizers, std::size_t amount)
     {
-        impl::AcquireWaiter acquireWaiter(syncronizers, amount);
-        return acquireWaiter.all();
+        impl::SyncronizerWaiter syncronizerWaiter(syncronizers, amount);
+        return syncronizerWaiter.all();
     }
 
 }}}

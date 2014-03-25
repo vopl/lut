@@ -78,6 +78,11 @@ namespace lut { namespace async { namespace impl
         coro->switchTo(&_rootContext);
     }
 
+    void Scheduler::ready(ctx::Coro *coro)
+    {
+        _readyCoros.enqueue(coro);
+    }
+
     void Scheduler::utilize()
     {
         assert(!_currentCoro);
@@ -89,6 +94,11 @@ namespace lut { namespace async { namespace impl
             _rootContext.switchTo(nextCoro);
             nextCoro = dequeueReadyCoro();
         }
+    }
+
+    ctx::Coro *Scheduler::currentCoro()
+    {
+        return _currentCoro;
     }
 
     void Scheduler::coroCompleted()

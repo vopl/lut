@@ -15,24 +15,24 @@ namespace lut { namespace async
 
     }
 
-    void RecursiveMutex::acquire()
+    void RecursiveMutex::lock()
     {
-        return impl().acquire();
+        return impl().lock();
     }
 
-    bool RecursiveMutex::tryAcquire()
+    bool RecursiveMutex::tryLock()
     {
-        return impl().tryAcquire();
+        return impl().tryLock();
     }
 
-    void RecursiveMutex::release()
+    void RecursiveMutex::unlock()
     {
-        return impl().release();
+        return impl().unlock();
     }
 
-    bool RecursiveMutex::isAcquired() const
+    bool RecursiveMutex::locked() const
     {
-        return impl().isAcquired();
+        return impl().locked();
     }
 
 }}

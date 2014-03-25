@@ -37,7 +37,10 @@ namespace lut { namespace async { namespace impl
         {
         public:
             BindedLock(ConditionVariable &cv, Lock &lock);
-            ~BindedLock();
+            virtual ~BindedLock();
+
+            virtual bool locked() const override;
+            virtual void lock() override;
 
         private:
             ConditionVariable &_cv;
@@ -58,6 +61,18 @@ namespace lut { namespace async { namespace impl
     template <typename Lock>
     ConditionVariable::BindedLock<Lock>::~BindedLock()
     {
+    }
+
+    template <typename Lock>
+    bool ConditionVariable::BindedLock<Lock>::locked() const
+    {
+        assert(0);
+    }
+
+    template <typename Lock>
+    void ConditionVariable::BindedLock<Lock>::lock()
+    {
+        assert(0);
     }
 
 

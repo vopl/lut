@@ -17,12 +17,12 @@ namespace lut { namespace async
 
     void Event::acquire()
     {
-        return impl().acquire();
+        return impl().lock();
     }
 
     bool Event::tryAcquire()
     {
-        return impl().tryAcquire();
+        return impl().tryLock();
     }
 
     void Event::set()
@@ -37,7 +37,7 @@ namespace lut { namespace async
 
     bool Event::isSignalled() const
     {
-        return impl().isSignalled();
+        return !impl().locked();
     }
 
 }}

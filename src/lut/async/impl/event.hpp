@@ -11,18 +11,16 @@ namespace lut { namespace async { namespace impl
     {
     public:
         Event(bool autoReset);
-        ~Event();
+        virtual ~Event();
 
     public:
-        void acquire();
-        bool tryAcquire();
+        virtual bool locked() const override;
+        virtual void lock() override;
+        bool tryLock();
+        bool signalled() const;
 
-    public:
         void set();
         void reset();
-
-    public:
-        bool isSignalled() const;
 
     private:
         bool _autoReset;

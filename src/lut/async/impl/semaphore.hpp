@@ -12,16 +12,13 @@ namespace lut { namespace async { namespace impl
     {
     public:
         Semaphore(std::size_t n=1);
-        ~Semaphore();
+        virtual ~Semaphore();
 
     public:
-        void acquire();
-        bool tryAcquire();
-
-    public:
-        void release();
-
-    public:
+        virtual bool locked() const override;
+        virtual void lock() override;
+        bool tryLock();
+        void unlock();
         std::size_t counter() const;
 
     private:

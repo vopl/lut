@@ -14,22 +14,22 @@ namespace lut { namespace async { namespace impl
         assert(!_owner);
     }
 
-    void RecursiveMutex::acquire()
+    void RecursiveMutex::lock()
     {
         assert(0);
     }
 
-    bool RecursiveMutex::tryAcquire()
+    bool RecursiveMutex::tryLock()
     {
         assert(0);
     }
 
-    void RecursiveMutex::release()
+    void RecursiveMutex::unlock()
     {
         assert(0);
     }
 
-    bool RecursiveMutex::isAcquired() const
+    bool RecursiveMutex::locked() const
     {
         assert(0);
     }

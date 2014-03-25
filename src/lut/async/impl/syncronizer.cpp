@@ -7,8 +7,7 @@ namespace lut { namespace async { namespace impl
 {
 
     Syncronizer::Syncronizer()
-        : _acqiured()
-        , _waiters()
+        : _waiters()
     {
     }
 
@@ -16,38 +15,52 @@ namespace lut { namespace async { namespace impl
     {
     }
 
-    bool Syncronizer::registerWaiter(AcquireWaiter *acquireWaiter, std::size_t waiterData)
+    bool Syncronizer::registerWaiter(SyncronizerWaiter *waiter, std::size_t data)
     {
-        _waiters.emplace_back(acquireWaiter, waiterData);
-        return !_acqiured;
+        _waiters.emplace_back(waiter, data);
+        return !locked();
     }
 
-    void Syncronizer::unregisterWaiterAndCommitAcquire(AcquireWaiter *acquireWaiter, std::size_t waiterData)
+    void Syncronizer::unregisterWaiterAndCommitAcquire(SyncronizerWaiter *waiter, std::size_t data)
     {
-        unregisterWaiter(acquireWaiter, waiterData);
+        unregisterWaiter(waiter, data);
 
-        assert(!_acqiured);
-        _acqiured = true;
+        assert(!locked());
+        lock();
     }
 
-    void Syncronizer::unregisterWaiter(AcquireWaiter *acquireWaiter, std::size_t waiterData)
+    void Syncronizer::unregisterWaiter(SyncronizerWaiter *waiter, std::size_t data)
     {
-        AcquireWaiterWithData acquireWaiterWithData {acquireWaiter, waiterData};
-        TVWaiters::reverse_iterator iter = std::find(_waiters.rbegin(), _waiters.rend(), acquireWaiterWithData);
+        WaiterWithData syncronizerWaiterWithData {waiter, data};
+        TVWaiters::reverse_iterator iter = std::find(_waiters.rbegin(), _waiters.rend(), syncronizerWaiterWithData);
         assert(_waiters.rend() != iter);
         _waiters.erase((iter+1).base());
     }
 
-    Syncronizer::AcquireWaiterWithData::AcquireWaiterWithData(AcquireWaiter *acquireWaiter, std::size_t waiterData)
-        : _acquireWaiter(acquireWaiter)
-        , _waiterData(waiterData)
+    void Syncronizer::unlock()
+    {
+        if(!_waiters.empty())
+        {
+            for(WaiterWithData &syncronizerWaiterWithData : _waiters)
+            {
+                if(syncronizerWaiterWithData._waiter->released(syncronizerWaiterWithData._data))
+                {
+                    return;
+                }
+            }
+        }
+    }
+
+    Syncronizer::WaiterWithData::WaiterWithData(SyncronizerWaiter *waiter, std::size_t data)
+        : _waiter(waiter)
+        , _data(data)
     {
     }
 
-    bool Syncronizer::AcquireWaiterWithData::operator==(const AcquireWaiterWithData &with) const
+    bool Syncronizer::WaiterWithData::operator==(const WaiterWithData &with) const
     {
-        return _acquireWaiter == with._acquireWaiter &&
-                _waiterData == with._waiterData;
+        return _waiter == with._waiter &&
+                _data == with._data;
     }
 
 }}}

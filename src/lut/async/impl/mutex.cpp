@@ -1,6 +1,6 @@
 #include "lut/async/stable.hpp"
 #include "lut/async/impl/mutex.hpp"
-#include "lut/async/impl/acquireWaiter.hpp"
+#include "lut/async/impl/syncronizerWaiter.hpp"
 
 namespace lut { namespace async { namespace impl
 {
@@ -12,39 +12,40 @@ namespace lut { namespace async { namespace impl
     {
     }
 
-    void Mutex::acquire()
+    void Mutex::lock()
     {
-        if(tryAcquire())
+        if(tryLock())
         {
             return;
         }
 
         SyncronizerPtr syncronizers[1] = {this};
-        AcquireWaiter acquireWaiter(syncronizers, 1);
+        SyncronizerWaiter syncronizerWaiter(syncronizers, 1);
 
-        acquireWaiter.all();
+        syncronizerWaiter.all();
     }
 
-    bool Mutex::tryAcquire()
+    bool Mutex::tryLock()
     {
-        if(!_acqiured)
+        if(!locked())
         {
-            _acqiured = true;
+            lock();
             return true;
         }
 
         return false;
     }
 
-    void Mutex::release()
+    void Mutex::unlock()
     {
-        assert(_acqiured);
-        _acqiured = false;
+        assert(locked());
+        Syncronizer::unlock();
     }
 
-    bool Mutex::isAcquired() const
+    bool Mutex::locked() const
     {
-        return _acqiured;
+        assert(0);
+        return false;
     }
 
 }}}

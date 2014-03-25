@@ -193,7 +193,7 @@ set(SRC_IMPL
     ${PSRC}/impl/task.cpp
     ${PSRC}/impl/effortContainer.hpp
 
-    ${PSRC}/impl/acquireWaiter.hpp
+    ${PSRC}/impl/syncronizerWaiter.hpp
     ${PSRC}/impl/syncronizer.hpp
     ${PSRC}/impl/mutex.hpp
     ${PSRC}/impl/recursiveMutex.hpp
@@ -201,7 +201,7 @@ set(SRC_IMPL
     ${PSRC}/impl/event.hpp
     ${PSRC}/impl/conditionVariable.hpp
 
-    ${PSRC}/impl/acquireWaiter.cpp
+    ${PSRC}/impl/syncronizerWaiter.cpp
     ${PSRC}/impl/syncronizer.cpp
     ${PSRC}/impl/mutex.cpp
     ${PSRC}/impl/recursiveMutex.cpp

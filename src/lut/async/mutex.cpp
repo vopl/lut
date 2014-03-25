@@ -15,24 +15,24 @@ namespace lut { namespace async
 
     }
 
-    void Mutex::acquire()
+    void Mutex::lock()
     {
-        return impl().acquire();
+        return impl().lock();
     }
 
-    bool Mutex::tryAcquire()
+    bool Mutex::tryLock()
     {
-        return impl().tryAcquire();
+        return impl().tryLock();
     }
 
-    void Mutex::release()
+    void Mutex::unlock()
     {
-        return impl().release();
+        return impl().unlock();
     }
 
-    bool Mutex::isAcquired() const
+    bool Mutex::locked() const
     {
-        return impl().isAcquired();
+        return impl().locked();
     }
 
 }}

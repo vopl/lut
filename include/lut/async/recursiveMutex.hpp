@@ -21,14 +21,14 @@ namespace lut { namespace async
         ~RecursiveMutex();
 
     public:
-        void acquire();
-        bool tryAcquire();
+        void lock();
+        bool tryLock();
 
     public:
-        void release();
+        void unlock();
 
     public:
-        bool isAcquired() const;
+        bool locked() const;
 
     public:
         using HiddenImpl<impl::RecursiveMutex>::pimpl;

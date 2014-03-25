@@ -13,17 +13,13 @@ namespace lut { namespace async { namespace impl
     {
     public:
         RecursiveMutex();
-        ~RecursiveMutex();
+        virtual ~RecursiveMutex();
 
     public:
-        void acquire();
-        bool tryAcquire();
-
-    public:
-        void release();
-
-    public:
-        bool isAcquired() const;
+        virtual bool locked() const override;
+        virtual void lock() override;
+        bool tryLock();
+        void unlock();
 
     private:
         ctx::Coro * _owner;
