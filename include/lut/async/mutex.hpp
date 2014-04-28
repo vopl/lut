@@ -1,7 +1,8 @@
 #ifndef _LUT_ASYNC_MUTEX_HPP_
 #define _LUT_ASYNC_MUTEX_HPP_
 
-#include "lut/async/hiddenImpl.hpp"
+#include "lut/async/sizeofImpl.hpp"
+#include "lut/hiddenImpl.hpp"
 
 namespace lut { namespace async
 {

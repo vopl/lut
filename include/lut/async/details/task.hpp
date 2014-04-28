@@ -1,7 +1,10 @@
 #ifndef _LUT_ASYNC_DETAILS_TASK_HPP_
 #define _LUT_ASYNC_DETAILS_TASK_HPP_
 
-#include "lut/async/hiddenImpl.hpp"
+#if !GENERATE_SIZEOFIMPL
+#   include "lut/async/sizeofImpl.hpp"
+#endif
+#include "lut/hiddenImpl.hpp"
 
 
 namespace lut { namespace async { namespace impl

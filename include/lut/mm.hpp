@@ -3,6 +3,7 @@
 
 #include "lut/mm/stack.hpp"
 
+#include <cstdlib>
 #include <type_traits>
 
 namespace lut { namespace mm

@@ -136,7 +136,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${PINC}/config.h)
 ############################################################
 set(INC
     ${INCDIR}/lut/async.hpp
-    ${PINC}/hiddenImpl.hpp
     ${PINC}/mutex.hpp
     ${PINC}/event.hpp
     ${PINC}/acquire.hpp
@@ -182,7 +181,6 @@ source_group(include/impl FILES ${INC_IMPL})
 set(SRC_IMPL
     ${PSRC}/impl/scheduler.hpp
     ${PSRC}/impl/scheduler.cpp
-    ${PSRC}/impl/sizeofImplGen.cpp
     ${PSRC}/impl/task.hpp
     ${PSRC}/impl/task.cpp
     ${PSRC}/impl/effortContainer.hpp
@@ -263,48 +261,24 @@ endif()
 
 
 
+mkHiddenImplSizes(
+    OUTPUT
+        ${PINC}/sizeofImpl.hpp
 
-############################################################
-string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_UC)
+    GUARD _LUT_ASYNC_SIZEOFIMPL_HPP_
 
-get_directory_property(INCS INCLUDE_DIRECTORIES)
-set(IINCS)
-foreach(i ${INCS})
-    list(APPEND IINCS "-I" ${i})
-endforeach(i)
+    HEADERS
+        ${PSRC}/impl/scheduler.hpp
+        ${PSRC}/impl/task.hpp
+        ${PSRC}/impl/mutex.hpp
+        ${PSRC}/impl/event.hpp
 
-get_directory_property(DEFS COMPILE_DEFINITIONS)
-get_directory_property(DEFSB COMPILE_DEFINITIONS_${BUILD_TYPE_UC})
-set(IDEFS)
-foreach(i ${DEFS} ${DEFSB})
-    LIST(APPEND IDEFS "-D" ${i})
-endforeach(i)
-
-set(cxx_args ${IDEFS} ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BUILD_TYPE_UC}} ${IINCS} ${PSRC}/impl/sizeofImplGen.cpp -o sizeofImplGen)
-separate_arguments(cxx_args)
-
-add_custom_command(OUTPUT ${PINC}/sizeofImpl.hpp
-                    COMMAND ${CMAKE_CXX_COMPILER} ${cxx_args}
-                    COMMAND ./sizeofImplGen > ${PINC}/sizeofImpl.hpp
-                    DEPENDS
-                        ${PINC}/hiddenImpl.hpp
-                        ${PSRC}/impl/sizeofImplGen.cpp
-                        ${PSRC}/impl/scheduler.hpp
-                        ${PSRC}/impl/task.hpp
-                        ${PSRC}/impl/mutex.hpp
-                        ${PSRC}/impl/event.hpp
-                    VERBATIM)
-                    
-set_source_files_properties(${PSRC}/impl/sizeofImplGen.cpp PROPERTIES HEADER_FILE_ONLY ON)
-#set_source_files_properties(
-#    ${PINC}/scheduler.hpp
-#    ${PINC}/codeManager.hpp
-#    ${PINC}/event.hpp
-#    ${PINC}/mutex.hpp
-#    ${PINC}/wait.hpp
-#    PROPERTIES OBJECT_DEPENDS ${PINC}/sizeofImpl.hpp )
-
-
+    CLASSES
+        ::lut::async::impl::Scheduler
+        ::lut::async::impl::Task
+        ::lut::async::impl::Mutex
+        ::lut::async::impl::Event
+)
 
 
 ############################################################

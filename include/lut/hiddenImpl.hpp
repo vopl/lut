@@ -1,19 +1,9 @@
-#ifndef _LUT_ASYNC_HIDDENIMPL_HPP_
-#define _LUT_ASYNC_HIDDENIMPL_HPP_
+#ifndef _LUT_HIDDENIMPL_HPP_
+#define _LUT_HIDDENIMPL_HPP_
 
-#if GENERATE_SIZEOFIMPL
-namespace lut { namespace async
-{
-    template<class T> struct sizeofImpl
-    {
-        static const std::size_t _value = 1;
-    };
-}}
-#else
-#   include "lut/async/sizeofImpl.hpp"
-#endif
+#include "lut/hiddenImpl/sizeofImpl.hpp"
 
-namespace lut { namespace async
+namespace lut
 {
     template <class T>
     class HiddenImpl
@@ -35,7 +25,7 @@ namespace lut { namespace async
         const T &impl() const;
 
     private:
-        char _data[sizeofImpl<T>::_value];
+        char _data[hiddenImpl::sizeofImpl<T>::_value];
     };
 
 
@@ -87,6 +77,6 @@ namespace lut { namespace async
     {
         return *pimpl();
     }
-}}
+}
 
 #endif
