@@ -95,14 +95,15 @@ macro(mkHiddenImplSizes)
 
 
     ############################################################
-    add_executable(${guard} EXCLUDE_FROM_ALL ${src} ${PINC}.hpp ${headers})
-    set_target_properties(${guard} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-    set_target_properties(${guard} PROPERTIES RUNTIME_OUTPUT_NAME sizeofImplGen)
-    get_target_property(sizeofImplGen ${guard} LOCATION)
+    set(sizeofImplGenTarget sizeofImplGen${guard})
+    add_executable(${sizeofImplGenTarget} EXCLUDE_FROM_ALL ${src} ${PINC}.hpp ${headers})
+    set_target_properties(${sizeofImplGenTarget} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    set_target_properties(${sizeofImplGenTarget} PROPERTIES RUNTIME_OUTPUT_NAME sizeofImplGen)
+    get_target_property(sizeofImplGenExecutable ${sizeofImplGenTarget} LOCATION)
 
     add_custom_command(OUTPUT ${output}
-                        COMMAND ${sizeofImplGen} > ${output}
-                        DEPENDS ${guard}
+                        COMMAND ${sizeofImplGenExecutable} > ${output}
+                        DEPENDS ${headers} ${sizeofImplGenTarget}
                         VERBATIM)
 
 endmacro()
