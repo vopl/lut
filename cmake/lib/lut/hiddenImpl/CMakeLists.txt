@@ -36,21 +36,22 @@ macro(mkHiddenImplSizes)
     #message("output: ${output}, guard: ${guard}, headers: ${headers}, classes: ${classes}")
 
     ############################################################
-    set(src "${CMAKE_CURRENT_BINARY_DIR}/sizeofImplGen.cpp")
-    file(WRITE ${src} "#define GENERATE_SIZEOFIMPL 1\n")
+    set(srcText "${CMAKE_CURRENT_BINARY_DIR}/sizeofImplGen.text")
+
+    file(WRITE ${srcText} "#define GENERATE_SIZEOFIMPL 1\n")
     foreach(header ${headers})
-        file(APPEND ${src} "#include \"${header}\"\n")
+        file(APPEND ${srcText} "#include \"${header}\"\n")
     endforeach()
 
-    file(APPEND ${src} "#include <iostream>\n")
+    file(APPEND ${srcText} "#include <iostream>\n")
 
-    file(APPEND ${src} "int main(){\n")
-    file(APPEND ${src} "    std::cout<<\n")
-    file(APPEND ${src} "        \"#ifndef ${guard}\\n\"\n")
-    file(APPEND ${src} "        \"#define ${guard}\\n\"\n")
-    file(APPEND ${src} "        \"\\n\"\n")
-    file(APPEND ${src} "        \"#include \\\"lut/hiddenImpl/sizeofImpl.hpp\\\"\\n\"\n")
-    file(APPEND ${src} "        \"\\n\"\n")
+    file(APPEND ${srcText} "int main(){\n")
+    file(APPEND ${srcText} "    std::cout<<\n")
+    file(APPEND ${srcText} "        \"#ifndef ${guard}\\n\"\n")
+    file(APPEND ${srcText} "        \"#define ${guard}\\n\"\n")
+    file(APPEND ${srcText} "        \"\\n\"\n")
+    file(APPEND ${srcText} "        \"#include \\\"lut/hiddenImpl/sizeofImpl.hpp\\\"\\n\"\n")
+    file(APPEND ${srcText} "        \"\\n\"\n")
 
     ############################################################
     foreach(class ${classes})
@@ -62,49 +63,56 @@ macro(mkHiddenImplSizes)
         list(REMOVE_AT namespaces 0)
         list(REVERSE namespaces)
 
-        file(APPEND ${src} "        \"")
+        file(APPEND ${srcText} "        \"")
         foreach(namespace ${namespaces})
-            file(APPEND ${src} "namespace ${namespace} {")
+            file(APPEND ${srcText} "namespace ${namespace} {")
         endforeach()
 
-        file(APPEND ${src} "class ${classWithoutNamespace};")
+        file(APPEND ${srcText} "class ${classWithoutNamespace};")
 
         foreach(namespace ${namespaces})
-            file(APPEND ${src} "}")
+            file(APPEND ${srcText} "}")
         endforeach()
-        file(APPEND ${src} "\\n\"\n")
+        file(APPEND ${srcText} "\\n\"\n")
     endforeach()
 
     ############################################################
-    file(APPEND ${src} "        \"\\n\"\n")
-    file(APPEND ${src} "        \"namespace lut { namespace hiddenImpl {\\n\"\n")
+    file(APPEND ${srcText} "        \"\\n\"\n")
+    file(APPEND ${srcText} "        \"namespace lut { namespace hiddenImpl {\\n\"\n")
 
     foreach(class ${classes})
-        file(APPEND ${src} "        \"    template <> struct sizeofImpl<${class}> { static const std::size_t _value =  \" << sizeof(${class}) << \";};\\n\"\n")
+        file(APPEND ${srcText} "        \"    template <> struct sizeofImpl<${class}> { static const std::size_t _value =  \" << sizeof(${class}) << \";};\\n\"\n")
     endforeach()
 
-    file(APPEND ${src} "        \"}}\\n\"\n")
+    file(APPEND ${srcText} "        \"}}\\n\"\n")
 
-    file(APPEND ${src} "        \"\\n\"\n")
-    file(APPEND ${src} "        \"#endif\\n\"\n")
-    file(APPEND ${src} ";\n")
-    file(APPEND ${src} "    return 0;\n")
-    file(APPEND ${src} "}\n")
+    file(APPEND ${srcText} "        \"\\n\"\n")
+    file(APPEND ${srcText} "        \"#endif\\n\"\n")
+    file(APPEND ${srcText} ";\n")
+    file(APPEND ${srcText} "    return 0;\n")
+    file(APPEND ${srcText} "}\n")
 
 
 
+
+    ############################################################
+    set(src "${CMAKE_CURRENT_BINARY_DIR}/sizeofImplGen.cpp")
+    add_custom_command(OUTPUT ${src}
+                        COMMAND ${CMAKE_COMMAND} -E copy ${srcText}  ${src}
+                        DEPENDS ${headers} ${PINC}.hpp
+                        )
 
     ############################################################
     set(sizeofImplGenTarget sizeofImplGen${guard})
-    add_executable(${sizeofImplGenTarget} EXCLUDE_FROM_ALL ${src} ${PINC}.hpp ${headers})
+    add_executable(${sizeofImplGenTarget} EXCLUDE_FROM_ALL ${src})
     set_target_properties(${sizeofImplGenTarget} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
     set_target_properties(${sizeofImplGenTarget} PROPERTIES RUNTIME_OUTPUT_NAME sizeofImplGen)
     get_target_property(sizeofImplGenExecutable ${sizeofImplGenTarget} LOCATION)
 
     add_custom_command(OUTPUT ${output}
                         COMMAND ${sizeofImplGenExecutable} > ${output}
-                        DEPENDS ${headers} ${sizeofImplGenTarget}
-                        VERBATIM)
+                        DEPENDS ${sizeofImplGenTarget}
+                        )
 
 endmacro()
 
