@@ -103,14 +103,36 @@ macro(mkHiddenImplSizes)
                         )
 
     ############################################################
-    set(sizeofImplGenTarget sizeofImplGen${guard})
-    add_executable(${sizeofImplGenTarget} EXCLUDE_FROM_ALL ${src})
-    set_target_properties(${sizeofImplGenTarget} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-    set_target_properties(${sizeofImplGenTarget} PROPERTIES RUNTIME_OUTPUT_NAME sizeofImplGen)
-    get_target_property(sizeofImplGenExecutable ${sizeofImplGenTarget} LOCATION)
+    set(sizeofImplGenTarget ${CMAKE_CURRENT_BINARY_DIR}/sizeofImplGen${guard})
+#    add_executable(${sizeofImplGenTarget} EXCLUDE_FROM_ALL ${src})
+#    set_target_properties(${sizeofImplGenTarget} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+#    set_target_properties(${sizeofImplGenTarget} PROPERTIES RUNTIME_OUTPUT_NAME sizeofImplGen)
+#    get_target_property(sizeofImplGenExecutable ${sizeofImplGenTarget} LOCATION)
 
+    set(cxx_args)
+
+    get_directory_property(incs INCLUDE_DIRECTORIES)
+    foreach(i ${incs})
+            list(APPEND cxx_args "-I" ${i})
+    endforeach(i)
+
+    get_directory_property(defs COMPILE_DEFINITIONS)
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_uc)
+    get_directory_property(defsb COMPILE_DEFINITIONS_${build_type_uc})
+    foreach(i ${defs} ${defsb})
+            list(APPEND cxx_args "-D" ${i})
+    endforeach(i)
+
+    set(cxx_args ${cxx_args} ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${build_type_uc}})
+    separate_arguments(cxx_args)
+
+    add_custom_command(OUTPUT ${sizeofImplGenTarget}
+            COMMAND ${CMAKE_CXX_COMPILER} ${cxx_args} ${src} -o ${sizeofImplGenTarget}
+            DEPENDS ${src})
+
+    ############################################################
     add_custom_command(OUTPUT ${output}
-                        COMMAND ${sizeofImplGenExecutable} > ${output}
+                        COMMAND ${sizeofImplGenTarget} > ${output}
                         DEPENDS ${sizeofImplGenTarget}
                         )
 
