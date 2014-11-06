@@ -1,5 +1,4 @@
-#ifndef _LUT_HIDDENIMPL_HPP_
-#define _LUT_HIDDENIMPL_HPP_
+#pragma once
 
 #include "lut/hiddenImpl/sizeofImpl.hpp"
 
@@ -78,5 +77,3 @@ namespace lut
         return *pimpl();
     }
 }
-
-#endif

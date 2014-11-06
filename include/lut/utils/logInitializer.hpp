@@ -1,5 +1,4 @@
-#ifndef _LUT_UTILS_LOGINITIALIZER_HPP_
-#define _LUT_UTILS_LOGINITIALIZER_HPP_
+#pragma once
 
 #include "lut/utils/options.hpp"
 #include <log4cplus/logger.h>
@@ -23,5 +22,3 @@ namespace lut { namespace utils
 
 	};
 }}
-
-#endif

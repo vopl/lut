@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_DETAILS_TASK_HPP_
-#define _LUT_ASYNC_DETAILS_TASK_HPP_
+#pragma once
 
 #if !GENERATE_SIZEOFIMPL
 #   include "lut/async/sizeofImpl.hpp"
@@ -23,15 +22,11 @@ namespace lut { namespace async { namespace details
         void operator=(const Task &) = delete;
 
     public:
-        enum class ActionKind
-        {
-            Free,
-            Call
-        };
-        using ActionExecutor = void (*)(Task *task, ActionKind ck);
+        using CallExecutor = void (*)(Task *task);
+        using FreeExecutor = void (*)(Task *task);
 
     protected:
-        Task(ActionExecutor actionExecutor);
+        Task(CallExecutor callExecutor, FreeExecutor freeExecutor);
         ~Task();
 
     public:
@@ -41,5 +36,3 @@ namespace lut { namespace async { namespace details
 
     void spawn(details::Task *task);
 }}}
-
-#endif

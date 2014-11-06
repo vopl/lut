@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_IMPL_EVENT_HPP_
-#define _LUT_ASYNC_IMPL_EVENT_HPP_
+#pragma once
 
 #include "lut/async/impl/syncronizer.hpp"
 
@@ -29,5 +28,3 @@ namespace lut { namespace async { namespace impl
     };
 
 }}}
-
-#endif

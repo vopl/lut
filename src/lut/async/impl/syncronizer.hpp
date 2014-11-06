@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_IMPL_SYNCRONIZER_HPP_
-#define _LUT_ASYNC_IMPL_SYNCRONIZER_HPP_
+#pragma once
 
 #include "lut/async/impl/syncronizerWaiter.hpp"
 #include <vector>
@@ -39,5 +38,3 @@ namespace lut { namespace async { namespace impl
     using SyncronizerPtr = Syncronizer *;
 
 }}}
-
-#endif

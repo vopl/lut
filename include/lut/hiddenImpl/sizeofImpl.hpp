@@ -1,5 +1,4 @@
-#ifndef _LUT_HIDDENIMPL_SIZEOFIMPL_HPP_
-#define _LUT_HIDDENIMPL_SIZEOFIMPL_HPP_
+#pragma once
 
 #include <cstddef>
 
@@ -11,5 +10,3 @@ namespace lut { namespace hiddenImpl
         static const std::size_t _value = 1;
     };
 }}
-
-#endif

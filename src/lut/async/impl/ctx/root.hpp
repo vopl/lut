@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_IMPL_CTX_ROOT_HPP_
-#define _LUT_ASYNC_IMPL_CTX_ROOT_HPP_
+#pragma once
 
 #include "lut/async/config.h"
 
@@ -26,5 +25,3 @@ namespace lut { namespace async { namespace impl { namespace ctx
         ~Root();
     };
 }}}}
-
-#endif

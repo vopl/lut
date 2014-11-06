@@ -1,7 +1,7 @@
-#include "lut/mm/stable.hpp"
-#include "lut/mm/impl/stack.hpp"
+#include "lut/stable.hpp"
+#include "lut/mm/allocator/stack.hpp"
 
-namespace lut { namespace mm { namespace impl
+namespace lut { namespace mm { namespace allocator
 {
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     Stack::Stack()

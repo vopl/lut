@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_IMPL_SYNCRONIZERWAITER_HPP_
-#define _LUT_ASYNC_IMPL_SYNCRONIZERWAITER_HPP_
+#pragma once
 
 #include "lut/async/impl/ctx/coro.hpp"
 #include <cstdint>
@@ -35,5 +34,3 @@ namespace lut { namespace async { namespace impl
     };
 
 }}}
-
-#endif

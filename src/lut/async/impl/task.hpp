@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_IMPL_TASK_HPP_
-#define _LUT_ASYNC_IMPL_TASK_HPP_
+#pragma once
 
 #include "lut/async/details/task.hpp"
 #include <thread>
@@ -13,7 +12,7 @@ namespace lut { namespace async { namespace impl
     class Task
     {
     public:
-        Task(details::Task *face, details::Task::ActionExecutor faceActionExecutor);
+        Task(details::Task *face, details::Task::CallExecutor faceCallExecutor, details::Task::FreeExecutor faceFreeExecutor);
         ~Task();
 
     public:
@@ -22,12 +21,11 @@ namespace lut { namespace async { namespace impl
 
     private:
         details::Task *_face;
-        details::Task::ActionExecutor _faceActionExecutor;
+        details::Task::CallExecutor _faceCallExecutor;
+        details::Task::FreeExecutor _faceFreeExecutor;
 
         friend class ::lut::async::impl::EffortContainer<Task>;
         Task *  _nextInList;
     };
 
 }}}
-
-#endif

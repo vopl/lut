@@ -265,8 +265,6 @@ mkHiddenImplSizes(
     OUTPUT
         ${PINC}/sizeofImpl.hpp
 
-    GUARD _LUT_ASYNC_SIZEOFIMPL_HPP_
-
     HEADERS
         ${PSRC}/impl/scheduler.hpp
         ${PSRC}/impl/task.hpp

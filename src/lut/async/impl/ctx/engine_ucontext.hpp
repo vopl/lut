@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_IMPL_CTX_ENGINE_UCONTEXT_HPP_
-#define _LUT_ASYNC_IMPL_CTX_ENGINE_UCONTEXT_HPP_
+#pragma once
 
 #include "lut/async/config.h"
 
@@ -21,5 +20,3 @@ namespace lut { namespace async { namespace impl { namespace ctx
         void switchTo(Engine *to);
     };
 }}}}
-
-#endif

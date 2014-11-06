@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_ACQUIRE_HPP_
-#define _LUT_ASYNC_ACQUIRE_HPP_
+#pragma once
 
 #include <cstdint>
 
@@ -28,5 +27,3 @@ namespace lut { namespace async
         return details::acquireAll(acquirables...);
     }
 }}
-
-#endif

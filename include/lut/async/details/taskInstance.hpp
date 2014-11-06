@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_DETAILS_TASKINSTANCE_HPP_
-#define _LUT_ASYNC_DETAILS_TASKINSTANCE_HPP_
+#pragma once
 
 #include "lut/async/details/task.hpp"
 #include "lut/mm.hpp"
@@ -20,7 +19,8 @@ namespace lut { namespace async { namespace details
         static TaskInstance *alloc(F &&f, Args &&...args);
 
     private:
-        static void actionExecutor(Task *task, ActionKind ak);
+        static void callExecutor(Task *task);
+        static void freeExecutor(Task *task);
 
     private:
         TaskInstance(F &&f, Args &&...args);
@@ -41,31 +41,28 @@ namespace lut { namespace async { namespace details
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template<class F, class... Args>
-    void TaskInstance<F, Args...>::actionExecutor(Task *task, ActionKind ak)
+    void TaskInstance<F, Args...>::callExecutor(Task *task)
     {
         TaskInstance *self = static_cast<TaskInstance*>(task);
 
-        switch(ak)
-        {
-        case ActionKind::Call:
-            self->_call();
-            return;
-        case ActionKind::Free:
-            {
-                self->~TaskInstance();
+        self->_call();
+    }
 
-                mm::free<sizeof(TaskInstance)>(self);
-                return;
-            }
-        default:
-            assert("unknown ak");
-        }
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template<class F, class... Args>
+    void TaskInstance<F, Args...>::freeExecutor(Task *task)
+    {
+        TaskInstance *self = static_cast<TaskInstance*>(task);
+
+        self->~TaskInstance();
+
+        mm::free<sizeof(TaskInstance)>(self);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template<class F, class... Args>
     TaskInstance<F, Args...>::TaskInstance(F &&f, Args &&...args)
-        : Task(&TaskInstance::actionExecutor)
+        : Task(&TaskInstance::callExecutor, &TaskInstance::freeExecutor)
         , _call(std::forward<F>(f), std::forward<Args>(args)...)
     {
     }
@@ -78,5 +75,3 @@ namespace lut { namespace async { namespace details
     }
 
 }}}
-
-#endif

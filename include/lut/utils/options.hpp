@@ -1,5 +1,4 @@
-#ifndef _LUT_UTILS_OPTIONS_HPP_
-#define _LUT_UTILS_OPTIONS_HPP_
+#pragma once
 
 #include <boost/program_options.hpp>
 #include <memory>
@@ -43,5 +42,3 @@ namespace lut { namespace utils
 		std::string wrap(const std::string &name) const;
 	};
 }}
-
-#endif

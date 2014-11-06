@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_IMPL_EFFORTCONTAINER_HPP_
-#define _LUT_ASYNC_IMPL_EFFORTCONTAINER_HPP_
+#pragma once
 
 namespace lut { namespace async { namespace impl
 {
@@ -82,6 +81,3 @@ namespace lut { namespace async { namespace impl
         return nullptr;
     }
 }}}
-
-#endif
-

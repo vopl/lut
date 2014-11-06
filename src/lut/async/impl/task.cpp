@@ -4,9 +4,10 @@
 namespace lut { namespace async { namespace impl
 {
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    Task::Task(details::Task *face, details::Task::ActionExecutor faceActionExecutor)
+    Task::Task(details::Task *face, details::Task::CallExecutor faceCallExecutor, details::Task::FreeExecutor faceFreeExecutor)
         : _face(face)
-        , _faceActionExecutor(faceActionExecutor)
+        , _faceCallExecutor(faceCallExecutor)
+        , _faceFreeExecutor(faceFreeExecutor)
     {
     }
 
@@ -18,13 +19,13 @@ namespace lut { namespace async { namespace impl
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     void Task::call()
     {
-        _faceActionExecutor(_face, details::Task::ActionKind::Call);
+        _faceCallExecutor(_face);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     void Task::free()
     {
-        _faceActionExecutor(_face, details::Task::ActionKind::Free);
+        _faceFreeExecutor(_face);
     }
 
 }}}

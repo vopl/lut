@@ -10,12 +10,12 @@ template <bool Stub> log4cplus::Logger LoggerHolder<Stub>::_instance;
 
 #define LOG_INSTANCE (LoggerHolder<true>::_instance)
 
-/////////////////////////////////////////////////////////////////////////
-inline log4cplus::tostream &operator<<(log4cplus::tostream &os, const boost::system::error_code &ec)
-{
-	os<<ec.message()<<" ("<<ec.category().name()<<", "<<ec.value()<<')';
-	return os;
-}
+///////////////////////////////////////////////////////////////////////////
+//inline log4cplus::tostream &operator<<(log4cplus::tostream &os, const boost::system::error_code &ec)
+//{
+//	os<<ec.message()<<" ("<<ec.category().name()<<", "<<ec.value()<<')';
+//	return os;
+//}
 
 
 /////////////////////////////////////////////////////////////////////////

@@ -1,13 +1,12 @@
-#ifndef _LUT_MM_IMPL_STACKLAYOUT_HPP_
-#define _LUT_MM_IMPL_STACKLAYOUT_HPP_
+#pragma once
 
 #include "lut/mm/config.hpp"
-#include "lut/mm/impl/stackState.hpp"
-#include "lut/mm/impl/vm.hpp"
+#include "lut/mm/allocator/stackState.hpp"
+#include "lut/mm/vm.hpp"
 
 #include <type_traits>
 
-namespace lut { namespace mm { namespace impl
+namespace lut { namespace mm { namespace allocator
 {
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <bool stackGrowsDown, bool stackUseGuardPage>
@@ -369,5 +368,3 @@ namespace lut { namespace mm { namespace impl
         WithoutGuard    _withoutGuard;
     };
 }}}
-
-#endif

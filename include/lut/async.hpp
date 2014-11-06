@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_HPP_
-#define _LUT_ASYNC_HPP_
+#pragma once
 
 #include "lut/async/details/taskInstance.hpp"
 
@@ -21,5 +20,3 @@ namespace lut { namespace async
     }
 
 }}
-
-#endif

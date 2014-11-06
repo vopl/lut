@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_DETAILS_ACQUIRE_HPP_
-#define _LUT_ASYNC_DETAILS_ACQUIRE_HPP_
+#pragma once
 
 #include "lut/async/mutex.hpp"
 #include "lut/async/event.hpp"
@@ -52,5 +51,3 @@ namespace lut { namespace async { namespace details
         acquireAll(syncronizers, amount);
     }
 }}}
-
-#endif

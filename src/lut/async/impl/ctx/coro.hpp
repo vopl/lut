@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_IMPL_CTX_CORO_HPP_
-#define _LUT_ASYNC_IMPL_CTX_CORO_HPP_
+#pragma once
 
 #include "lut/async/impl/ctx/root.hpp"
 #include "lut/async/impl/task.hpp"
@@ -47,5 +46,3 @@ namespace lut { namespace async { namespace impl { namespace ctx
         Coro *  _nextInList;
     };
 }}}}
-
-#endif

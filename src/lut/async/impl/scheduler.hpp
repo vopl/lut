@@ -1,5 +1,4 @@
-#ifndef _LUT_ASYNC_IMPL_SCHEDULER_HPP_
-#define _LUT_ASYNC_IMPL_SCHEDULER_HPP_
+#pragma once
 
 #include "lut/async/impl/task.hpp"
 #include "lut/async/impl/ctx/root.hpp"
@@ -44,5 +43,3 @@ namespace lut { namespace async { namespace impl
 
     };
 }}}
-
-#endif

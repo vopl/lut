@@ -118,6 +118,11 @@ namespace lut { namespace async { namespace impl
             if(!coro)
             {
                 coro = ctx::Coro::alloc(this);
+
+                if(!coro)
+                {
+                    return nullptr;
+                }
             }
             coro->setCode(task);
             return coro;

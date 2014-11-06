@@ -1,5 +1,4 @@
-#ifndef _LUT_MM_STACK_HPP_
-#define _LUT_MM_STACK_HPP_
+#pragma once
 
 #include "lut/mm/config.hpp"
 
@@ -14,5 +13,3 @@ namespace lut { namespace mm
         char *_userspaceEnd;
     };
 }}
-
-#endif

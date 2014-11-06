@@ -1,9 +1,8 @@
-#ifndef _LUT_MM_IMPL_STACK_HPP_
-#define _LUT_MM_IMPL_STACK_HPP_
+#pragma once
 
-#include "lut/mm/impl/stackLayout.hpp"
+#include "lut/mm/allocator/stackLayout.hpp"
 
-namespace lut { namespace mm { namespace impl
+namespace lut { namespace mm { namespace allocator
 {
     class Stack
         : public StackLayout<Config::_stackGrowsDown, Config::_stackUseGuardPage>
@@ -25,5 +24,3 @@ namespace lut { namespace mm { namespace impl
     private:
     };
 }}}
-
-#endif
