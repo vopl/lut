@@ -48,7 +48,13 @@ if(VALGRIND_FOUND)
     include_directories(${VALGRIND_INCLUDE_DIR})
 endif()
 
+include(FindLibuv)
+if(!LIBUV_FOUND)
+    message(ERROR "libuv not found")
+endif()
 
+#message(STATUS "found libuv: ${LIBUV_INCLUDE_DIRS}")
+include_directories(${LIBUV_INCLUDE_DIRS})
 
 
 
@@ -298,6 +304,7 @@ if(ASYNCSCHEDULER_CONTEXTENGINE_BOOSTCONTEXT)
 endif()
 
 target_link_libraries(${PROJECT} ${Boost_SYSTEM_LIBRARY})
+target_link_libraries(${PROJECT} ${LIBUV_LIBRARIES})
 
 
 

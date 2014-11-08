@@ -8,7 +8,8 @@ namespace lut { namespace async
     void spawn(F &&f, Args &&...args);
 
     void yield();
-    void utilize();
+    void run();
+    void stop();
 
 
     ////////////////////////////////////////////////////////////////////////////////

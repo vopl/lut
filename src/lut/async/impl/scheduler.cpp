@@ -10,6 +10,7 @@ namespace lut { namespace async { namespace impl
     Scheduler::Scheduler()
         : _currentCoro(nullptr)
     {
+        uv_loop_init(&_uv_loop);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -21,6 +22,8 @@ namespace lut { namespace async { namespace impl
             coro->free();
             coro = _emptyCoros.dequeue();
         }
+
+        uv_loop_close(&_uv_loop);
     }
 
     Scheduler &Scheduler::instance()
@@ -55,7 +58,36 @@ namespace lut { namespace async { namespace impl
         _readyCoros.enqueue(coro);
     }
 
-    void Scheduler::utilize()
+    namespace
+    {
+        void uv_check_cb(uv_check_t* handle)
+        {
+            static_cast<Scheduler *>(handle->data)->executeReadyCoros();
+        }
+    }
+
+    void Scheduler::run()
+    {
+        executeReadyCoros();
+
+        uv_check_t  uv_check;
+
+        uv_check_init(&_uv_loop, &uv_check);
+
+        uv_check.data = this;
+        uv_check_start(&uv_check, &uv_check_cb);
+
+        uv_run(&_uv_loop, UV_RUN_DEFAULT);
+
+        uv_check_stop(&uv_check);
+    }
+
+    void Scheduler::stop()
+    {
+        uv_stop(&_uv_loop);
+    }
+
+    void Scheduler::executeReadyCoros()
     {
         assert(!_currentCoro);
 

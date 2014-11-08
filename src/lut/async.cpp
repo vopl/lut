@@ -11,8 +11,15 @@ namespace lut { namespace async
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void utilize()
+    void run()
     {
-        return impl::Scheduler::instance().utilize();
+        return impl::Scheduler::instance().run();
     }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    void stop()
+    {
+        return impl::Scheduler::instance().stop();
+    }
+
 }}
