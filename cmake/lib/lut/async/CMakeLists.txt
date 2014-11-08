@@ -145,6 +145,7 @@ set(INC
     ${PINC}/mutex.hpp
     ${PINC}/event.hpp
     ${PINC}/acquire.hpp
+    ${PINC}/future.hpp
 )
 source_group(include FILES ${INC})
 ############################################################

@@ -94,7 +94,7 @@ macro(mkHiddenImplSizes)
     set(src "${CMAKE_CURRENT_BINARY_DIR}/sizeofImplGen.cpp")
     add_custom_command(OUTPUT ${src}
                         COMMAND ${CMAKE_COMMAND} -E copy ${srcText}  ${src}
-                        DEPENDS ${headers} ${PINC}.hpp
+                        DEPENDS ${headers} #${PINC}.hpp
                         )
 
     ############################################################

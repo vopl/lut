@@ -70,6 +70,7 @@ namespace lut { namespace async { namespace impl
         {
             static_cast<Scheduler *>(handle->data)->executeReadyCoros();
         });
+        uv_unref((uv_handle_t *)&uv_check);
 
         uv_run(&_uv_loop, UV_RUN_DEFAULT);
 
