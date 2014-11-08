@@ -58,24 +58,18 @@ namespace lut { namespace async { namespace impl
         _readyCoros.enqueue(coro);
     }
 
-    namespace
-    {
-        void uv_check_cb(uv_check_t* handle)
-        {
-            static_cast<Scheduler *>(handle->data)->executeReadyCoros();
-        }
-    }
-
     void Scheduler::run()
     {
         executeReadyCoros();
 
         uv_check_t  uv_check;
-
         uv_check_init(&_uv_loop, &uv_check);
 
         uv_check.data = this;
-        uv_check_start(&uv_check, &uv_check_cb);
+        uv_check_start(&uv_check, [](uv_check_t *handle)
+        {
+            static_cast<Scheduler *>(handle->data)->executeReadyCoros();
+        });
 
         uv_run(&_uv_loop, UV_RUN_DEFAULT);
 
