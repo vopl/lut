@@ -8,34 +8,25 @@ set(PSRC ${SRCDIR}/lut/io)
 
 ############################################################
 set(INC
-    ${PINC}/handle.hpp
+    ${PINC}/loop.hpp
     ${PINC}/stream.hpp
-    ${PINC}/tcp.hpp
-    ${PINC}/udp.hpp
-    ${PINC}/pipe.hpp
-    ${PINC}/tty.hpp
-    ${PINC}/poll.hpp
+    ${PINC}/server.hpp
+    ${PINC}/client.hpp
+    ${PINC}/endpoint.hpp
+    ${PINC}/poller.hpp
     ${PINC}/timer.hpp
-    ${PINC}/process.hpp
-    ${PINC}/fs_event.hpp
-    ${PINC}/fs_poll.hpp
-    ${PINC}/signal.hpp
+    ${PINC}/data.hpp
 )
 source_group(include FILES ${INC})
 ############################################################
 set(SRC
-    ${PSRC}/handle.cpp
+    ${PSRC}/loop.cpp
     ${PSRC}/stream.cpp
-    ${PSRC}/tcp.cpp
-    ${PSRC}/udp.cpp
-    ${PSRC}/pipe.cpp
-    ${PSRC}/tty.cpp
-    ${PSRC}/poll.cpp
+    ${PSRC}/server.cpp
+    ${PSRC}/client.cpp
+    ${PSRC}/endpoint.cpp
+    ${PSRC}/poller.cpp
     ${PSRC}/timer.cpp
-    ${PSRC}/process.cpp
-    ${PSRC}/fs_event.cpp
-    ${PSRC}/fs_poll.cpp
-    ${PSRC}/signal.cpp
 )
 source_group(src FILES ${SRC})
 
@@ -49,34 +40,28 @@ source_group(src FILES ${SRC})
 
 ############################################################
 set(INC_IMPL
-    ${PSRC}/impl/handle.hpp
+    ${PSRC}/impl/loop.hpp
     ${PSRC}/impl/stream.hpp
-    ${PSRC}/impl/tcp.hpp
-    ${PSRC}/impl/udp.hpp
-    ${PSRC}/impl/pipe.hpp
-    ${PSRC}/impl/tty.hpp
-    ${PSRC}/impl/poll.hpp
+    ${PSRC}/impl/server.hpp
+    ${PSRC}/impl/client.hpp
+    ${PSRC}/impl/poller.hpp
     ${PSRC}/impl/timer.hpp
-    ${PSRC}/impl/process.hpp
-    ${PSRC}/impl/fs_event.hpp
-    ${PSRC}/impl/fs_poll.hpp
-    ${PSRC}/impl/signal.hpp
+    ${PSRC}/impl/fd/base.hpp
+    ${PSRC}/impl/fd/tcp.hpp
+    ${PSRC}/impl/fd/tcpConnector.hpp
 )
 source_group(include/impl FILES ${INC_IMPL})
 ############################################################
 set(SRC_IMPL
-    ${PSRC}/impl/handle.cpp
+    ${PSRC}/impl/loop.cpp
     ${PSRC}/impl/stream.cpp
-    ${PSRC}/impl/tcp.cpp
-    ${PSRC}/impl/udp.cpp
-    ${PSRC}/impl/pipe.cpp
-    ${PSRC}/impl/tty.cpp
-    ${PSRC}/impl/poll.cpp
+    ${PSRC}/impl/server.cpp
+    ${PSRC}/impl/client.cpp
+    ${PSRC}/impl/poller.cpp
     ${PSRC}/impl/timer.cpp
-    ${PSRC}/impl/process.cpp
-    ${PSRC}/impl/fs_event.cpp
-    ${PSRC}/impl/fs_poll.cpp
-    ${PSRC}/impl/signal.cpp
+    ${PSRC}/impl/fd/base.cpp
+    ${PSRC}/impl/fd/tcp.cpp
+    ${PSRC}/impl/fd/tcpConnector.cpp
 )
 source_group(src/impl FILES ${SRC_IMPL})
 
@@ -91,10 +76,14 @@ mkHiddenImplSizes(
         ${PINC}/sizeofImpl.hpp
 
     HEADERS
-        ${PSRC}/impl/handle.hpp
+        ${PSRC}/impl/stream.hpp
+        ${PSRC}/impl/client.hpp
+        ${PSRC}/impl/server.hpp
 
     CLASSES
-        ::lut::io::impl::Handle
+        ::lut::io::impl::Stream
+        ::lut::io::impl::Client
+        ::lut::io::impl::Server
 )
 
 

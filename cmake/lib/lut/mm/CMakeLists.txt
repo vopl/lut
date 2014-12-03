@@ -24,6 +24,7 @@ set(INC
     ${PINC}.hpp
     ${PINC}/config.hpp
     ${PINC}/stack.hpp
+    ${PINC}/sharedInstance.hpp
 )
 source_group(include/mm FILES ${INC})
 ############################################################

@@ -5,8 +5,6 @@
 #include "lut/async/impl/ctx/coro.hpp"
 #include "lut/async/impl/effortContainer.hpp"
 
-#include <uv.h>
-
 namespace lut { namespace async { namespace impl
 {
     class Scheduler
@@ -23,8 +21,6 @@ namespace lut { namespace async { namespace impl
         void yield();
         void hold();
         void ready(ctx::Coro *coro);
-        void run();
-        void stop();
         void executeReadyCoros();
 
     public:
@@ -43,8 +39,5 @@ namespace lut { namespace async { namespace impl
         EffortContainer<ctx::Coro>  _emptyCoros;
         EffortContainer<ctx::Coro>  _readyCoros;
         EffortContainer<Task>       _tasks;
-
-    private:
-        uv_loop_t   _uv_loop;
     };
 }}}

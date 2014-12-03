@@ -11,15 +11,9 @@ namespace lut { namespace async
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    void run()
+    void executeReadyCoros()
     {
-        return impl::Scheduler::instance().run();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    void stop()
-    {
-        return impl::Scheduler::instance().stop();
+        return impl::Scheduler::instance().executeReadyCoros();
     }
 
 }}

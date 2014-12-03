@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lut/async/impl/scheduler.hpp"
 #include "lut/async/details/taskInstance.hpp"
 
 namespace lut { namespace async
@@ -8,9 +9,8 @@ namespace lut { namespace async
     void spawn(F &&f, Args &&...args);
 
     void yield();
-    void run();
-    void stop();
 
+    void executeReadyCoros();
 
     ////////////////////////////////////////////////////////////////////////////////
     template<class F, class... Args>

@@ -1,21 +1,32 @@
 #pragma once
 
 #include "lut/hiddenImpl/sizeofImpl.hpp"
+#include <utility>
 
 namespace lut
 {
+    namespace hiddenImpl
+    {
+        class Accessor;
+    }
+
     template <class T>
     class HiddenImpl
     {
-    private:
-        HiddenImpl(const HiddenImpl &other) = delete;
-        HiddenImpl &operator=(const HiddenImpl &other) = delete;
-
     protected:
+        friend class hiddenImpl::Accessor;
 
         template <typename... Arg>
         HiddenImpl(const Arg &... args);
+
+        HiddenImpl(const HiddenImpl &other);
+        HiddenImpl(HiddenImpl &&other);
+
         ~HiddenImpl();
+
+        HiddenImpl &operator=(const HiddenImpl &other);
+        HiddenImpl &operator=(HiddenImpl &&other);
+
 
         T *pimpl();
         T &impl();
@@ -30,6 +41,15 @@ namespace lut
 
 
 
+    namespace
+    {
+        template <typename T, std::size_t s1=sizeof(T), std::size_t s2 = sizeof(HiddenImpl<T>)>
+        void sizeChecker()
+        {
+            static_assert(sizeof(T)==sizeof(HiddenImpl<T>), "inconsistent sizeofImpl");
+        }
+    }
+
 
 
 
@@ -38,8 +58,24 @@ namespace lut
     template <typename... Arg>
     HiddenImpl<T>::HiddenImpl(const Arg &... args)
     {
-        static_assert(sizeof(T)==sizeof(HiddenImpl), "inconsistent sizeofImpl");
+        sizeChecker<T>();
         new (&_data) T(args...);
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <class T>
+    HiddenImpl<T>::HiddenImpl(const HiddenImpl &other)
+    {
+        sizeChecker<T>();
+        new (&_data) T(other);
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <class T>
+    HiddenImpl<T>::HiddenImpl(HiddenImpl &&other)
+    {
+        sizeChecker<T>();
+        new (&_data) T(std::move(other.impl()));
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -47,6 +83,20 @@ namespace lut
     HiddenImpl<T>::~HiddenImpl()
     {
         pimpl()->~T();
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <class T>
+    HiddenImpl<T> &HiddenImpl<T>::operator=(const HiddenImpl &other)
+    {
+        impl() = other;
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <class T>
+    HiddenImpl<T> &HiddenImpl<T>::operator=(HiddenImpl &&other)
+    {
+        impl() = std::forward<T>(other);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

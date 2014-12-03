@@ -94,7 +94,7 @@ macro(mkHiddenImplSizes)
     set(src "${CMAKE_CURRENT_BINARY_DIR}/sizeofImplGen.cpp")
     add_custom_command(OUTPUT ${src}
                         COMMAND ${CMAKE_COMMAND} -E copy ${srcText}  ${src}
-                        DEPENDS ${headers} #${PINC}.hpp
+                        DEPENDS ${headers} ${srcText} #${PINC}.hpp
                         )
 
     ############################################################
@@ -123,7 +123,7 @@ macro(mkHiddenImplSizes)
 
     add_custom_command(OUTPUT ${sizeofImplGenTarget}
             COMMAND ${CMAKE_CXX_COMPILER} ${cxx_args} ${src} -o ${sizeofImplGenTarget}
-            DEPENDS ${src})
+            DEPENDS ${src} )
 
     ############################################################
     add_custom_command(OUTPUT ${output}
@@ -135,6 +135,7 @@ endmacro()
 
 add_library(${PROJECT} STATIC
     ${PINC}.hpp
-    ${PINC}/sizeofImpl.hpp)
+    ${PINC}/sizeofImpl.hpp
+    ${PSRC}/accessor.hpp)
 
 set_target_properties(${PROJECT} PROPERTIES LINKER_LANGUAGE CXX)

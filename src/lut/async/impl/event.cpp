@@ -37,9 +37,8 @@ namespace lut { namespace async { namespace impl
         {
             if(_autoReset)
             {
-                return true;
+                _signalled = false;
             }
-            _signalled = false;
             return true;
         }
 

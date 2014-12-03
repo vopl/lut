@@ -19,7 +19,8 @@ add_executable(entry ${INC} ${SRC} ${SRC_PCH})
 
 target_link_libraries(entry 
     lut-mm
-    lut-async)
+    lut-async
+    lut-io)
 
 #if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
 #    target_link_libraries(${PROJECT} rt)
