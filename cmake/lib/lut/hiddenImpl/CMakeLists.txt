@@ -36,6 +36,7 @@ macro(mkHiddenImplSizes)
     set(srcText "${CMAKE_CURRENT_BINARY_DIR}/sizeofImplGen.text")
 
     file(WRITE ${srcText} "#define GENERATE_SIZEOFIMPL 1\n")
+    file(APPEND ${srcText} "#include \"lut/hiddenImpl/sizeofImplDefault.hpp\"\n")
     foreach(header ${headers})
         file(APPEND ${srcText} "#include \"${header}\"\n")
     endforeach()
@@ -136,6 +137,7 @@ endmacro()
 add_library(${PROJECT} STATIC
     ${PINC}.hpp
     ${PINC}/sizeofImpl.hpp
+    ${PINC}/sizeofImplDefault.hpp
     ${PSRC}/accessor.hpp)
 
 set_target_properties(${PROJECT} PROPERTIES LINKER_LANGUAGE CXX)

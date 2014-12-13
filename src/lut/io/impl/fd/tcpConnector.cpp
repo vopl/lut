@@ -1,7 +1,7 @@
 
 #include "lut/stable.hpp"
 #include "lut/io/impl/fd/tcpConnector.hpp"
-#include "lut/io/impl/fd/tcp.hpp"
+#include "lut/io/impl/fd/stream.hpp"
 #include "lut/io/impl/stream.hpp"
 #include "lut/io/stream.hpp"
 #include "lut/hiddenImpl/accessor.hpp"
@@ -79,7 +79,7 @@ namespace lut { namespace io { namespace impl { namespace fd
 
         if(typeFlags & etf_error)
         {
-            int errcode;
+            int errcode = ENOTSOCK;
             socklen_t errcodelen = sizeof(errcode);
             if(-1 == getsockopt(getDescriptor(), SOL_SOCKET, SO_ERROR, &errcode, &errcodelen))
             {
@@ -121,7 +121,7 @@ namespace lut { namespace io { namespace impl { namespace fd
             return;
         }
 
-        Tcp *engine = new Tcp;
+        Stream *engine = new Stream;
         err = moveDescriptorTo(engine);
 
         if(err)

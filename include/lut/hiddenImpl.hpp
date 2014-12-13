@@ -89,14 +89,16 @@ namespace lut
     template <class T>
     HiddenImpl<T> &HiddenImpl<T>::operator=(const HiddenImpl &other)
     {
-        impl() = other;
+        impl() = other.impl();
+        return *this;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
     HiddenImpl<T> &HiddenImpl<T>::operator=(HiddenImpl &&other)
     {
-        impl() = std::forward<T>(other);
+        impl() = std::forward<T>(other.impl());
+        return *this;
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

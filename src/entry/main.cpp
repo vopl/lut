@@ -54,10 +54,13 @@ int main()
 
             //lut::io::loop::stop();
 
-            lut::io::Data d = stream.read(0, 220).value<1>();
-//            stream.write(d);
+            lut::io::Data dw;
+            dw << "HTTP 1.0 GET \r\n\r\n";
+            stream.write(std::move(dw)).wait();
 
-//            stream.close();
+            lut::io::Data dr = stream.read(0, 220).detachValue<1>();
+
+            //stream.close();
 
         });
 

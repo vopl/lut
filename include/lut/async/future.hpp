@@ -33,6 +33,7 @@ namespace lut { namespace async
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename... T>
     class Future
+        : private lut::mm::SharedInstance<details::FutureState<T...>>
     {
         friend class Promise<T...>;
         using StateInstance = lut::mm::SharedInstance<details::FutureState<T...>>;
@@ -57,15 +58,15 @@ namespace lut { namespace async
 
         template <std::size_t idx>
         typename std::tuple_element<idx, std::tuple<T...> >::type &&detachValue();
-
-    private:
-        StateInstance _state;
     };
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename... T>
     class Promise
+        : private lut::mm::SharedInstance<details::FutureState<T...>>
     {
+        using StateInstance = lut::mm::SharedInstance<details::FutureState<T...>>;
+
         Promise(const Promise &other) = delete;
         Promise &operator=(const Promise &other) = delete;
 
@@ -81,10 +82,6 @@ namespace lut { namespace async
         bool isReady() const;
         void setValue(T&&... val);
         void setException(const std::exception_ptr &exception);
-
-    private:
-        using StateInstance = typename Future<T...>::StateInstance;
-        StateInstance _state;
     };
 
 
@@ -117,19 +114,19 @@ namespace lut { namespace async
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename... T>
     Future<T...>::Future(const StateInstance &state)
-        : _state(state)
+        : StateInstance(state)
     {
     }
 
     template <typename... T>
     Future<T...>::Future(const Future &other)
-        : _state(other._state)
+        : StateInstance(other._state)
     {
     }
 
     template <typename... T>
     Future<T...>::Future(Future &&other)
-        : _state(std::move(other._state))
+        : StateInstance(std::forward<StateInstance>(other))
     {
 
     }
@@ -137,36 +134,38 @@ namespace lut { namespace async
     template <typename... T>
     Future<T...> &Future<T...>::operator=(const Future &other)
     {
-        _state = other._state;
+        this->StateInstance::operator=(other);
+        return *this;
     }
 
     template <typename... T>
     Future<T...> &Future<T...>::operator=(Future &&other)
     {
-        _state = std::move<StateInstance>(other._state);
+        this->StateInstance::operator=(std::forward<StateInstance>(other));
+        return *this;
     }
 
     template <typename... T>
     void Future<T...>::wait()
     {
-        _state->_readyEvent.acquire();
+        this->instance()._readyEvent.acquire();
     }
 
     template <typename... T>
     bool Future<T...>::isReady() const
     {
-        return _state->_readyEvent.isSignalled();
+        return this->_readyEvent.isSignalled();
     }
 
     template <typename... T>
     const std::tuple<T...> &Future<T...>::value()
     {
         wait();
-        if(_state->_exception)
+        if(this->instance()._exception)
         {
-            std::rethrow_exception(_state->_exception);
+            std::rethrow_exception(this->instance()._exception);
         }
-        return _state->valueArea();
+        return this->instance().valueArea();
     }
 
     template <typename... T>
@@ -174,22 +173,22 @@ namespace lut { namespace async
     const typename std::tuple_element<idx, std::tuple<T...> >::type &Future<T...>::value()
     {
         wait();
-        if(_state->_exception)
+        if(this->_exception)
         {
-            std::rethrow_exception(_state->_exception);
+            std::rethrow_exception(this->_exception);
         }
-        return std::get<idx>(_state->valueArea());
+        return std::get<idx>(this->valueArea());
     }
 
     template <typename... T>
     std::tuple<T...> &&Future<T...>::detachValue()
     {
         wait();
-        if(_state->_exception)
+        if(this->_exception)
         {
-            std::rethrow_exception(_state->_exception);
+            std::rethrow_exception(this->_exception);
         }
-        return _state->valueArea();
+        return this->valueArea();
     }
 
 
@@ -198,11 +197,11 @@ namespace lut { namespace async
     typename std::tuple_element<idx, std::tuple<T...> >::type &&Future<T...>::detachValue()
     {
         wait();
-        if(_state->_exception)
+        if(this->instance()._exception)
         {
-            std::rethrow_exception(_state->_exception);
+            std::rethrow_exception(this->instance()._exception);
         }
-        return std::get<idx>(std::forward<typename details::FutureState<T...>::Value>(_state->valueArea()));
+        return std::get<idx>(std::forward<typename details::FutureState<T...>::Value>(this->instance().valueArea()));
     }
 
 
@@ -210,26 +209,26 @@ namespace lut { namespace async
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <typename... T>
     Promise<T...>::Promise()
-        : _state()
+        : StateInstance()
     {
     }
 
     template <typename... T>
     Promise<T...>::Promise(Promise &&other)
-        : _state(std::move<StateInstance>(other._state))
+        : StateInstance(std::forward<StateInstance>(other))
     {
     }
 
     template <typename... T>
     Promise<T...> &Promise<T...>::operator=(Promise &&other)
     {
-        _state = std::move<StateInstance>(other._state);
+        this->StateInstance::operator=( std::forward<StateInstance>(other));
     }
 
     template <typename... T>
     Promise<T...>::~Promise()
     {
-        if(!_state->_readyEvent.isSignalled() && _state.counter()>1)
+        if(!this->instance()._readyEvent.isSignalled() && this->counter()>1)
         {
             assert(!"unsetted promise destroyed while futures exists");
             std::abort();
@@ -239,39 +238,39 @@ namespace lut { namespace async
     template <typename... T>
     Future<T...> Promise<T...>::future()
     {
-        return Future<T...>(_state);
+        return Future<T...>(*this);
     }
 
     template <typename... T>
     bool Promise<T...>::isReady() const
     {
-        return _state->_readyEvent.isSignalled();
+        return this->instance()._readyEvent.isSignalled();
     }
 
     template <typename... T>
     void Promise<T...>::setValue(T&&... val)
     {
-        if(_state->_readyEvent.isSignalled())
+        if(this->instance()._readyEvent.isSignalled())
         {
             assert(!"promise already has value or exception");
             std::abort();
         }
 
-        new(&_state->valueArea()) std::tuple<T...>(std::forward<T>(val)...);
-        _state->_readyEvent.set();
+        new(&this->instance().valueArea()) std::tuple<T...>(std::forward<T>(val)...);
+        this->instance()._readyEvent.set();
     }
 
     template <typename... T>
     void Promise<T...>::setException(const std::exception_ptr &exception)
     {
-        if(_state->_readyEvent.isSignalled())
+        if(this->instance()._readyEvent.isSignalled())
         {
             assert(!"promise already has value or exception");
             std::abort();
         }
 
-        _state->_exception = exception;
-        _state->_readyEvent.set();
+        this->instance()._exception = exception;
+        this->instance()._readyEvent.set();
     }
 
 }}

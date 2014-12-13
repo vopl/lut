@@ -27,6 +27,7 @@ set(SRC
     ${PSRC}/endpoint.cpp
     ${PSRC}/poller.cpp
     ${PSRC}/timer.cpp
+    ${PSRC}/data.cpp
 )
 source_group(src FILES ${SRC})
 
@@ -47,8 +48,11 @@ set(INC_IMPL
     ${PSRC}/impl/poller.hpp
     ${PSRC}/impl/timer.hpp
     ${PSRC}/impl/fd/base.hpp
-    ${PSRC}/impl/fd/tcp.hpp
+    ${PSRC}/impl/fd/stream.hpp
+    ${PSRC}/impl/fd/stream/reader.hpp
+    ${PSRC}/impl/fd/stream/writer.hpp
     ${PSRC}/impl/fd/tcpConnector.hpp
+    ${PSRC}/impl/data.hpp
 )
 source_group(include/impl FILES ${INC_IMPL})
 ############################################################
@@ -60,8 +64,11 @@ set(SRC_IMPL
     ${PSRC}/impl/poller.cpp
     ${PSRC}/impl/timer.cpp
     ${PSRC}/impl/fd/base.cpp
-    ${PSRC}/impl/fd/tcp.cpp
+    ${PSRC}/impl/fd/stream.cpp
+    ${PSRC}/impl/fd/stream/reader.cpp
+    ${PSRC}/impl/fd/stream/writer.cpp
     ${PSRC}/impl/fd/tcpConnector.cpp
+    ${PSRC}/impl/data.cpp
 )
 source_group(src/impl FILES ${SRC_IMPL})
 
@@ -79,11 +86,13 @@ mkHiddenImplSizes(
         ${PSRC}/impl/stream.hpp
         ${PSRC}/impl/client.hpp
         ${PSRC}/impl/server.hpp
+        ${PSRC}/impl/data.hpp
 
     CLASSES
         ::lut::io::impl::Stream
         ::lut::io::impl::Client
         ::lut::io::impl::Server
+        ::lut::io::impl::Data
 )
 
 

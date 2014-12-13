@@ -4,6 +4,7 @@ include/lut/async/sizeofImpl.hpp
 cmake-build
 build
 bin/*
+tmp/*
 
 *.user
 *.user.*

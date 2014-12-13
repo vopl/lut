@@ -30,14 +30,9 @@ namespace lut { namespace io
 
     public:
 
-        async::Future<std::error_code> shutdown(bool read, bool write);
-
-        async::Future<std::error_code, Data> read(int min, int max);
-        std::error_code write(const Data &data);
+        async::Future<std::error_code, io::Data> read(std::size_t min, std::size_t max);
+        async::Future<std::error_code> write(io::Data &&data);
 
         void close();
-
-        bool isReadable();
-        bool isWriteable();
     };
 }}

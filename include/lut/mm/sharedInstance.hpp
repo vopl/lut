@@ -29,12 +29,12 @@ namespace lut { namespace mm
 
         std::int32_t counter() const;
 
-        Instance &value();
-        Instance *ptr();
+        Instance &instance();
+        Instance *instancePtr();
         Instance *operator->();
 
-        const Instance &value() const;
-        const Instance *ptr() const;
+        const Instance &instance() const;
+        const Instance *instancePtr() const;
         const Instance *operator->() const;
 
     private:
@@ -116,14 +116,14 @@ namespace lut { namespace mm
     }
 
     template <typename T>
-    typename SharedInstance<T>::Instance &SharedInstance<T>::value()
+    typename SharedInstance<T>::Instance &SharedInstance<T>::instance()
     {
         assert(_state);
         return _state->_instance;
     }
 
     template <typename T>
-    typename SharedInstance<T>::Instance *SharedInstance<T>::ptr()
+    typename SharedInstance<T>::Instance *SharedInstance<T>::instancePtr()
     {
         assert(_state);
         return &_state->_instance;
@@ -132,18 +132,18 @@ namespace lut { namespace mm
     template <typename T>
     typename SharedInstance<T>::Instance *SharedInstance<T>::operator->()
     {
-        return ptr();
+        return instancePtr();
     }
 
     template <typename T>
-    const typename SharedInstance<T>::Instance &SharedInstance<T>::value() const
+    const typename SharedInstance<T>::Instance &SharedInstance<T>::instance() const
     {
         assert(_state);
         return _state->_instance;
     }
 
     template <typename T>
-    const typename SharedInstance<T>::Instance *SharedInstance<T>::ptr() const
+    const typename SharedInstance<T>::Instance *SharedInstance<T>::instancePtr() const
     {
         assert(_state);
         return &_state->_instance;
@@ -152,7 +152,7 @@ namespace lut { namespace mm
     template <typename T>
     const typename SharedInstance<T>::Instance *SharedInstance<T>::operator->() const
     {
-        return ptr();
+        return instancePtr();
     }
 
     template <typename T>

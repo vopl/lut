@@ -20,35 +20,19 @@ namespace lut { namespace io
     {
     }
 
-    async::Future<std::error_code> Stream::shutdown(bool read, bool write)
-    {
-        return impl().shutdown(read, write);
-    }
-
-    async::Future<std::error_code, Data> Stream::read(int min, int max)
+    async::Future<std::error_code, io::Data> Stream::read(std::size_t min, std::size_t max)
     {
         return impl().read(min, max);
     }
 
-    std::error_code Stream::write(const Data &data)
+    async::Future<std::error_code> Stream::write(Data &&data)
     {
-        return impl().write(data);
+        return impl().write(std::forward<Data>(data));
     }
 
     void Stream::close()
     {
         return impl().close();
     }
-
-    bool Stream::isReadable()
-    {
-        return impl().isReadable();
-    }
-
-    bool Stream::isWriteable()
-    {
-        return impl().isWriteable();
-    }
-
 
 }}

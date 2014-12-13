@@ -9,7 +9,7 @@ namespace lut { namespace io { namespace impl
 
     namespace fd
     {
-        class Tcp;
+        class Stream;
     }
 
     class Stream
@@ -21,23 +21,18 @@ namespace lut { namespace io { namespace impl
         Stream(Stream &&from);
         ~Stream();
 
-        void setEngine(fd::Tcp *tcpEngine);
+        void setEngine(fd::Stream *tcpEngine);
 
-        async::Future<std::error_code> shutdown(bool read, bool write);
-
-        async::Future<std::error_code, Data> read(int min, int max);
-        std::error_code write(const Data &data);
+        async::Future<std::error_code, io::Data> read(std::size_t min, std::size_t max);
+        async::Future<std::error_code> write(io::Data &&data);
 
         void close();
-
-        bool isReadable();
-        bool isWriteable();
 
     private:
 
         union
         {
-            fd::Tcp *_tcp;
+            fd::Stream *_tcp;
         } _engine;
 
         enum class EngineType

@@ -1,5 +1,5 @@
 #include "lut/io/impl/stream.hpp"
-#include "lut/io/impl/fd/tcp.hpp"
+#include "lut/io/impl/fd/stream.hpp"
 
 namespace lut { namespace io { namespace impl
 {
@@ -20,6 +20,9 @@ namespace lut { namespace io { namespace impl
             from._engineType = EngineType::null;
             return;
         }
+
+        assert(!"never here");
+        abort();
     }
 
     Stream::~Stream()
@@ -27,7 +30,7 @@ namespace lut { namespace io { namespace impl
         close();
     }
 
-    void Stream::setEngine(fd::Tcp *tcpEngine)
+    void Stream::setEngine(fd::Stream *tcpEngine)
     {
         close();
 
@@ -35,19 +38,40 @@ namespace lut { namespace io { namespace impl
         _engineType = EngineType::tcp;
     }
 
-    async::Future<std::error_code> Stream::shutdown(bool read, bool write)
+    async::Future<std::error_code, io::Data> Stream::read(std::size_t min, std::size_t max)
     {
-        assert(0);
+        switch(_engineType)
+        {
+        case EngineType::null:
+            {
+                async::Promise<std::error_code, io::Data> promise;
+                promise.setValue(std::make_error_code(std::errc::not_connected), io::Data());
+                return promise.future();
+            }
+        case EngineType::tcp:
+            return _engine._tcp->read(min, max);
+        }
+
+        assert(!"never here");
+        abort();
     }
 
-    async::Future<std::error_code, Data> Stream::read(int min, int max)
+    async::Future<std::error_code> Stream::write(io::Data &&data)
     {
-        assert(0);
-    }
+        switch(_engineType)
+        {
+        case EngineType::null:
+            {
+                async::Promise<std::error_code> promise;
+                promise.setValue(std::make_error_code(std::errc::not_connected));
+                return promise.future();
+            }
+        case EngineType::tcp:
+            return _engine._tcp->write(std::forward<io::Data>(data));
+        }
 
-    std::error_code Stream::write(const Data &data)
-    {
-        assert(0);
+        assert(!"never here");
+        abort();
     }
 
     void Stream::close()
@@ -65,16 +89,6 @@ namespace lut { namespace io { namespace impl
 
         assert(!"never here");
         abort();
-    }
-
-    bool Stream::isReadable()
-    {
-        assert(0);
-    }
-
-    bool Stream::isWriteable()
-    {
-        assert(0);
     }
 
 }}}
