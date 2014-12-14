@@ -4,6 +4,7 @@
 #include "lut/io/impl/fd/stream.hpp"
 #include "lut/io/impl/stream.hpp"
 #include "lut/io/stream.hpp"
+#include "lut/io/error.hpp"
 #include "lut/hiddenImpl/accessor.hpp"
 
 #include <sys/socket.h>
@@ -108,7 +109,7 @@ namespace lut { namespace io { namespace impl { namespace fd
         assert(!_promise.isReady());
         if(!_promise.isReady())
         {
-            resolve(std::make_error_code(std::errc::connection_aborted));
+            resolve(make_error_code(error::stream::closed));
         }
     }
 

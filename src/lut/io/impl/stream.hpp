@@ -32,13 +32,13 @@ namespace lut { namespace io { namespace impl
 
         union
         {
-            fd::Stream *_tcp;
+            fd::Stream *_fd;
         } _engine;
 
         enum class EngineType
         {
             null,
-            tcp,
+            fd,
         } _engineType;
     };
 }}}

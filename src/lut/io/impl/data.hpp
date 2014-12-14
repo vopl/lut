@@ -15,13 +15,13 @@ namespace lut { namespace io { namespace impl
 
     public:
         Data();
-        Data(Data &&);
+        Data(Data &&from);
         ~Data();
 
         Data &operator=(Data &&);
 
         void append(Data &&data);
-        void append(const char *str, std::size_t size = -1);
+        void append(const char *str, std::size_t size);
 
         bool empty() const;
         std::size_t size() const;

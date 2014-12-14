@@ -21,6 +21,8 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
 
     private:
         void pump(int descriptor);
+        void flushProcessed(std::size_t size);
+        void flushError(std::error_code ec);
 
     private:
         bool _descriptorReady;

@@ -1,5 +1,6 @@
 #include "lut/stable.hpp"
 #include "lut/io/impl/fd/stream/writer.hpp"
+#include "lut/io/error.hpp"
 
 #include <sys/uio.h>
 
@@ -24,6 +25,7 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
 
     Writer::~Writer()
     {
+        close();
     }
 
     void Writer::error(const std::error_code &err)
@@ -42,7 +44,9 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
         assert(!data.empty());
         if(data.empty())
         {
-            ::abort();
+            async::Promise<std::error_code> promise;
+            promise.setValue(std::error_code());
+            return promise.future();
         }
 
         if(!_requestsFirst)
@@ -78,17 +82,7 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
     void Writer::close()
     {
         _tailData.clear();
-
-        Request *request = _requestsFirst;
-        _requestsFirst = _requestsLast = nullptr;
-
-        while(request)
-        {
-            request->_promise.setValue(std::make_error_code(std::errc::connection_aborted));
-            request = request->_next;
-        }
-
-        _descriptorReady = false;
+        flushError(make_error_code(error::stream::closed));
     }
 
     void Writer::pump(int descriptor)
@@ -105,9 +99,6 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
 
         int iovAmount = _tailData.segmentsAmount();
 
-        std::size_t processedBytes {0};
-        std::error_code error {};
-
         if(iovAmount)
         {
             iovec iov[iovAmount];
@@ -117,76 +108,84 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
 
             if(0 <= res)
             {
-                processedBytes = res;
+                flushProcessed(res);
             }
             else
             {
-                error = std::error_code(errno, std::system_category());
+                flushError(std::error_code(errno, std::system_category()));
             }
         }
+    }
 
-        if(processedBytes)
+    void Writer::flushProcessed(std::size_t size)
+    {
+        assert(size);
+
+        if(size < _tailData.size())
         {
-            _tailData.dropFirst(processedBytes);
+            _descriptorReady = false;
+        }
 
-            if(processedBytes < _tailData.size())
+        _tailData.dropFirst(size);
+
+        for(;;)
+        {
+            assert(_requestsFirst);
+
+            if(_requestsFirst->_tailSize <= size)
             {
-                _descriptorReady = false;
-            }
+                Request *r = _requestsFirst;
 
-            for(;;)
-            {
-                assert(_requestsFirst);
-
-                if(_requestsFirst->_tailSize <= processedBytes)
+                if(_requestsFirst->_next)
                 {
-                    Request *r = _requestsFirst;
-
-                    if(_requestsFirst->_next)
-                    {
-                        _requestsFirst = _requestsFirst->_next;
-                    }
-                    else
-                    {
-                        assert(_requestsLast == _requestsFirst);
-                        _requestsFirst = _requestsLast = nullptr;
-                    }
-
-                    r->_promise.setValue(std::error_code());
-                    processedBytes -= r->_tailSize;
-
-                    delete r;
-
+                    _requestsFirst = _requestsFirst->_next;
                 }
                 else
                 {
-                    _requestsFirst->_tailSize -= processedBytes;
-                    processedBytes = 0;
+                    assert(_requestsLast == _requestsFirst);
+                    _requestsFirst = _requestsLast = nullptr;
+                }
+
+                r->_promise.setValue(std::error_code());
+                size -= r->_tailSize;
+
+                delete r;
+
+                if(!size)
+                {
                     break;
                 }
-            }
-        }
 
-
-        if(error)
-        {
-
-            if(std::error_condition(EAGAIN, std::system_category()) == error)
-            {
-                assert(!"impossible");
-                _descriptorReady = false;
             }
             else
             {
-                _descriptorReady = false;
-                _tailData.clear();
+                _requestsFirst->_tailSize -= size;
+                size = 0;
+                break;
+            }
+        }
+    }
 
-                Request *r = _requestsFirst;
-                _requestsFirst = _requestsLast = nullptr;
-                for(; r; r = r->_next)
-                {
-                    r->_promise.setValue(std::error_code(err, std::system_category()));
-                }
+    void Writer::flushError(std::error_code ec)
+    {
+        assert(ec);
+
+        if(std::error_condition(EAGAIN, std::system_category()) == ec)
+        {
+            assert(!"impossible");
+            _descriptorReady = false;
+        }
+        else
+        {
+            _descriptorReady = false;
+            _tailData.clear();
+
+            Request *r = _requestsFirst;
+            _requestsFirst = _requestsLast = nullptr;
+            for(; r; r = r->_next)
+            {
+                r->_promise.setValue(std::error_code(ec));
+                delete r;
             }
         }
     }

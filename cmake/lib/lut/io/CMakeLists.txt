@@ -16,6 +16,7 @@ set(INC
     ${PINC}/poller.hpp
     ${PINC}/timer.hpp
     ${PINC}/data.hpp
+    ${PINC}/error.hpp
 )
 source_group(include FILES ${INC})
 ############################################################
@@ -28,6 +29,7 @@ set(SRC
     ${PSRC}/poller.cpp
     ${PSRC}/timer.cpp
     ${PSRC}/data.cpp
+    ${PSRC}/error.cpp
 )
 source_group(src FILES ${SRC})
 

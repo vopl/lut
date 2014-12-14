@@ -8,13 +8,14 @@
 #include "lut/io/loop.hpp"
 #include "lut/io/client.hpp"
 
+#include <system_error>
+
 lut::async::Promise<> p;
 
 lut::async::Future<> f(p.future());
 
 int main()
 {
-
 
     lut::async::spawn([]()
     {
@@ -46,7 +47,7 @@ int main()
             lut::io::Client client;
 
             //auto errAndStream = client.connect("tcp://[2001:0db8:11a3:09d7:1f34:8a2e:07a0:765d]:1234");
-            auto errAndStream = client.connect("ip://192.168.100.2:80");
+            auto errAndStream = client.connect("ip://127.0.0.1:80");
             errAndStream.wait();
             lut::io::Stream stream = errAndStream.detachValue<1>();
 

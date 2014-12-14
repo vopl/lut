@@ -52,7 +52,7 @@ namespace lut { namespace io
 
     Data &Data::operator<<(const char *str)
     {
-        impl().append(str);
+        impl().append(str, strlen(str));
         return *this;
     }
 

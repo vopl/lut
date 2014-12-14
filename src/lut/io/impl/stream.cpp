@@ -1,5 +1,6 @@
 #include "lut/io/impl/stream.hpp"
 #include "lut/io/impl/fd/stream.hpp"
+#include "lut/io/error.hpp"
 
 namespace lut { namespace io { namespace impl
 {
@@ -15,8 +16,8 @@ namespace lut { namespace io { namespace impl
         {
         case EngineType::null:
             return;
-        case EngineType::tcp:
-            _engine._tcp = from._engine._tcp;
+        case EngineType::fd:
+            _engine._fd = from._engine._fd;
             from._engineType = EngineType::null;
             return;
         }
@@ -34,8 +35,8 @@ namespace lut { namespace io { namespace impl
     {
         close();
 
-        _engine._tcp = tcpEngine;
-        _engineType = EngineType::tcp;
+        _engine._fd = tcpEngine;
+        _engineType = EngineType::fd;
     }
 
     async::Future<std::error_code, io::Data> Stream::read(std::size_t min, std::size_t max)
@@ -45,11 +46,11 @@ namespace lut { namespace io { namespace impl
         case EngineType::null:
             {
                 async::Promise<std::error_code, io::Data> promise;
-                promise.setValue(std::make_error_code(std::errc::not_connected), io::Data());
+                promise.setValue(make_error_code(error::stream::not_connected), io::Data());
                 return promise.future();
             }
-        case EngineType::tcp:
-            return _engine._tcp->read(min, max);
+        case EngineType::fd:
+            return _engine._fd->read(min, max);
         }
 
         assert(!"never here");
@@ -63,11 +64,11 @@ namespace lut { namespace io { namespace impl
         case EngineType::null:
             {
                 async::Promise<std::error_code> promise;
-                promise.setValue(std::make_error_code(std::errc::not_connected));
+                promise.setValue(make_error_code(error::stream::not_connected));
                 return promise.future();
             }
-        case EngineType::tcp:
-            return _engine._tcp->write(std::forward<io::Data>(data));
+        case EngineType::fd:
+            return _engine._fd->write(std::forward<io::Data>(data));
         }
 
         assert(!"never here");
@@ -80,9 +81,9 @@ namespace lut { namespace io { namespace impl
         {
         case EngineType::null:
             return;
-        case EngineType::tcp:
-            _engine._tcp->close();
-            delete _engine._tcp;
+        case EngineType::fd:
+            _engine._fd->close();
+            delete _engine._fd;
             _engineType = EngineType::null;
             return;
         }

@@ -1,5 +1,6 @@
 #include "lut/stable.hpp"
 #include "lut/io/impl/loop.hpp"
+#include "lut/io/error.hpp"
 #include "lut/async.hpp"
 
 #include <sys/epoll.h>
@@ -61,7 +62,7 @@ namespace lut { namespace io { namespace impl { namespace loop
         {
             if(fdbFrom->getDescriptor() != fdbTo->getDescriptor())
             {
-                return std::make_error_code(std::errc::invalid_argument);
+                return make_error_code(error::general::invalid_argument);
             }
 
             epoll_event evt = {0};
@@ -141,7 +142,7 @@ namespace lut { namespace io { namespace impl { namespace loop
     {
         if(-1 != g_epollfd)
         {
-            return std::make_error_code(std::errc::device_or_resource_busy);
+            return make_error_code(error::general::already_runned);
         }
 
         g_epollfd = epoll_create(1);
@@ -196,7 +197,7 @@ namespace lut { namespace io { namespace impl { namespace loop
     {
         if(-1 == g_epollfd)
         {
-            return std::make_error_code(std::errc::no_such_device);
+            return make_error_code(error::general::not_runned);
         }
 
         if(g_activeListeners)
