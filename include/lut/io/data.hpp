@@ -24,6 +24,7 @@ namespace lut { namespace io
     public:
         Data();
         Data(Data &&);
+        Data(impl::Data &&);
         ~Data();
 
         Data &operator=(Data &&);
@@ -43,6 +44,9 @@ namespace lut { namespace io
 
         void dropFirst(std::size_t size);
         void dropLast(std::size_t size);
+
+        Data detachFirst(std::size_t size);
+        Data detachLast(std::size_t size);
     };
 
 }}

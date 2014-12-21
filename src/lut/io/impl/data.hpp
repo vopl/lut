@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sys/uio.h>
+#include "lut/io/impl/data/segment.hpp"
 
 namespace lut { namespace io { namespace impl
 {
@@ -11,11 +12,9 @@ namespace lut { namespace io { namespace impl
         void operator=(const Data &) = delete;
 
     public:
-        static constexpr std::size_t _granula = 1024;
-
-    public:
         Data();
         Data(Data &&from);
+        Data(std::size_t size, data::Segment *first, data::Segment *last);
         ~Data();
 
         Data &operator=(Data &&);
@@ -34,21 +33,14 @@ namespace lut { namespace io { namespace impl
         void dropFirst(std::size_t size);
         void dropLast(std::size_t size);
 
-    private:
-        struct Segment
-        {
-            char _buffer[Data::_granula];
+        Data detachFirst(std::size_t size);
+        Data detachLast(std::size_t size);
 
-            std::uint32_t _offset;
-            std::uint32_t _size;
-            Segment *_next;
-        };
-        static constexpr std::size_t _segmentSize = sizeof(Segment);
+    private:
+        static constexpr std::size_t _segmentSize = sizeof(data::Segment);
 
         std::size_t _size;
-        Segment *_first;
-        Segment *_last;
-
-
+        data::Segment *_first;
+        data::Segment *_last;
     };
 }}}

@@ -55,6 +55,7 @@ set(INC_IMPL
     ${PSRC}/impl/fd/stream/writer.hpp
     ${PSRC}/impl/fd/tcpConnector.hpp
     ${PSRC}/impl/data.hpp
+    ${PSRC}/impl/data/segment.hpp
 )
 source_group(include/impl FILES ${INC_IMPL})
 ############################################################
@@ -71,6 +72,7 @@ set(SRC_IMPL
     ${PSRC}/impl/fd/stream/writer.cpp
     ${PSRC}/impl/fd/tcpConnector.cpp
     ${PSRC}/impl/data.cpp
+    ${PSRC}/impl/data/segment.cpp
 )
 source_group(src/impl FILES ${SRC_IMPL})
 

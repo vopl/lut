@@ -20,6 +20,13 @@ namespace lut { namespace io { namespace impl
         from._last = nullptr;
     }
 
+    Data::Data(std::size_t size, data::Segment *first, data::Segment *last)
+        : _size {size}
+        , _first {first}
+        , _last {last}
+    {
+    }
+
     Data::~Data()
     {
         clear();
@@ -89,17 +96,14 @@ namespace lut { namespace io { namespace impl
         if(!_last)
         {
             assert(!_first);
-            _first = _last = new Segment;
-            _last->_next = nullptr;
-            _last->_offset = 0;
-            _last->_size = 0;
+            _first = _last = new data::Segment;
         }
 
-        Segment *cur = _last;
+        data::Segment *cur = _last;
         for(;;)
         {
-            assert(cur->_offset + cur->_size <= _granula);
-            std::size_t space = _granula - (cur->_offset + cur->_size);
+            assert(cur->_offset + cur->_size <= data::Segment::_granula);
+            std::size_t space = data::Segment::_granula - (cur->_offset + cur->_size);
 
             if(space > size)
             {
@@ -113,10 +117,7 @@ namespace lut { namespace io { namespace impl
 
             if(size)
             {
-                Segment *next = new Segment;
-                next->_next = nullptr;
-                next->_offset = 0;
-                next->_size = 0;
+                data::Segment *next = new data::Segment;
                 cur->_next = next;
                 cur = next;
             }
@@ -144,10 +145,10 @@ namespace lut { namespace io { namespace impl
 
     void Data::clear()
     {
-        Segment *segment = _first;
+        data::Segment *segment = _first;
         while(segment)
         {
-            Segment *cur = segment;
+            data::Segment *cur = segment;
             segment = segment->_next;
 
             delete cur;
@@ -160,7 +161,7 @@ namespace lut { namespace io { namespace impl
     std::size_t Data::segmentsAmount() const
     {
         std::size_t res {0};
-        for(Segment *iter = _first; iter; iter=iter->_next)
+        for(data::Segment *iter = _first; iter; iter=iter->_next)
         {
             res++;
         }
@@ -170,7 +171,7 @@ namespace lut { namespace io { namespace impl
 
     void Data::fillIovec(iovec *iov) const
     {
-        for(Segment *iter = _first; iter; iter=iter->_next)
+        for(data::Segment *iter = _first; iter; iter=iter->_next)
         {
             iov->iov_base = &iter->_buffer[iter->_offset];
             iov->iov_len = iter->_size;
@@ -186,11 +187,11 @@ namespace lut { namespace io { namespace impl
             return;
         }
 
-        Segment *iter = _first;
+        data::Segment *iter = _first;
 
         for(;;)
         {
-            Segment *cur = iter;
+            data::Segment *cur = iter;
 
             if(size > cur->_size)
             {
@@ -221,5 +222,19 @@ namespace lut { namespace io { namespace impl
         assert(0);
     }
 
+    Data Data::detachFirst(std::size_t size)
+    {
+        if(!size)
+        {
+            return Data {};
+        }
+
+        assert(0);
+    }
+
+    Data Data::detachLast(std::size_t size)
+    {
+        assert(0);
+    }
 
 }}}

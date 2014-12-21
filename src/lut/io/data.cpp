@@ -15,6 +15,11 @@ namespace lut { namespace io
     {
     }
 
+    Data::Data(impl::Data &&from)
+        : HiddenImpl<impl::Data>(std::forward<impl::Data>(from))
+    {
+    }
+
     Data::~Data()
     {
     }
@@ -76,5 +81,14 @@ namespace lut { namespace io
         return impl().dropLast(size);
     }
 
+    Data Data::detachFirst(std::size_t size)
+    {
+        return impl().detachFirst(size);
+    }
+
+    Data Data::detachLast(std::size_t size)
+    {
+        return impl().detachLast(size);
+    }
 
 }}

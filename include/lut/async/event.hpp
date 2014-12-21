@@ -11,7 +11,7 @@ namespace lut { namespace async
     }
 
     class Event
-        : private HiddenImpl<impl::Event>
+        : public HiddenImpl<impl::Event>
     {
         Event(const Event &from) = delete;
         Event &operator=(const Event &from) = delete;

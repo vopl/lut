@@ -51,7 +51,6 @@ int main()
             errAndStream.wait();
             lut::io::Stream stream = errAndStream.detachValue<1>();
 
-            int k = 110;
 
             //lut::io::loop::stop();
 
@@ -59,8 +58,9 @@ int main()
             dw << "HTTP 1.0 GET \r\n\r\n";
             stream.write(std::move(dw)).wait();
 
-            lut::io::Data dr = stream.read(0, 220).detachValue<1>();
+            lut::io::Data dr = stream.read(1, 220).detachValue<1>();
 
+            int k = 110;
             //stream.close();
 
         });

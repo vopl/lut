@@ -22,11 +22,16 @@ namespace lut
         HiddenImpl(const HiddenImpl &other);
         HiddenImpl(HiddenImpl &&other);
 
+        HiddenImpl(const T &other);
+        HiddenImpl(T &&other);
+
         ~HiddenImpl();
 
         HiddenImpl &operator=(const HiddenImpl &other);
         HiddenImpl &operator=(HiddenImpl &&other);
 
+        HiddenImpl &operator=(const T &other);
+        HiddenImpl &operator=(T &&other);
 
         T *pimpl();
         T &impl();
@@ -67,7 +72,7 @@ namespace lut
     HiddenImpl<T>::HiddenImpl(const HiddenImpl &other)
     {
         sizeChecker<T>();
-        new (&_data) T(other);
+        new (&_data) T(other.impl());
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -76,6 +81,22 @@ namespace lut
     {
         sizeChecker<T>();
         new (&_data) T(std::move(other.impl()));
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <class T>
+    HiddenImpl<T>::HiddenImpl(const T &other)
+    {
+        sizeChecker<T>();
+        new (&_data) T(other);
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <class T>
+    HiddenImpl<T>::HiddenImpl(T &&other)
+    {
+        sizeChecker<T>();
+        new (&_data) T(std::move(other));
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -98,6 +119,22 @@ namespace lut
     HiddenImpl<T> &HiddenImpl<T>::operator=(HiddenImpl &&other)
     {
         impl() = std::forward<T>(other.impl());
+        return *this;
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <class T>
+    HiddenImpl<T> &HiddenImpl<T>::operator=(const T &other)
+    {
+        impl() = other;
+        return *this;
+    }
+
+    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+    template <class T>
+    HiddenImpl<T> &HiddenImpl<T>::operator=(T &&other)
+    {
+        impl() = std::forward<T>(other);
         return *this;
     }
 

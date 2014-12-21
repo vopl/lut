@@ -11,7 +11,7 @@ namespace lut { namespace async
     }
 
     class Mutex
-        : private HiddenImpl<impl::Mutex>
+        : public HiddenImpl<impl::Mutex>
     {
         Mutex(const Mutex &from) = delete;
         Mutex &operator=(const Mutex &from) = delete;

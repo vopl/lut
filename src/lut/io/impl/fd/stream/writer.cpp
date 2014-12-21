@@ -55,8 +55,8 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
 
             Request *request = new Request {data.size()};
 
-            assert(_tailData.empty());
-            _tailData = std::forward<io::Data>(data);
+            assert(_buffer.empty());
+            _buffer = std::forward<io::Data>(data);
 
             _requestsFirst = _requestsLast = request;
 
@@ -70,8 +70,8 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
 
         Request *request = new Request {data.size()};
 
-        assert(!_tailData.empty());
-        _tailData.append(std::forward<io::Data>(data));
+        assert(!_buffer.empty());
+        _buffer.append(std::forward<io::Data>(data));
 
         _requestsLast->_next = request;
         _requestsLast = request;
@@ -81,7 +81,7 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
 
     void Writer::close()
     {
-        _tailData.clear();
+        _buffer.clear();
         flushError(make_error_code(error::stream::closed));
     }
 
@@ -92,17 +92,17 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
             return;
         }
 
-        if(_tailData.empty())
+        if(_buffer.empty())
         {
             return;
         }
 
-        int iovAmount = _tailData.segmentsAmount();
+        int iovAmount = _buffer.segmentsAmount();
 
         if(iovAmount)
         {
             iovec iov[iovAmount];
-            _tailData.fillIovec(&iov[0]);
+            _buffer.fillIovec(&iov[0]);
 
             ssize_t res = ::writev(descriptor, iov, iovAmount);
 
@@ -121,12 +121,12 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
     {
         assert(size);
 
-        if(size < _tailData.size())
+        if(size < _buffer.size())
         {
             _descriptorReady = false;
         }
 
-        _tailData.dropFirst(size);
+        _buffer.dropFirst(size);
 
         for(;;)
         {
@@ -166,7 +166,7 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
         }
     }
 
-    void Writer::flushError(std::error_code ec)
+    void Writer::flushError(const std::error_code &ec)
     {
         assert(ec);
 
@@ -178,7 +178,7 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
         else
         {
             _descriptorReady = false;
-            _tailData.clear();
+            _buffer.clear();
 
             Request *r = _requestsFirst;
             _requestsFirst = _requestsLast = nullptr;
