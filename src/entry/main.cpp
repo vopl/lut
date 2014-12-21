@@ -17,32 +17,32 @@ lut::async::Future<> f(p.future());
 int main()
 {
 
-    lut::async::spawn([]()
+//    lut::async::spawn([]()
+//    {
+//        lut::async::spawn([]()
+//        {
+//            std::cout<<"3"<<std::endl;
+//            p.setException(std::make_exception_ptr(std::runtime_error("tratata")));
+//            std::cout<<"4"<<std::endl;
+//        });
+
+//        std::cout<<"1"<<std::endl;
+//        try
+//        {
+//            f.value();
+//        }
+//        catch(std::exception &e)
+//        {
+//            std::cout<<e.what()<<std::endl;
+//        }
+
+//        std::cout<<"2"<<std::endl;
+//    });
+
     {
         lut::async::spawn([]()
         {
-            std::cout<<"3"<<std::endl;
-            p.setException(std::make_exception_ptr(std::runtime_error("tratata")));
-            std::cout<<"4"<<std::endl;
-        });
-
-        std::cout<<"1"<<std::endl;
-        try
-        {
-            f.value();
-        }
-        catch(std::exception &e)
-        {
-            std::cout<<e.what()<<std::endl;
-        }
-
-        std::cout<<"2"<<std::endl;
-    });
-
-    {
-        lut::async::spawn([]()
-        {
-            std::cout<<"try connect "<<std::endl;
+            //std::cout<<"try connect "<<std::endl;
 
             lut::io::Client client;
 
@@ -55,13 +55,19 @@ int main()
             //lut::io::loop::stop();
 
             lut::io::Data dw;
-            dw << "HTTP 1.0 GET \r\n\r\n";
+            dw << "GET / HTTP 1.0\r\n"
+                  "Host:127.0.0.1\r\n"
+                  "\r\n\r\n";
             stream.write(std::move(dw)).wait();
 
-            lut::io::Data dr = stream.read(1, 220).detachValue<1>();
+            lut::io::Data dr = stream.read(1).detachValue<1>();
 
+            std::cout << dr.toString() << std::endl;
             int k = 110;
-            //stream.close();
+            stream.close();
+
+
+            lut::io::loop::stop();
 
         });
 

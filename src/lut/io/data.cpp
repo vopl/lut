@@ -91,4 +91,9 @@ namespace lut { namespace io
         return impl().detachLast(size);
     }
 
+    std::string Data::toString()
+    {
+        return impl().toString();
+    }
+
 }}

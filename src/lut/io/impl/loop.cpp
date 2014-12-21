@@ -162,6 +162,12 @@ namespace lut { namespace io { namespace impl { namespace loop
 
             if(-1 == eventsAmount)
             {
+                if(-1 == g_epollfd)
+                {
+                    res = std::error_code();
+                    break;
+                }
+
                 res = std::error_code(errno, std::system_category());
                 break;
             }

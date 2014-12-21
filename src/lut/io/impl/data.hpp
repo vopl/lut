@@ -36,6 +36,8 @@ namespace lut { namespace io { namespace impl
         Data detachFirst(std::size_t size);
         Data detachLast(std::size_t size);
 
+        std::string toString();
+
     private:
         static constexpr std::size_t _segmentSize = sizeof(data::Segment);
 

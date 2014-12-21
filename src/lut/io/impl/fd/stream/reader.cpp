@@ -74,7 +74,8 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
 
     void Reader::close()
     {
-        assert(0);
+        _buffer.clear();
+        flushError(make_error_code(error::stream::closed));
     }
 
     void Reader::flushProcessed(impl::Data &&data)
@@ -108,7 +109,26 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
 
     void Reader::flushError(const std::error_code &ec)
     {
-        assert(0);
+        assert(ec);
+
+        if(std::error_condition(EAGAIN, std::system_category()) == ec)
+        {
+            assert(!"impossible");
+            _descriptorReady = false;
+        }
+        else
+        {
+            _descriptorReady = false;
+            _buffer.clear();
+
+            Request *r = _requestsFirst;
+            _requestsFirst = _requestsLast = nullptr;
+            for(; r; r = r->_next)
+            {
+                r->_promise.setValue(std::error_code(ec), io::Data {});
+                delete r;
+            }
+        }
     }
 
     void Reader::pump(int descriptor)
@@ -182,6 +202,9 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
             last = last->_next;
         }
         _segmentFirst = last->_next;
+
+        last->_next = nullptr;
+        last->_size = size - (segmentsAmount-1) * data::Segment::_granula;
         _iovecs.erase(_iovecs.begin(), _iovecs.begin()+segmentsAmount);
 
         return impl::Data {size, first, last};

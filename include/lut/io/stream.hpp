@@ -6,6 +6,7 @@
 #include "lut/async/future.hpp"
 
 #include <system_error>
+#include <limits>
 
 namespace lut { namespace io
 {
@@ -30,7 +31,7 @@ namespace lut { namespace io
 
     public:
 
-        async::Future<std::error_code, io::Data> read(std::size_t min, std::size_t max);
+        async::Future<std::error_code, io::Data> read(std::size_t min=1, std::size_t max = std::numeric_limits<std::size_t>::max());
         async::Future<std::error_code> write(io::Data &&data);
 
         void close();

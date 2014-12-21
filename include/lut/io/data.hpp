@@ -5,6 +5,8 @@
 #   include "lut/io/sizeofImpl.hpp"
 #endif
 
+#include <string>
+
 struct iovec;
 
 namespace lut { namespace io
@@ -47,6 +49,8 @@ namespace lut { namespace io
 
         Data detachFirst(std::size_t size);
         Data detachLast(std::size_t size);
+
+        std::string toString();
     };
 
 }}

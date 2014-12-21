@@ -203,7 +203,6 @@ namespace lut { namespace io { namespace impl
             {
                 cur->_offset += size;
                 cur->_size -= size;
-                size = 0;
                 break;
             }
             else
@@ -229,12 +228,69 @@ namespace lut { namespace io { namespace impl
             return Data {};
         }
 
-        assert(0);
+        if(size >= _size)
+        {
+            return Data {std::move(*this)};
+        }
+
+        data::Segment *detachBound = _first;
+        std::size_t detachSize = detachBound->_size;
+
+        for(;;)
+        {
+            if(detachSize < size)
+            {
+                detachBound = detachBound->_next;
+                detachSize += detachBound->_size;
+            }
+            else if(detachSize > size)
+            {
+                //посеридине
+                data::Segment *detachFirst = _first;
+
+                std::size_t boundTailSize = detachSize - size;
+
+                _first = new data::Segment {static_cast<std::uint32_t>(boundTailSize), 0, detachBound->_next};
+                ::memcpy(_first->_buffer, &detachBound->_buffer[detachBound->_offset + detachBound->_size - boundTailSize], boundTailSize);
+                _size -= size;
+
+                detachBound->_size -= boundTailSize;
+                detachBound->_next = nullptr;
+                return impl::Data {size, detachFirst, detachBound};
+            }
+            else
+            {
+                //точно по границе
+                data::Segment *detachFirst = _first;
+                _size -= size;
+                _first = detachBound->_next;
+                return impl::Data {size, detachFirst, detachBound};
+            }
+        }
+
+        assert(!"never here");
     }
 
     Data Data::detachLast(std::size_t size)
     {
         assert(0);
+    }
+
+    std::string Data::toString()
+    {
+        std::string res;
+        res.reserve(_size);
+
+        data::Segment *segment = _first;
+        while(segment)
+        {
+            res.append(&segment->_buffer[segment->_offset], &segment->_buffer[segment->_offset + segment->_size]);
+            segment = segment->_next;
+        }
+
+        assert(res.size() == _size);
+
+        return res;
     }
 
 }}}
