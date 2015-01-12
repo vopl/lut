@@ -9,8 +9,17 @@ namespace lut { namespace io { namespace impl { namespace fd
         : _descriptor{-1}
         , _nextOnPoller{}
         , _prevOnPoller{}
-
     {
+    }
+
+    Base::Base(Base &&from)
+        : _descriptor{from._descriptor}
+        , _nextOnPoller{from._nextOnPoller}
+        , _prevOnPoller{from._prevOnPoller}
+    {
+        from._descriptor = -1;
+        from._nextOnPoller = nullptr;
+        from._prevOnPoller = nullptr;
     }
 
     Base::~Base()
@@ -37,7 +46,13 @@ namespace lut { namespace io { namespace impl { namespace fd
 
         if(_descriptor >= 0)
         {
-            return loop::listenerAdd(this);
+            std::error_code err = loop::listenerAdd(this);
+
+            if(err)
+            {
+                _descriptor = -1;
+                return err;
+            }
         }
 
         return std::error_code();
@@ -69,7 +84,7 @@ namespace lut { namespace io { namespace impl { namespace fd
         return _descriptor;
     }
 
-    void Base::event(int typeFlags)
+    void Base::fdEvent(int typeFlags)
     {
         (void)typeFlags;
         assert(!"never here");

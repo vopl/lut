@@ -1,38 +1,53 @@
 
 #include "lut/stable.hpp"
-#include "lut/io/impl/fd/tcpConnector.hpp"
+#include "lut/io/impl/fd/connector.hpp"
 #include "lut/io/impl/fd/stream.hpp"
 #include "lut/io/impl/stream.hpp"
 #include "lut/io/stream.hpp"
 #include "lut/io/error.hpp"
 #include "lut/hiddenImpl/accessor.hpp"
-
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
+#include "lut/io/impl/utils/sockaddr.hpp"
 
 namespace lut { namespace io { namespace impl { namespace fd
 {
 
-    TcpConnector::TcpConnector()
+    Connector::Connector(Promise &&promise, const lut::io::Endpoint &endpoint)
         : Base()
+        , _promise(std::forward<Promise>(promise))
     {
-
+        switch(endpoint.scope())
+        {
+        case Scope::ipc:
+            startLocal(endpoint.addressStr());
+            return;
+        case Scope::ip4:
+            startInet(endpoint.addressIp4(), endpoint.port());
+            return;
+        case Scope::ip6:
+            startInet(endpoint.addressIp6(), endpoint.port());
+            return;
+        default:
+            assert(!"not impl");
+            _promise.setValue(io::make_error_code(io::error::general::not_implemented), lut::io::Stream());
+            delete this;
+            return;
+        }
     }
 
-    TcpConnector::~TcpConnector()
+    Connector::~Connector()
     {
-        close();
+        fdClose();
     }
 
-    async::Future<std::error_code, lut::io::Stream> TcpConnector::getFuture()
+    template <typename Address>
+    void Connector::startInet(const Address &address, std::uint16_t port)
     {
-        return _promise.future();
-    }
+        utils::Sockaddr<Address> sa;
+        memset(&sa, 0, sizeof(sa));
 
-    void TcpConnector::start(const ip4::Address &address, std::uint16_t port)
-    {
-        int fd = socket(AF_INET, SOCK_STREAM|SOCK_NONBLOCK, 0);
+        int family = utils::fillSockaddr(sa, address, port);
+
+        int fd = socket(family, SOCK_STREAM|SOCK_NONBLOCK, 0);
         if(-1 == fd)
         {
             resolve(std::error_code(errno, std::system_category()));
@@ -42,15 +57,12 @@ namespace lut { namespace io { namespace impl { namespace fd
         std::error_code err = setDescriptor(fd);
         if(err)
         {
+            close(fd);
             resolve(err);
             return;
         }
 
-        sockaddr_in addr;
-        addr.sin_family = AF_INET;
-        addr.sin_port = htons(port);
-        addr.sin_addr.s_addr = htonl(address._value._uint32);
-        int res = ::connect(fd, (sockaddr *)&addr, sizeof(addr));
+        int res = ::connect(fd, (sockaddr *)&sa, sizeof(sa));
 
         if(0 == res)
         {
@@ -68,16 +80,13 @@ namespace lut { namespace io { namespace impl { namespace fd
         resolve(std::error_code(errno, std::system_category()));
     }
 
-    void TcpConnector::event(int typeFlags)
+    void Connector::startLocal(const io::str::Address &address)
     {
-        assert(! (typeFlags & etf_read));
+        assert(!"not impl");
+    }
 
-        if(typeFlags & etf_write)
-        {
-            resolve(std::error_code());
-            return;
-        }
-
+    void Connector::fdEvent(int typeFlags)
+    {
         if(typeFlags & etf_error)
         {
             int errcode = ENOTSOCK;
@@ -91,10 +100,18 @@ namespace lut { namespace io { namespace impl { namespace fd
             return;
         }
 
+        assert(! (typeFlags & etf_read));
+
+        if(typeFlags & etf_write)
+        {
+            resolve(std::error_code());
+            return;
+        }
+
         assert(!"not impossible");
     }
 
-    void TcpConnector::close()
+    void Connector::fdClose()
     {
         int fd = getDescriptor();
         if(-1 == fd)
@@ -106,14 +123,13 @@ namespace lut { namespace io { namespace impl { namespace fd
         setDescriptor(-1);
         ::close(fd);
 
-        assert(!_promise.isReady());
         if(!_promise.isReady())
         {
             resolve(make_error_code(error::stream::closed));
         }
     }
 
-    void TcpConnector::resolve(std::error_code err)
+    void Connector::resolve(std::error_code err)
     {
         if(err)
         {

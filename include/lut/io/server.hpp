@@ -1,5 +1,11 @@
 #pragma once
 
+#include "lut/io/endpoint.hpp"
+#include "lut/async/future.hpp"
+#include "lut/io/stream.hpp"
+
+#include <system_error>
+
 namespace lut { namespace io
 {
     namespace impl
@@ -15,11 +21,14 @@ namespace lut { namespace io
 
     public:
         Server();
+        Server(Server &&from);
         ~Server();
 
-    public:
+        Server &operator=(Server &&from);
 
-        Error bind(const Endpoint &endpoint);
-        async::Future<Stream> accept();
+    public:
+        std::error_code listen(const Endpoint &endpoint);
+        async::Future<std::error_code, lut::io::Stream> accept();
+        std::error_code close();
     };
 }}

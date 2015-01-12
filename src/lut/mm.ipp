@@ -3,6 +3,13 @@
 #include "lut/mm.hpp"
 #include "lut/mm/allocator.hpp"
 #include "lut/mm/system.hpp"
+#include "lut/mm/allocator.ipp"
+#include "lut/mm/utils/sized_cast.ipp"
+#include "lut/mm/utils/intrusiveDeque.ipp"
+#include "lut/mm/allocator/blocksHolder.ipp"
+#include "lut/mm/allocator/block.ipp"
+#include "lut/mm/allocator/bitIndex.ipp"
+#include "lut/mm/allocator/bitIndex/level.ipp"
 
 namespace lut { namespace mm
 {

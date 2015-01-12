@@ -184,7 +184,7 @@ namespace lut { namespace io { namespace impl { namespace loop
                         ((evt.events & (EPOLLERR|EPOLLHUP)) ? (int)fd::etf_error : 0) |
                         0;
 
-                fdb->event(typeFlags);
+                fdb->fdEvent(typeFlags);
             }
         }
 
@@ -220,7 +220,7 @@ namespace lut { namespace io { namespace impl { namespace loop
 
                 listener = next(listener);
 
-                cur->close();
+                cur->fdClose();
             }
             while(listener);
         }

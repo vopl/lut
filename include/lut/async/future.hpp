@@ -84,7 +84,13 @@ namespace lut { namespace async
         void setException(const std::exception_ptr &exception);
     };
 
-
+    template <typename... T>
+    Future<T...> mkReadyFuture(T&&... val)
+    {
+        Promise<T...> promise;
+        promise.setValue(std::forward<T>(val)...);
+        return promise.future();
+    }
 
     namespace details
     {
@@ -173,11 +179,11 @@ namespace lut { namespace async
     const typename std::tuple_element<idx, std::tuple<T...> >::type &Future<T...>::value()
     {
         wait();
-        if(this->_exception)
+        if(this->instance()._exception)
         {
-            std::rethrow_exception(this->_exception);
+            std::rethrow_exception(this->instance()._exception);
         }
-        return std::get<idx>(this->valueArea());
+        return std::get<idx>(this->instance().valueArea());
     }
 
     template <typename... T>
@@ -228,7 +234,7 @@ namespace lut { namespace async
     template <typename... T>
     Promise<T...>::~Promise()
     {
-        if(!this->instance()._readyEvent.isSignalled() && this->counter()>1)
+        if(this->counter()>1 && !this->instance()._readyEvent.isSignalled())
         {
             assert(!"unsetted promise destroyed while futures exists");
             std::abort();

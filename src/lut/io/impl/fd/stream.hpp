@@ -15,12 +15,12 @@ namespace lut { namespace io { namespace impl { namespace fd
         Stream();
         ~Stream() override;
 
-        void event(int typeFlags) override;
-
         async::Future<std::error_code, io::Data> read(std::size_t min, std::size_t max);
         async::Future<std::error_code> write(io::Data &&data);
 
-        void close() override;
+    public:
+        virtual void fdEvent(int typeFlags) override;
+        virtual void fdClose() override;
 
     private:
         stream::Reader _reader;

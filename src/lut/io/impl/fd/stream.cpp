@@ -19,10 +19,20 @@ namespace lut { namespace io { namespace impl { namespace fd
 
     Stream::~Stream()
     {
-        close();
+        fdClose();
     }
 
-    void Stream::event(int typeFlags)
+    async::Future<std::error_code, io::Data> Stream::read(std::size_t min, std::size_t max)
+    {
+        return _reader.read(getDescriptor(), min, max);
+    }
+
+    async::Future<std::error_code> Stream::write(io::Data &&data)
+    {
+        return _writer.write(getDescriptor(), std::forward<io::Data>(data));
+    }
+
+    void Stream::fdEvent(int typeFlags)
     {
         if(etf_error & typeFlags)
         {
@@ -47,17 +57,7 @@ namespace lut { namespace io { namespace impl { namespace fd
         }
     }
 
-    async::Future<std::error_code, io::Data> Stream::read(std::size_t min, std::size_t max)
-    {
-        return _reader.read(getDescriptor(), min, max);
-    }
-
-    async::Future<std::error_code> Stream::write(io::Data &&data)
-    {
-        return _writer.write(getDescriptor(), std::forward<io::Data>(data));
-    }
-
-    void Stream::close()
+    void Stream::fdClose()
     {
         int descriptor = getDescriptor();
         if(-1 != descriptor)

@@ -1,3 +1,4 @@
+#include "lut/stable.hpp"
 #include "lut/io/impl/stream.hpp"
 #include "lut/io/impl/fd/stream.hpp"
 #include "lut/io/error.hpp"
@@ -45,9 +46,7 @@ namespace lut { namespace io { namespace impl
         {
         case EngineType::null:
             {
-                async::Promise<std::error_code, io::Data> promise;
-                promise.setValue(make_error_code(error::stream::not_connected), io::Data());
-                return promise.future();
+                return async::mkReadyFuture(make_error_code(error::stream::not_connected), io::Data());
             }
         case EngineType::fd:
             return _engine._fd->read(min, max);
@@ -63,9 +62,7 @@ namespace lut { namespace io { namespace impl
         {
         case EngineType::null:
             {
-                async::Promise<std::error_code> promise;
-                promise.setValue(make_error_code(error::stream::not_connected));
-                return promise.future();
+                return async::mkReadyFuture(make_error_code(error::stream::not_connected));
             }
         case EngineType::fd:
             return _engine._fd->write(std::forward<io::Data>(data));
@@ -82,7 +79,7 @@ namespace lut { namespace io { namespace impl
         case EngineType::null:
             return;
         case EngineType::fd:
-            _engine._fd->close();
+            _engine._fd->fdClose();
             delete _engine._fd;
             _engineType = EngineType::null;
             return;

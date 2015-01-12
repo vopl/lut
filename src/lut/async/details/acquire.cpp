@@ -1,3 +1,4 @@
+#include "lut/stable.hpp"
 #include "lut/async/stable.hpp"
 #include "lut/async/details/acquire.hpp"
 #include "lut/async/impl/mutex.hpp"

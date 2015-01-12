@@ -44,9 +44,7 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
         assert(!data.empty());
         if(data.empty())
         {
-            async::Promise<std::error_code> promise;
-            promise.setValue(std::error_code());
-            return promise.future();
+            return async::mkReadyFuture(std::error_code());
         }
 
         if(!_requestsFirst)

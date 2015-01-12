@@ -25,16 +25,19 @@ namespace lut { namespace io { namespace impl { namespace fd
 
     class Base
     {
+        Base(const Base &) = delete;
+
     public:
         Base();
+        Base(Base &&from);
         virtual ~Base();
 
         std::error_code setDescriptor(int descriptor);
         std::error_code moveDescriptorTo(Base *to);
         int getDescriptor();
 
-        virtual void event(int typeFlags) = 0;
-        virtual void close() = 0;
+        virtual void fdEvent(int typeFlags) = 0;
+        virtual void fdClose() = 0;
 
     private:
         int _descriptor;

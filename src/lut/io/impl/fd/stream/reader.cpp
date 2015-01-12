@@ -46,10 +46,7 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
     {
         if(_buffer.size() >= min)
         {
-            async::Promise<std::error_code, io::Data> promise;
-            promise.setValue(std::error_code(), _buffer.detachFirst(std::min(_buffer.size(), max)));
-            return promise.future();
-
+            return async::mkReadyFuture(std::error_code(), _buffer.detachFirst(std::min(_buffer.size(), max)));
         }
 
         if(!_requestsFirst)

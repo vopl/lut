@@ -1,7 +1,9 @@
 #pragma once
 
 #include "lut/hiddenImpl.hpp"
-#include "lut/io/sizeofImpl.hpp"
+#if !GENERATE_SIZEOFIMPL
+#   include "lut/io/sizeofImpl.hpp"
+#endif
 #include "lut/io/data.hpp"
 #include "lut/async/future.hpp"
 

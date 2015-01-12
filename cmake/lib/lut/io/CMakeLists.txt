@@ -53,9 +53,10 @@ set(INC_IMPL
     ${PSRC}/impl/fd/stream.hpp
     ${PSRC}/impl/fd/stream/reader.hpp
     ${PSRC}/impl/fd/stream/writer.hpp
-    ${PSRC}/impl/fd/tcpConnector.hpp
+    ${PSRC}/impl/fd/connector.hpp
     ${PSRC}/impl/data.hpp
     ${PSRC}/impl/data/segment.hpp
+    ${PSRC}/impl/utils/sockaddr.hpp
 )
 source_group(include/impl FILES ${INC_IMPL})
 ############################################################
@@ -70,9 +71,10 @@ set(SRC_IMPL
     ${PSRC}/impl/fd/stream.cpp
     ${PSRC}/impl/fd/stream/reader.cpp
     ${PSRC}/impl/fd/stream/writer.cpp
-    ${PSRC}/impl/fd/tcpConnector.cpp
+    ${PSRC}/impl/fd/connector.cpp
     ${PSRC}/impl/data.cpp
     ${PSRC}/impl/data/segment.cpp
+    ${PSRC}/impl/utils/sockaddr.cpp
 )
 source_group(src/impl FILES ${SRC_IMPL})
 

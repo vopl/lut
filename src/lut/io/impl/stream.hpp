@@ -23,6 +23,7 @@ namespace lut { namespace io { namespace impl
 
         void setEngine(fd::Stream *tcpEngine);
 
+    public:
         async::Future<std::error_code, io::Data> read(std::size_t min, std::size_t max);
         async::Future<std::error_code> write(io::Data &&data);
 

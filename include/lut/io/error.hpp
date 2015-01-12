@@ -9,6 +9,10 @@ namespace lut { namespace io { namespace error
         already_runned = 1,
         not_runned,
         invalid_argument,
+        secondary_listen,
+        no_listen,
+        not_implemented,
+        unknown,
     };
 
     enum class stream

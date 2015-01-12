@@ -24,6 +24,14 @@ namespace lut { namespace io { namespace error
                     return "not runned";
                 case general::invalid_argument:
                     return "invalid argument";
+                case general::secondary_listen:
+                    return "secondary listen";
+                case general::no_listen:
+                    return "no listen";
+                case general::not_implemented:
+                    return "not implemented";
+                case general::unknown:
+                    return "unknown";
                 }
 
                 return "lut.io.general error";

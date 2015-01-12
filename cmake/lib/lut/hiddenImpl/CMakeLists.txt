@@ -36,6 +36,7 @@ macro(mkHiddenImplSizes)
     set(srcText "${CMAKE_CURRENT_BINARY_DIR}/sizeofImplGen.text")
 
     file(WRITE ${srcText} "#define GENERATE_SIZEOFIMPL 1\n")
+    file(APPEND ${srcText} "#include \"lut/stable.hpp\"\n")
     file(APPEND ${srcText} "#include \"lut/hiddenImpl/sizeofImplDefault.hpp\"\n")
     foreach(header ${headers})
         file(APPEND ${srcText} "#include \"${header}\"\n")
