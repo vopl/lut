@@ -57,10 +57,11 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
             _buffer = std::forward<io::Data>(data);
 
             _requestsFirst = _requestsLast = request;
+            async::Future<std::error_code> res = request->_promise.future();
 
             pump(descriptor);
 
-            return request->_promise.future();
+            return res;
         }
 
         assert(!_descriptorReady);

@@ -2,6 +2,7 @@
 
 #include "lut/async/future.hpp"
 #include "lut/io/data.hpp"
+#include "lut/mm/newDelete.hpp"
 
 #include <system_error>
 
@@ -30,6 +31,7 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
         io::Data _buffer;
 
         struct Request
+            : public mm::NewDelete<Request>
         {
             std::size_t _tailSize;
             async::Promise<std::error_code> _promise;

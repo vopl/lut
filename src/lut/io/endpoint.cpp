@@ -1,6 +1,7 @@
 #include "lut/stable.hpp"
 #include "lut/io/endpoint.hpp"
 #include <boost/spirit/include/qi.hpp>
+
 #include <string>
 
 namespace lut { namespace io
@@ -320,18 +321,27 @@ namespace lut { namespace io
         bool allow_ip6 = false;
         bool allow_ipc = false;
 
-        auto scope =
-                (
-                    qi::lit("ip") >>
-                    (
-                        qi::lit("c://")[([&](){allow_ipc=true;})] |
-                        qi::lit("6://")[([&](){allow_ip6=true;})] |
-                        qi::lit("4://")[([&](){allow_ip4=true;})] |
-                        qi::lit("://") [([&](){allow_ip6=allow_ip4=true;})]
-                    )
-                );
+//        auto scope =
+//                (
+//                    qi::lit("ip") >>
+//                    (
+//                        qi::lit("c://")[([&](){allow_ipc=true;})] |
+//                        qi::lit("6://")[([&](){allow_ip6=true;})] |
+//                        qi::lit("4://")[([&](){allow_ip4=true;})] |
+//                        qi::lit("://") [([&](){allow_ip6=allow_ip4=true;})]
+//                    )
+//                );
 
-        if(!qi::parse(str, end, scope))
+        if(!qi::parse(str, end,
+                      (
+                          qi::lit("ip") >>
+                          (
+                              qi::lit("c://")[([&](){allow_ipc=true;})] |
+                              qi::lit("6://")[([&](){allow_ip6=true;})] |
+                              qi::lit("4://")[([&](){allow_ip4=true;})] |
+                              qi::lit("://") [([&](){allow_ip6=allow_ip4=true;})]
+                          )
+                      )))
         {
             allow_ip4 = true;
             allow_ip6 = true;

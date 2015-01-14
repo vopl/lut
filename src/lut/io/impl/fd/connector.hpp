@@ -3,6 +3,7 @@
 #include "lut/async/future.hpp"
 #include "lut/io/impl/fd/base.hpp"
 #include "lut/io/endpoint.hpp"
+#include "lut/mm/newDelete.hpp"
 
 #include <system_error>
 
@@ -16,6 +17,7 @@ namespace lut { namespace io { namespace impl { namespace fd
 
     class Connector
         : public Base
+        , public mm::NewDelete<Connector>
     {
         using Promise = async::Promise<std::error_code, lut::io::Stream>;
 

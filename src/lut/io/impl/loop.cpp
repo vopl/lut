@@ -25,12 +25,34 @@ namespace lut { namespace io { namespace impl { namespace loop
         return b->_prevOnPoller;
     }
 
+    namespace
+    {
+        uint32_t mkEpollEventsMask(fd::Base *fdb)
+        {
+            int typeFlags = fdb->getEventTypes();
+
+            uint32_t res = (typeFlags & fd::etf_read) ? EPOLLIN : 0;
+
+            if(typeFlags & fd::etf_write)
+            {
+                res |= EPOLLOUT;
+            }
+
+            if(typeFlags & fd::etf_et)
+            {
+                res |= EPOLLET;
+            }
+
+            return res;
+        }
+    }
+
     std::error_code listenerAdd(fd::Base *fdb)
     {
         {
             epoll_event evt = {0};
             evt.data.ptr = fdb;
-            evt.events = EPOLLIN|EPOLLOUT|EPOLLPRI|EPOLLET;
+            evt.events = mkEpollEventsMask(fdb);
 
             if(epoll_ctl(g_epollfd, EPOLL_CTL_ADD, fdb->getDescriptor(), &evt))
             {
@@ -67,7 +89,7 @@ namespace lut { namespace io { namespace impl { namespace loop
 
             epoll_event evt = {0};
             evt.data.ptr = fdbTo;
-            evt.events = EPOLLIN|EPOLLOUT|EPOLLPRI|EPOLLET;
+            evt.events = mkEpollEventsMask(fdbTo);
 
             if(epoll_ctl(g_epollfd, EPOLL_CTL_MOD, fdbFrom->getDescriptor(), &evt))
             {

@@ -16,7 +16,7 @@ namespace lut { namespace io { namespace impl
     }
 
     Server::Server()
-        : fd::Base {}
+        : fd::Base {fd::etf_read}
         , _descriptorReady {}
         , _requestsFirst {}
         , _requestsLast {}
@@ -81,8 +81,10 @@ namespace lut { namespace io { namespace impl
             _descriptorReady = false;
 
             async::Promise<std::error_code, io::Stream> promise;
-            makeAccept(promise);
-            return promise.future();
+            if(makeAccept(promise))
+            {
+                return promise.future();
+            }
         }
 
         if(_requestsFirst)
@@ -183,6 +185,8 @@ namespace lut { namespace io { namespace impl
 
         if(fd::etf_read & typeFlags)
         {
+            assert(!_descriptorReady);
+
             if(_requestsFirst)
             {
                 Request *request = _requestsFirst;
@@ -196,7 +200,10 @@ namespace lut { namespace io { namespace impl
                     _requestsFirst = request->_next;
                 }
 
-                makeAccept(request->_promise);
+                bool b = makeAccept(request->_promise);
+                assert(b);
+                (void)b;
+
                 delete request;
             }
             else
@@ -208,6 +215,7 @@ namespace lut { namespace io { namespace impl
         }
 
         assert(!(fd::etf_write & typeFlags));
+        assert(!"never here");
     }
 
     void Server::fdClose()
@@ -253,8 +261,6 @@ namespace lut { namespace io { namespace impl
                 promise.setValue(std::forward<std::error_code>(err), lut::io::Stream());
                 return false;
             }
-
-            acceptedDescriptor = -1;
 
             lut::io::Stream stream;
             hiddenImpl::Accessor::access(stream).setEngine(engine);

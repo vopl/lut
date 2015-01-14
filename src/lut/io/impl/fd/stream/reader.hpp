@@ -3,6 +3,7 @@
 #include "lut/async/future.hpp"
 #include "lut/io/data.hpp"
 #include "lut/io/impl/data/segment.hpp"
+#include "lut/mm/newDelete.hpp"
 
 #include <system_error>
 #include <vector>
@@ -33,6 +34,7 @@ namespace lut { namespace io { namespace impl { namespace fd { namespace stream
         io::Data _buffer;
 
         struct Request
+            : public mm::NewDelete<Request>
         {
             std::size_t _needMinSize;
             std::size_t _needMaxSize;

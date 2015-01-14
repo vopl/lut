@@ -5,8 +5,9 @@
 namespace lut { namespace io { namespace impl { namespace fd
 {
 
-    Base::Base()
+    Base::Base(int eventTypes)
         : _descriptor{-1}
+        , _eventTypes{eventTypes}
         , _nextOnPoller{}
         , _prevOnPoller{}
     {
@@ -14,10 +15,12 @@ namespace lut { namespace io { namespace impl { namespace fd
 
     Base::Base(Base &&from)
         : _descriptor{from._descriptor}
+        , _eventTypes{from._eventTypes}
         , _nextOnPoller{from._nextOnPoller}
         , _prevOnPoller{from._prevOnPoller}
     {
         from._descriptor = -1;
+        from._eventTypes = 0;
         from._nextOnPoller = nullptr;
         from._prevOnPoller = nullptr;
     }
@@ -79,9 +82,14 @@ namespace lut { namespace io { namespace impl { namespace fd
     }
 
 
-    int Base::getDescriptor()
+    int Base::getDescriptor() const
     {
         return _descriptor;
+    }
+
+    int Base::getEventTypes() const
+    {
+        return _eventTypes;
     }
 
     void Base::fdEvent(int typeFlags)

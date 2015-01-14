@@ -12,8 +12,8 @@ namespace lut { namespace io { namespace impl { namespace fd
 {
 
     Connector::Connector(Promise &&promise, const lut::io::Endpoint &endpoint)
-        : Base()
-        , _promise(std::forward<Promise>(promise))
+        : Base {fd::etf_read|fd::etf_write|fd::etf_et}
+        , _promise {std::forward<Promise>(promise)}
     {
         switch(endpoint.scope())
         {

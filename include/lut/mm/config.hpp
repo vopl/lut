@@ -30,9 +30,9 @@ namespace lut { namespace mm
         static constexpr std::size_t _bigSizeClass = static_cast<std::size_t>(-1);
 
         ////////////////////////////////////////////////////////////////
-        static constexpr std::size_t _sizeGranula = 8;
+        static constexpr std::size_t _sizeGranula = 16;
         static constexpr std::size_t _minSize = _sizeGranula;
-        static constexpr std::size_t _maxSize = 1024;
+        static constexpr std::size_t _maxSize = 4096;
 
         static constexpr std::size_t _maxSizeClassIndex = (_maxSize-1) / _sizeGranula;
 
@@ -53,15 +53,15 @@ namespace lut { namespace mm
         {
             return !size ?
                         _sizeGranula :
-                        size >= _maxSize ?
-                            _maxSizeClassIndex :
-                            (size-1)/_sizeGranula;
+                        (size-1)/_sizeGranula;
         }
 
         ////////////////////////////////////////////////////////////////
         static constexpr std::size_t evalSizeClass(std::size_t size)
         {
-            return (evalSizeClassIndex(size)+1) * _sizeGranula;
+            return size > _maxSize ?
+                            _bigSizeClass :
+                            (evalSizeClassIndex(size)+1) * _sizeGranula;
         }
 
 

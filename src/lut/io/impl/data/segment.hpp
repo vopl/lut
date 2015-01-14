@@ -1,10 +1,11 @@
 #pragma once
 
-#include <sys/uio.h>
+#include "lut/mm/newDelete.hpp"
 
 namespace lut { namespace io { namespace impl { namespace data
 {
     struct Segment
+        : public mm::NewDelete<Segment>
     {
         Segment(std::uint32_t size = 0, std::uint32_t offset = 0, Segment *next=nullptr);
 

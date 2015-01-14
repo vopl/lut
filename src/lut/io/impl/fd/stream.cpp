@@ -11,7 +11,7 @@ namespace lut { namespace io { namespace impl { namespace fd
 {
 
     Stream::Stream()
-        : Base()
+        : Base {fd::etf_read|fd::etf_write|fd::etf_et}
         , _reader {}
         , _writer {}
     {

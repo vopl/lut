@@ -25,6 +25,7 @@ set(INC
     ${PINC}/config.hpp
     ${PINC}/stack.hpp
     ${PINC}/sharedInstance.hpp
+    ${PINC}/newDelete.hpp
 )
 source_group(include/mm FILES ${INC})
 ############################################################

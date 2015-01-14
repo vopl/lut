@@ -3,6 +3,7 @@
 #include "lut/io/impl/fd/base.hpp"
 #include "lut/io/impl/fd/stream/reader.hpp"
 #include "lut/io/impl/fd/stream/writer.hpp"
+#include "lut/mm/newDelete.hpp"
 
 
 namespace lut { namespace io { namespace impl { namespace fd
@@ -10,6 +11,7 @@ namespace lut { namespace io { namespace impl { namespace fd
 
     class Stream
         : public Base
+        , public mm::NewDelete<Stream>
     {
     public:
         Stream();

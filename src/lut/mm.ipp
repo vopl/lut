@@ -16,8 +16,9 @@ namespace lut { namespace mm
     namespace details
     {
         template <std::size_t sizeClass>
-        inline void *allocBySizeClass()
+        inline void *allocBySizeClass(std::size_t size)
         {
+            (void)size;
             return g_allocator.alloc<sizeClass>();
         }
 
@@ -28,9 +29,9 @@ namespace lut { namespace mm
         }
 
         template <>
-        inline void *allocBySizeClass<ConfigHeap::_bigSizeClass>()
+        inline void *allocBySizeClass<ConfigHeap::_bigSizeClass>(std::size_t size)
         {
-            return system::malloc(ConfigHeap::_bigSizeClass);
+            return system::malloc(size);
         }
 
         template <>

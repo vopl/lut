@@ -20,7 +20,10 @@ namespace lut { namespace io { namespace impl { namespace fd
     {
         etf_read    = 0x01,
         etf_write   = 0x02,
-        etf_error   = 0x04,
+
+        etf_et      = 0x10,
+
+        etf_error   = 0x100,
     };
 
     class Base
@@ -28,19 +31,22 @@ namespace lut { namespace io { namespace impl { namespace fd
         Base(const Base &) = delete;
 
     public:
-        Base();
+        Base(int eventTypes/* = etf_read | etf_write | etf_et*/);
         Base(Base &&from);
         virtual ~Base();
 
         std::error_code setDescriptor(int descriptor);
         std::error_code moveDescriptorTo(Base *to);
-        int getDescriptor();
+
+        int getDescriptor() const;
+        int getEventTypes() const;
 
         virtual void fdEvent(int typeFlags) = 0;
         virtual void fdClose() = 0;
 
     private:
         int _descriptor;
+        int _eventTypes;
 
     private:
         friend Base *&loop::next(Base*);

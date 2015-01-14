@@ -4,6 +4,8 @@
 #include <system_error>
 #include "lut/async/future.hpp"
 #include "lut/io/stream.hpp"
+#include "lut/mm/newDelete.hpp"
+
 
 #include "lut/io/impl/fd/base.hpp"
 
@@ -47,6 +49,7 @@ namespace lut { namespace io { namespace impl
         bool _descriptorReady;
 
         struct Request
+            : public mm::NewDelete<Request>
         {
             async::Promise<std::error_code, io::Stream> _promise;
             Request *_next;

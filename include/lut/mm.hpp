@@ -8,14 +8,14 @@ namespace lut { namespace mm
     namespace details
     {
         ////////////////////////////////////////////////////////////////
-        template <std::size_t sizeClass> void *allocBySizeClass();
+        template <std::size_t sizeClass> void *allocBySizeClass(std::size_t size);
         template <std::size_t sizeClass> void freeBySizeClass(void *ptr);
     }
 
     ////////////////////////////////////////////////////////////////
     template <std::size_t size> void *alloc()
     {
-        return details::allocBySizeClass<ConfigHeap::evalSizeClass(size)>();
+        return details::allocBySizeClass<ConfigHeap::evalSizeClass(size)>(size);
     }
 
     template <std::size_t size> void free(void *ptr)
