@@ -8,9 +8,9 @@ namespace lut { namespace mm { namespace allocator { namespace bitIndex
 
     namespace
     {
-        std::size_t bits_itz(std::uint8_t x);//index of least significant zero or overflow if absent
-        std::size_t bits_itz(std::uint16_t x);
-        std::size_t bits_itz(std::uint32_t x);
+//        std::size_t bits_itz(std::uint8_t x);//index of least significant zero or overflow if absent
+//        std::size_t bits_itz(std::uint16_t x);
+//        std::size_t bits_itz(std::uint32_t x);
 
         inline std::size_t bits_itz(std::uint64_t x)
         {

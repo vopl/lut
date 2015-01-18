@@ -21,7 +21,7 @@ endif()
 
 ############################################################
 set(INC
-    ${PINC}.hpp
+    ${PINC}/main.hpp
     ${PINC}/config.hpp
     ${PINC}/stack.hpp
     ${PINC}/sharedInstance.hpp
@@ -55,8 +55,8 @@ set(SRC
     ${PSRC}/allocator/stackState.hpp
     ${PSRC}/allocator.ipp
     ${PSRC}/allocator.cpp
-    ${PSRC}.ipp
-    ${PSRC}.cpp
+    ${PSRC}/main.ipp
+    ${PSRC}/main.cpp
 )
 source_group(src/mm FILES ${SRC})
 

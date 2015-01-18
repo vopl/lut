@@ -5,5 +5,5 @@
 namespace lut { namespace hiddenImpl
 {
     template <class T>
-    struct sizeofImpl;
+    struct sizeProvider;
 }}

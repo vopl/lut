@@ -1,18 +1,18 @@
 #include "lut/stable.hpp"
-#include "lut/io/sizeofImpl.hpp"
+#include "lut/io/sizeProvider.hpp"
 #include "lut/io/stream.hpp"
 #include "lut/io/impl/stream.hpp"
 
 namespace lut { namespace io
 {
     Stream::Stream()
-        : HiddenImpl<impl::Stream>()
+        : Single<impl::Stream>()
     {
 
     }
 
     Stream::Stream(Stream &&from)
-        : HiddenImpl<impl::Stream>(std::forward<HiddenImpl<impl::Stream>>(from))
+        : Single<impl::Stream>(std::forward<Single<impl::Stream>>(from))
     {
     }
 

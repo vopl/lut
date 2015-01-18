@@ -1,11 +1,11 @@
 #pragma once
 
-#include "lut/hiddenImpl/sizeofImpl.hpp"
+#include "lut/hiddenImpl/sizeProvider.hpp"
 
 namespace lut { namespace hiddenImpl
 {
     template <class T>
-    struct sizeofImpl
+    struct sizeProvider
     {
         static const std::size_t _value = 0;
     };

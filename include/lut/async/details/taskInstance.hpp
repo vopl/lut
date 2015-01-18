@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lut/async/details/task.hpp"
-#include "lut/mm.hpp"
+#include "lut/mm/main.hpp"
 
 #include <cstddef>
 #include <functional>

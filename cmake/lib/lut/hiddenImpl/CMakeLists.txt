@@ -33,11 +33,11 @@ macro(mkHiddenImplSizes)
     #message("output: ${output}, headers: ${headers}, classes: ${classes}")
 
     ############################################################
-    set(srcText "${CMAKE_CURRENT_BINARY_DIR}/sizeofImplGen.text")
+    set(srcText "${CMAKE_CURRENT_BINARY_DIR}/sizeProviderGen.text")
 
-    file(WRITE ${srcText} "#define GENERATE_SIZEOFIMPL 1\n")
+    file(WRITE ${srcText} "#define GENERATE_SIZEPROVIDER 1\n")
     file(APPEND ${srcText} "#include \"lut/stable.hpp\"\n")
-    file(APPEND ${srcText} "#include \"lut/hiddenImpl/sizeofImplDefault.hpp\"\n")
+    file(APPEND ${srcText} "#include \"lut/hiddenImpl/sizeProviderDefault.hpp\"\n")
     foreach(header ${headers})
         file(APPEND ${srcText} "#include \"${header}\"\n")
     endforeach()
@@ -48,7 +48,7 @@ macro(mkHiddenImplSizes)
     file(APPEND ${srcText} "    std::cout<<\n")
     file(APPEND ${srcText} "        \"#pragma once\\n\"\n")
     file(APPEND ${srcText} "        \"\\n\"\n")
-    file(APPEND ${srcText} "        \"#include \\\"lut/hiddenImpl/sizeofImpl.hpp\\\"\\n\"\n")
+    file(APPEND ${srcText} "        \"#include \\\"lut/hiddenImpl/sizeProvider.hpp\\\"\\n\"\n")
     file(APPEND ${srcText} "        \"\\n\"\n")
 
     ############################################################
@@ -79,7 +79,7 @@ macro(mkHiddenImplSizes)
     file(APPEND ${srcText} "        \"namespace lut { namespace hiddenImpl {\\n\"\n")
 
     foreach(class ${classes})
-        file(APPEND ${srcText} "        \"    template <> struct sizeofImpl<${class}> { static const std::size_t _value =  \" << sizeof(${class}) << \";};\\n\"\n")
+        file(APPEND ${srcText} "        \"    template <> struct sizeProvider<${class}> { static const std::size_t _value =  \" << sizeof(${class}) << \";};\\n\"\n")
     endforeach()
 
     file(APPEND ${srcText} "        \"}}\\n\"\n")
@@ -93,18 +93,18 @@ macro(mkHiddenImplSizes)
 
 
     ############################################################
-    set(src "${CMAKE_CURRENT_BINARY_DIR}/sizeofImplGen.cpp")
+    set(src "${CMAKE_CURRENT_BINARY_DIR}/sizeProviderGen.cpp")
     add_custom_command(OUTPUT ${src}
                         COMMAND ${CMAKE_COMMAND} -E copy ${srcText}  ${src}
                         DEPENDS ${headers} ${srcText} #${PINC}.hpp
                         )
 
     ############################################################
-    set(sizeofImplGenTarget ${CMAKE_CURRENT_BINARY_DIR}/sizeofImplGen)
-#    add_executable(${sizeofImplGenTarget} EXCLUDE_FROM_ALL ${src})
-#    set_target_properties(${sizeofImplGenTarget} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-#    set_target_properties(${sizeofImplGenTarget} PROPERTIES RUNTIME_OUTPUT_NAME sizeofImplGen)
-#    get_target_property(sizeofImplGenExecutable ${sizeofImplGenTarget} LOCATION)
+    set(sizeProviderGenTarget ${CMAKE_CURRENT_BINARY_DIR}/sizeProviderGen)
+#    add_executable(${sizeProviderGenTarget} EXCLUDE_FROM_ALL ${src})
+#    set_target_properties(${sizeProviderGenTarget} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+#    set_target_properties(${sizeProviderGenTarget} PROPERTIES RUNTIME_OUTPUT_NAME sizeProviderGen)
+#    get_target_property(sizeProviderGenExecutable ${sizeProviderGenTarget} LOCATION)
 
     set(cxx_args)
 
@@ -123,22 +123,23 @@ macro(mkHiddenImplSizes)
     set(cxx_args ${cxx_args} ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${build_type_uc}})
     separate_arguments(cxx_args)
 
-    add_custom_command(OUTPUT ${sizeofImplGenTarget}
-            COMMAND ${CMAKE_CXX_COMPILER} ${cxx_args} ${src} -o ${sizeofImplGenTarget}
+    add_custom_command(OUTPUT ${sizeProviderGenTarget}
+            COMMAND ${CMAKE_CXX_COMPILER} ${cxx_args} ${src} -o ${sizeProviderGenTarget}
             DEPENDS ${src} )
 
     ############################################################
     add_custom_command(OUTPUT ${output}
-                        COMMAND ${sizeofImplGenTarget} > ${output}
-                        DEPENDS ${sizeofImplGenTarget}
+                        COMMAND ${sizeProviderGenTarget} > ${output}
+                        DEPENDS ${sizeProviderGenTarget}
                         )
 
 endmacro()
 
 add_library(${PROJECT} STATIC
-    ${PINC}.hpp
-    ${PINC}/sizeofImpl.hpp
-    ${PINC}/sizeofImplDefault.hpp
+    ${PINC}/single.hpp
+    ${PINC}/compound.hpp
+    ${PINC}/sizeProvider.hpp
+    ${PINC}/sizeProviderDefault.hpp
     ${PSRC}/accessor.hpp)
 
 set_target_properties(${PROJECT} PROPERTIES LINKER_LANGUAGE CXX)

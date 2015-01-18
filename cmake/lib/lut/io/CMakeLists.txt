@@ -86,7 +86,7 @@ source_group(src/impl FILES ${SRC_IMPL})
 
 mkHiddenImplSizes(
     OUTPUT
-        ${PINC}/sizeofImpl.hpp
+        ${PINC}/sizeProvider.hpp
 
     HEADERS
         ${PSRC}/impl/stream.hpp
@@ -108,7 +108,7 @@ add_library(${PROJECT} STATIC
     ${INC_IMPL}             ${SRC_IMPL}
 
     ${SRC_PCH}
-    ${PINC}/sizeofImpl.hpp)
+    ${PINC}/sizeProvider.hpp)
 
 target_link_libraries(${PROJECT}
     lut-mm lut-async)

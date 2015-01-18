@@ -6,7 +6,7 @@ namespace lut { namespace io
 {
 
     Client::Client()
-        : HiddenImpl<impl::Client>()
+        : Single<impl::Client>()
     {
     }
 

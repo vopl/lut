@@ -1,7 +1,7 @@
 #pragma once
 
-#include "mm/config.hpp"
-#include "mm/stack.hpp"
+#include "lut/mm/config.hpp"
+#include "lut/mm/stack.hpp"
 
 namespace lut { namespace mm
 {
@@ -44,4 +44,4 @@ namespace lut { namespace mm
 
 }}
 
-#include "lut/mm.ipp"
+#include "lut/mm/main.ipp"

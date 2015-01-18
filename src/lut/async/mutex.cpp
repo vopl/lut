@@ -5,7 +5,7 @@
 namespace lut { namespace async
 {
     Mutex::Mutex()
-        : HiddenImpl<impl::Mutex>()
+        : Single<impl::Mutex>()
     {
 
     }

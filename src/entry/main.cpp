@@ -1,6 +1,6 @@
 #include <iostream>
 #include "lut/stable.hpp"
-#include "lut/async.hpp"
+#include "lut/async/main.hpp"
 
 #include <future>
 #include "lut/mm/sharedInstance.hpp"

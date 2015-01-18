@@ -7,7 +7,7 @@ namespace lut { namespace async { namespace details
 {
     ////////////////////////////////////////////////////////////////////////////////
     Task::Task(CallExecutor callExecutor, FreeExecutor freeExecutor)
-        : HiddenImpl<impl::Task>(this, callExecutor, freeExecutor)
+        : Single<impl::Task>(this, callExecutor, freeExecutor)
     {
     }
 

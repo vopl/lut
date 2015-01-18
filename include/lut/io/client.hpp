@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lut/hiddenImpl.hpp"
+#include "lut/hiddenImpl/single.hpp"
 #include "lut/async/future.hpp"
 #include "lut/io/stream.hpp"
 #include "lut/io/endpoint.hpp"
@@ -15,7 +15,7 @@ namespace lut { namespace io
     }
 
     class Client
-        : public HiddenImpl<impl::Client>
+        : public hiddenImpl::Single<impl::Client>
     {
         Client(const Client &from) = delete;
         Client &operator=(const Client &from) = delete;

@@ -1,5 +1,5 @@
 #include "lut/stable.hpp"
-#include "lut/io/sizeofImpl.hpp"
+#include "lut/io/sizeProvider.hpp"
 #include "lut/io/server.hpp"
 #include "lut/io/impl/server.hpp"
 
@@ -7,12 +7,12 @@ namespace lut { namespace io
 {
 
     Server::Server()
-        : HiddenImpl<impl::Server>()
+        : Single<impl::Server>()
     {
     }
 
     Server::Server(Server &&from)
-        : HiddenImpl<impl::Server>(std::forward<HiddenImpl<impl::Server>>(from))
+        : Single<impl::Server>(std::forward<Single<impl::Server>>(from))
     {
     }
 

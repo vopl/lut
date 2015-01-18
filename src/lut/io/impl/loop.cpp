@@ -1,7 +1,7 @@
 #include "lut/stable.hpp"
 #include "lut/io/impl/loop.hpp"
 #include "lut/io/error.hpp"
-#include "lut/async.hpp"
+#include "lut/async/main.hpp"
 
 #include <sys/epoll.h>
 

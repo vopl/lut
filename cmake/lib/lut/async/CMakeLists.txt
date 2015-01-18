@@ -141,7 +141,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${PINC}/config.h)
 
 ############################################################
 set(INC
-    ${INCDIR}/lut/async.hpp
+    ${PINC}/main.hpp
     ${PINC}/mutex.hpp
     ${PINC}/event.hpp
     ${PINC}/acquire.hpp
@@ -150,7 +150,7 @@ set(INC
 source_group(include FILES ${INC})
 ############################################################
 set(SRC
-    ${SRCDIR}/lut/async.cpp
+    ${PSRC}/main.cpp
     ${PSRC}/stable.hpp
     ${PSRC}/mutex.cpp
     ${PSRC}/event.cpp
@@ -270,7 +270,7 @@ endif()
 
 mkHiddenImplSizes(
     OUTPUT
-        ${PINC}/sizeofImpl.hpp
+        ${PINC}/sizeProvider.hpp
 
     HEADERS
         ${PSRC}/impl/scheduler.hpp
@@ -295,7 +295,7 @@ add_library(${PROJECT} STATIC
     ${INC_IMPL_CTX}         ${SRC_IMPL_CTX}
 
     ${SRC_PCH}
-    ${PINC}/sizeofImpl.hpp)
+    ${PINC}/sizeProvider.hpp)
 
 target_link_libraries(${PROJECT}
     lut-mm)

@@ -14,7 +14,7 @@ namespace lut { namespace io
     }
 
     class Server
-        : public HiddenImpl<impl::Server>
+        : public hiddenImpl::Single<impl::Server>
     {
         Server(const Server &from) = delete;
         Server &operator=(const Server &from) = delete;

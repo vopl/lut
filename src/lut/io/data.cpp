@@ -1,22 +1,22 @@
 #include "lut/stable.hpp"
-#include "lut/io/sizeofImpl.hpp"
+#include "lut/io/sizeProvider.hpp"
 #include "lut/io/data.hpp"
 #include "lut/io/impl/data.hpp"
 
 namespace lut { namespace io
 {
     Data::Data()
-        : HiddenImpl<impl::Data>()
+        : Single<impl::Data>()
     {
     }
 
     Data::Data(Data &&from)
-        : HiddenImpl<impl::Data>(std::forward<HiddenImpl<impl::Data>>(from))
+        : Single<impl::Data>(std::forward<Single<impl::Data>>(from))
     {
     }
 
     Data::Data(impl::Data &&from)
-        : HiddenImpl<impl::Data>(std::forward<impl::Data>(from))
+        : Single<impl::Data>(std::forward<impl::Data>(from))
     {
     }
 
@@ -26,7 +26,7 @@ namespace lut { namespace io
 
     Data &Data::operator=(Data &&from)
     {
-        this->HiddenImpl<impl::Data>::operator =(std::forward<HiddenImpl<impl::Data>>(from));
+        impl() = std::move(from.impl());
         return *this;
     }
 

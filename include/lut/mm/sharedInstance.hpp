@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cassert>
 #include <utility>
-#include "lut/mm.hpp"
+#include "lut/mm/main.hpp"
 
 namespace lut { namespace mm
 {

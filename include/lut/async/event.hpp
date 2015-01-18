@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lut/async/sizeofImpl.hpp"
-#include "lut/hiddenImpl.hpp"
+#include "lut/async/sizeProvider.hpp"
+#include "lut/hiddenImpl/single.hpp"
 
 namespace lut { namespace async
 {
@@ -11,7 +11,7 @@ namespace lut { namespace async
     }
 
     class Event
-        : public HiddenImpl<impl::Event>
+        : public hiddenImpl::Single<impl::Event>
     {
         Event(const Event &from) = delete;
         Event &operator=(const Event &from) = delete;
@@ -32,8 +32,8 @@ namespace lut { namespace async
         bool isSignalled() const;
 
     public:
-        using HiddenImpl<impl::Event>::pimpl;
-        using HiddenImpl<impl::Event>::impl;
+        using Single<impl::Event>::pimpl;
+        using Single<impl::Event>::impl;
     };
 
 }}

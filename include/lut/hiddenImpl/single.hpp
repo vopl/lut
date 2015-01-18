@@ -1,37 +1,37 @@
 #pragma once
 
-#include "lut/hiddenImpl/sizeofImpl.hpp"
+#include "lut/hiddenImpl/sizeProvider.hpp"
 #include <utility>
 
-namespace lut
+namespace lut { namespace hiddenImpl
 {
-    namespace hiddenImpl
-    {
-        class Accessor;
-    }
+    class Accessor;
 
     template <class T>
-    class HiddenImpl
+    class Single
     {
+    public:
+        using Impl = T;
+
     protected:
         friend class hiddenImpl::Accessor;
 
         template <typename... Arg>
-        HiddenImpl(const Arg &... args);
+        Single(const Arg &... args);
 
-        HiddenImpl(const HiddenImpl &other);
-        HiddenImpl(HiddenImpl &&other);
+        Single(const Single &other);
+        Single(Single &&other);
 
-        HiddenImpl(const T &other);
-        HiddenImpl(T &&other);
+        Single(const T &other);
+        Single(T &&other);
 
-        ~HiddenImpl();
+        ~Single();
 
-        HiddenImpl &operator=(const HiddenImpl &other);
-        HiddenImpl &operator=(HiddenImpl &&other);
+        Single &operator=(const Single &other);
+        Single &operator=(Single &&other);
 
-        HiddenImpl &operator=(const T &other);
-        HiddenImpl &operator=(T &&other);
+        Single &operator=(const T &other);
+        Single &operator=(T &&other);
 
         T *pimpl();
         T &impl();
@@ -40,7 +40,7 @@ namespace lut
         const T &impl() const;
 
     private:
-        char _data[hiddenImpl::sizeofImpl<T>::_value];
+        char _data[hiddenImpl::sizeProvider<T>::_value];
     };
 
 
@@ -48,10 +48,10 @@ namespace lut
 
     namespace
     {
-        template <typename T, std::size_t s1=sizeof(T), std::size_t s2 = sizeof(HiddenImpl<T>)>
+        template <typename T, std::size_t s1=sizeof(T), std::size_t s2 = sizeof(Single<T>)>
         void sizeChecker()
         {
-            static_assert(sizeof(T)==sizeof(HiddenImpl<T>), "inconsistent sizeofImpl");
+            static_assert(sizeof(T)==sizeof(Single<T>), "inconsistent sizeProvider");
         }
     }
 
@@ -61,7 +61,7 @@ namespace lut
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
     template <typename... Arg>
-    HiddenImpl<T>::HiddenImpl(const Arg &... args)
+    Single<T>::Single(const Arg &... args)
     {
         sizeChecker<T>();
         new (&_data) T(args...);
@@ -69,7 +69,7 @@ namespace lut
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    HiddenImpl<T>::HiddenImpl(const HiddenImpl &other)
+    Single<T>::Single(const Single &other)
     {
         sizeChecker<T>();
         new (&_data) T(other.impl());
@@ -77,7 +77,7 @@ namespace lut
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    HiddenImpl<T>::HiddenImpl(HiddenImpl &&other)
+    Single<T>::Single(Single &&other)
     {
         sizeChecker<T>();
         new (&_data) T(std::move(other.impl()));
@@ -85,7 +85,7 @@ namespace lut
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    HiddenImpl<T>::HiddenImpl(const T &other)
+    Single<T>::Single(const T &other)
     {
         sizeChecker<T>();
         new (&_data) T(other);
@@ -93,7 +93,7 @@ namespace lut
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    HiddenImpl<T>::HiddenImpl(T &&other)
+    Single<T>::Single(T &&other)
     {
         sizeChecker<T>();
         new (&_data) T(std::move(other));
@@ -101,14 +101,14 @@ namespace lut
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    HiddenImpl<T>::~HiddenImpl()
+    Single<T>::~Single()
     {
         pimpl()->~T();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    HiddenImpl<T> &HiddenImpl<T>::operator=(const HiddenImpl &other)
+    Single<T> &Single<T>::operator=(const Single &other)
     {
         impl() = other.impl();
         return *this;
@@ -116,7 +116,7 @@ namespace lut
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    HiddenImpl<T> &HiddenImpl<T>::operator=(HiddenImpl &&other)
+    Single<T> &Single<T>::operator=(Single &&other)
     {
         impl() = std::forward<T>(other.impl());
         return *this;
@@ -124,7 +124,7 @@ namespace lut
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    HiddenImpl<T> &HiddenImpl<T>::operator=(const T &other)
+    Single<T> &Single<T>::operator=(const T &other)
     {
         impl() = other;
         return *this;
@@ -132,7 +132,7 @@ namespace lut
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    HiddenImpl<T> &HiddenImpl<T>::operator=(T &&other)
+    Single<T> &Single<T>::operator=(T &&other)
     {
         impl() = std::forward<T>(other);
         return *this;
@@ -140,29 +140,29 @@ namespace lut
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    T *HiddenImpl<T>::pimpl()
+    T *Single<T>::pimpl()
     {
         return reinterpret_cast<T*>(&_data);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    T &HiddenImpl<T>::impl()
+    T &Single<T>::impl()
     {
         return *pimpl();
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    const T *HiddenImpl<T>::pimpl() const
+    const T *Single<T>::pimpl() const
     {
         return reinterpret_cast<const T*>(&_data);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     template <class T>
-    const T &HiddenImpl<T>::impl() const
+    const T &Single<T>::impl() const
     {
         return *pimpl();
     }
-}
+}}

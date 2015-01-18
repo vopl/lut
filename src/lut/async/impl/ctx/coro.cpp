@@ -1,7 +1,7 @@
 #include "lut/stable.hpp"
 #include "lut/async/stable.hpp"
 #include "lut/async/impl/ctx/coro.hpp"
-#include "lut/mm.hpp"
+#include "lut/mm/main.hpp"
 #include "lut/async/impl/scheduler.hpp"
 
 namespace lut { namespace async { namespace impl { namespace ctx

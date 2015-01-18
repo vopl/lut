@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lut/mm.hpp"
+#include "lut/mm/main.hpp"
 
 namespace lut { namespace mm
 {

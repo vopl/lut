@@ -5,7 +5,7 @@
 #include "lut/async/impl/event.hpp"
 #include "lut/async/impl/syncronizerWaiter.hpp"
 
-#include "lut/mm.hpp"
+#include "lut/mm/main.hpp"
 
 
 namespace lut { namespace async { namespace details
