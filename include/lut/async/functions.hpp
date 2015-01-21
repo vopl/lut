@@ -6,7 +6,7 @@
 namespace lut { namespace async
 {
     template<class F, class... Args>
-    void spawn(F &&f, Args &&...args);
+    void spawn(F&& f, Args&&... args);
 
     void yield();
 

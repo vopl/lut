@@ -1,11 +1,10 @@
 #include "lut/stable.hpp"
-#include "lut/async/stable.hpp"
 #include "lut/async/details/acquire.hpp"
 #include "lut/async/impl/mutex.hpp"
 #include "lut/async/impl/event.hpp"
 #include "lut/async/impl/syncronizerWaiter.hpp"
 
-#include "lut/mm/main.hpp"
+#include "lut/mm/functions.hpp"
 
 
 namespace lut { namespace async { namespace details

@@ -48,14 +48,6 @@ if(VALGRIND_FOUND)
     include_directories(${VALGRIND_INCLUDE_DIR})
 endif()
 
-include(FindLibuv)
-if(!LIBUV_FOUND)
-    message(ERROR "libuv not found")
-endif()
-
-#message(STATUS "found libuv: ${LIBUV_INCLUDE_DIRS}")
-include_directories(${LIBUV_INCLUDE_DIRS})
-
 
 
 
@@ -141,7 +133,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${PINC}/config.h)
 
 ############################################################
 set(INC
-    ${PINC}/main.hpp
+    ${PINC}/functions.hpp
     ${PINC}/mutex.hpp
     ${PINC}/event.hpp
     ${PINC}/acquire.hpp
@@ -150,8 +142,7 @@ set(INC
 source_group(include FILES ${INC})
 ############################################################
 set(SRC
-    ${PSRC}/main.cpp
-    ${PSRC}/stable.hpp
+    ${PSRC}/functions.cpp
     ${PSRC}/mutex.cpp
     ${PSRC}/event.cpp
 )
@@ -305,7 +296,6 @@ if(ASYNCSCHEDULER_CONTEXTENGINE_BOOSTCONTEXT)
 endif()
 
 target_link_libraries(${PROJECT} ${Boost_SYSTEM_LIBRARY})
-target_link_libraries(${PROJECT} ${LIBUV_LIBRARIES})
 
 
 

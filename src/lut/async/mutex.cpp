@@ -1,4 +1,4 @@
-#include "lut/async/stable.hpp"
+#include "lut/stable.hpp"
 #include "lut/async/mutex.hpp"
 #include "lut/async/impl/mutex.hpp"
 

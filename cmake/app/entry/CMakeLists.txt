@@ -9,11 +9,9 @@ set(INC
 SOURCE_GROUP(include FILES ${INC})
 
 set(SRC
-	${PSRC}/main.cpp
+    ${PSRC}/main.cpp
 )
 source_group(src FILES ${SRC})
-
-include_directories(${PSRC})
 
 add_executable(entry ${INC} ${SRC} ${SRC_PCH})
 

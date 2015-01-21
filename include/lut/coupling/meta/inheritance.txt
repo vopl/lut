@@ -1,0 +1,27 @@
+entity
+    type
+        ineteger
+        real
+        string
+        container1
+            list
+            set
+            ptr
+            array
+        container2
+            map
+
+
+        enum : compound<enumValue>, inheritable<enum>
+        scope : compound <type>
+            variant : compound<attribute>, inheritable<variant>
+            struct : compound<attribute>, inheritable<struct>
+            iface : compound<method>, inheritable<iface>
+
+    enumValue
+    attribute
+    method
+
+compound<E>
+inheritable<B>
+

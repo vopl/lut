@@ -1,9 +1,9 @@
 #include "lut/stable.hpp"
-#include "lut/mm/main.hpp"
+#include "lut/mm/functions.hpp"
 #include "lut/mm/system.hpp"
 #include "lut/mm/allocator.hpp"
 
-#include "lut/mm/main.ipp"
+#include "lut/mm/functions.ipp"
 #include "lut/mm/allocator.ipp"
 #include "lut/mm/allocator/blocksHolder.ipp"
 #include "lut/mm/allocator/block.ipp"

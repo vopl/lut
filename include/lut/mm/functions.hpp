@@ -43,5 +43,3 @@ namespace lut { namespace mm
     void stackCompact(const Stack *stack);
 
 }}
-
-#include "lut/mm/main.ipp"

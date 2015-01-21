@@ -21,7 +21,7 @@ endif()
 
 ############################################################
 set(INC
-    ${PINC}/main.hpp
+    ${PINC}/functions.hpp
     ${PINC}/config.hpp
     ${PINC}/stack.hpp
     ${PINC}/sharedInstance.hpp
@@ -55,8 +55,8 @@ set(SRC
     ${PSRC}/allocator/stackState.hpp
     ${PSRC}/allocator.ipp
     ${PSRC}/allocator.cpp
-    ${PSRC}/main.ipp
-    ${PSRC}/main.cpp
+    ${PSRC}/functions.ipp
+    ${PSRC}/functions.cpp
 )
 source_group(src/mm FILES ${SRC})
 
@@ -68,9 +68,6 @@ source_group(src/mm FILES ${SRC})
 
 
 ############################################################
-#include_directories(${CMAKE_CURRENT_BINARY_DIR})
-#include_directories(${PSRC})
-
 include_directories(${INCDIR})
 include_directories(${SRCDIR})
 

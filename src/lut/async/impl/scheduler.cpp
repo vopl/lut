@@ -1,4 +1,4 @@
-#include "lut/async/stable.hpp"
+#include "lut/stable.hpp"
 #include "lut/async/impl/scheduler.hpp"
 #include "lut/async/impl/ctx/coro.hpp"
 
