@@ -7,7 +7,6 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     class Container2
         : public Type
     {
-
     };
 
 }}}}

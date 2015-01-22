@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lut/async/sizeProvider.hpp"
-#include "lut/hiddenImpl/single.hpp"
+#include "lut/hiddenImpl/layout.hpp"
 
 namespace lut { namespace async
 {
@@ -11,7 +11,7 @@ namespace lut { namespace async
     }
 
     class Mutex
-        : public hiddenImpl::Single<impl::Mutex>
+        : public hiddenImpl::Layout<impl::Mutex>
     {
         Mutex(const Mutex &from) = delete;
         Mutex &operator=(const Mutex &from) = delete;
@@ -31,8 +31,8 @@ namespace lut { namespace async
         bool locked() const;
 
     public:
-        using Single<impl::Mutex>::pimpl;
-        using Single<impl::Mutex>::impl;
+        using hiddenImpl::Layout<impl::Mutex>::pimpl;
+        using hiddenImpl::Layout<impl::Mutex>::impl;
     };
 
 }}

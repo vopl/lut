@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lut/hiddenImpl/single.hpp"
+#include "lut/hiddenImpl/layout.hpp"
 
 namespace lut { namespace hiddenImpl
 {
@@ -8,14 +8,14 @@ namespace lut { namespace hiddenImpl
     {
     public:
 
-        template <typename T>
-        static const T &access(const Single<T> &impl)
+        template <class TImpl, class... TFaces>
+        static const TImpl &access(const hiddenImpl::Layout<TImpl, TFaces...> &impl)
         {
             return impl.impl();
         }
 
-        template <typename T>
-        static T &access(Single<T> &impl)
+        template <class TImpl, class... TFaces>
+        static TImpl &access(hiddenImpl::Layout<TImpl, TFaces...> &impl)
         {
             return impl.impl();
         }

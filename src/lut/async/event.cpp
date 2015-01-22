@@ -5,7 +5,7 @@
 namespace lut { namespace async
 {
     Event::Event(bool autoReset)
-        : Single<impl::Event>(autoReset)
+        : hiddenImpl::Layout<impl::Event>(autoReset)
     {
 
     }

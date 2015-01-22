@@ -12,7 +12,6 @@ namespace lut { namespace coupling { namespace meta { namespace impl
         , public Compound<EnumValue>
         , public Inheritable<Enum>
     {
-
     };
 
 }}}}

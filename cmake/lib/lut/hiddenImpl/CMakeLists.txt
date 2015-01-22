@@ -41,6 +41,7 @@ macro(mkHiddenImplSizes)
     file(WRITE ${srcText} "#define GENERATE_SIZEPROVIDER 1\n")
     file(APPEND ${srcText} "#include \"lut/stable.hpp\"\n")
     file(APPEND ${srcText} "#include \"lut/hiddenImpl/sizeProviderDefault.hpp\"\n")
+    file(APPEND ${srcText} "#include \"lut/hiddenImpl/sizeFetcher.hpp\"\n")
 
     if(predecl)
         file(APPEND ${srcText} "#include \"${predecl}\"\n")
@@ -91,7 +92,7 @@ macro(mkHiddenImplSizes)
     file(APPEND ${srcText} "        \"namespace lut { namespace hiddenImpl {\\n\"\n")
 
     foreach(class ${classes})
-        file(APPEND ${srcText} "        \"    template <> struct sizeProvider<${class}> { static const std::size_t _value =  \" << sizeof(${class}) << \";};\\n\"\n")
+        file(APPEND ${srcText} "        \"    template <> struct sizeProvider<${class}> { static const std::size_t _value =  \" << lut::hiddenImpl::SizeFetcher<${class}>::_value << \";};\\n\"\n")
     endforeach()
 
     file(APPEND ${srcText} "        \"}}\\n\"\n")
@@ -148,10 +149,10 @@ macro(mkHiddenImplSizes)
 endmacro()
 
 add_library(${PROJECT} STATIC
-    ${PINC}/single.hpp
-    ${PINC}/compound.hpp
+    ${PINC}/layout.hpp
     ${PINC}/sizeProvider.hpp
     ${PINC}/sizeProviderDefault.hpp
+    ${PINC}/sizeFetcher.hpp
     ${PSRC}/accessor.hpp)
 
 set_target_properties(${PROJECT} PROPERTIES LINKER_LANGUAGE CXX)

@@ -1,4 +1,4 @@
-#include "lut/async/stable.hpp"
+#include "lut/stable.hpp"
 #include "lut/async/impl/ctx/engine_boostcontext.hpp"
 #include "lut/mm/config.hpp"
 

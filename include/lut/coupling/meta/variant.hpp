@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lut/coupling/meta/sizeProvider.hpp"
-#include "lut/hiddenImpl/compound.hpp"
+#include "lut/hiddenImpl/layout.hpp"
 
 #include "lut/coupling/meta/scope.hpp"
 #include "lut/coupling/meta/compound.hpp"
@@ -16,7 +16,7 @@ namespace lut { namespace coupling { namespace meta
     }
 
     class Variant
-        : public hiddenImpl::Compound3<Scope, Compound<Attribute>, Inheritable<Variant>, impl::Variant>
+        : public hiddenImpl::Layout<impl::Variant, Scope, Compound<Attribute>, Inheritable<Variant>>
     {
 
     };

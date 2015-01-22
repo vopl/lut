@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lut/hiddenImpl/single.hpp"
+#include "lut/hiddenImpl/layout.hpp"
 #if !GENERATE_SIZEPROVIDER
 #   include "lut/io/sizeProvider.hpp"
 #endif
@@ -18,7 +18,7 @@ namespace lut { namespace io
     }
 
     class Stream
-        : public hiddenImpl::Single<impl::Stream>
+        : public hiddenImpl::Layout<impl::Stream>
     {
         Stream(const Stream &from) = delete;
         Stream &operator=(const Stream &from) = delete;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lut/coupling/meta/sizeProvider.hpp"
-#include "lut/hiddenImpl/single.hpp"
+#include "lut/hiddenImpl/layout.hpp"
 
 namespace lut { namespace coupling { namespace meta
 {
@@ -13,7 +13,7 @@ namespace lut { namespace coupling { namespace meta
 
     template <class E>
     class Compound
-        : public hiddenImpl::Single<impl::Compound<E>>
+        : public hiddenImpl::Layout<impl::Compound<E>>
     {
 
     };

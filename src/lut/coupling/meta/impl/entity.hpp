@@ -4,7 +4,6 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 {
     class Entity
     {
-
     };
 
 }}}}
