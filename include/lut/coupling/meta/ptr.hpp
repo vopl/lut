@@ -7,12 +7,6 @@
 
 namespace lut { namespace coupling { namespace meta
 {
-
-    namespace impl
-    {
-        class Ptr;
-    }
-
     class Ptr
         : public hiddenImpl::Layout<impl::Ptr, Container1>
     {

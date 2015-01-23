@@ -7,14 +7,13 @@
 
 namespace lut { namespace coupling { namespace meta
 {
-    namespace impl
+    class Alias
+        : public hiddenImpl::Layout<impl::Alias, Type>
     {
-        class String;
-    }
+    public:
+        Type *target();
 
-    class String
-        : public hiddenImpl::Layout<impl::String, Type>
-    {
+        bool strong();
 
     };
 

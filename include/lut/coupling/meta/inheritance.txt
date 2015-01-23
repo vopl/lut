@@ -1,27 +1,32 @@
-entity
+абстрактные
     type
-        ineteger
-        real
-        string
-        container1
-            list
-            set
-            ptr
-            array
-        container2
-            map
+    container1 : type
+    container2 : type
+    compound<E>
+    inheritable<B>
 
+конкретные
+    scope       : type, compound <type>
 
-        enum : compound<enumValue>, inheritable<enum>
-        scope : compound <type>
-            variant : compound<attribute>, inheritable<variant>
-            struct : compound<attribute>, inheritable<struct>
-            iface : compound<method>, inheritable<iface>
+    alias       : type
+    bool        : type
+    integer     : type
+    real        : type
+    string      : type
 
-    enumValue
-    attribute
-    method
+    list        : container1
+    set         : container1
+    ptr         : container1
+    array       : container1
 
-compound<E>
-inheritable<B>
+    map         : container2
 
+    enum        : type, compound<enumValue>, inheritable<enum>
+
+    variant     : scope, compound<attribute>, inheritable<variant>
+    struct      : scope, compound<attribute>, inheritable<struct>
+    iface       : scope, compound<method>, inheritable<iface>
+
+    enumValue   : type
+    attribute   : type
+    method      : type, compound<attribute>

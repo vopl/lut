@@ -8,11 +8,6 @@
 
 namespace lut { namespace coupling { namespace meta
 {
-    namespace impl
-    {
-        class Scope;
-    }
-
     class Scope
         : public hiddenImpl::Layout<impl::Scope, Type, Compound<Type>>
     {

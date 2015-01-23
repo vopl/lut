@@ -10,14 +10,15 @@
 
 namespace lut { namespace coupling { namespace meta
 {
-    namespace impl
-    {
-        class Iface;
-    }
-
     class Iface
         : public hiddenImpl::Layout<impl::Iface, Scope, Compound<Method>, Inheritable<Iface>>
     {
+    public:
+        std::vector<Method *> methods();
+
+        bool forward();
+
+        Iface *opposite();
 
     };
 

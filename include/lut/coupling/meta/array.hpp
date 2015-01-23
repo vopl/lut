@@ -7,14 +7,11 @@
 
 namespace lut { namespace coupling { namespace meta
 {
-    namespace impl
-    {
-        class Array;
-    }
-
     class Array
         : public hiddenImpl::Layout<impl::Array, Container1>
     {
+    public:
+        std::uint64_t size();
 
     };
 

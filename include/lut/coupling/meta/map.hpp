@@ -7,11 +7,6 @@
 
 namespace lut { namespace coupling { namespace meta
 {
-    namespace impl
-    {
-        class Map;
-    }
-
     class Map
         : public hiddenImpl::Layout<impl::Map, Container2>
     {

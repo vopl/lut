@@ -5,16 +5,17 @@
 
 namespace lut { namespace coupling { namespace meta
 {
-    namespace impl
-    {
-        template <class E>
-        class Compound;
-    }
-
     template <class E>
     class Compound
         : public hiddenImpl::Layout<impl::Compound<E>>
     {
+    public:
+        std::vector<E *> elements();
+
+        std::size_t elementsAmount();
+
+        E *element(std::size_t index);
+        E *element(std::string name);
 
     };
 

@@ -10,11 +10,6 @@
 
 namespace lut { namespace coupling { namespace meta
 {
-    namespace impl
-    {
-        class Struct;
-    }
-
     class Struct
         : public hiddenImpl::Layout<impl::Struct, Scope, Compound<Attribute>, Inheritable<Struct>>
     {

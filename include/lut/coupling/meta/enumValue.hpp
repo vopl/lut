@@ -3,18 +3,15 @@
 #include "lut/coupling/meta/sizeProvider.hpp"
 #include "lut/hiddenImpl/layout.hpp"
 
-#include "lut/coupling/meta/entity.hpp"
+#include "lut/coupling/meta/type.hpp"
 
 namespace lut { namespace coupling { namespace meta
 {
-    namespace impl
-    {
-        class EnumValue;
-    }
-
     class EnumValue
-        : public hiddenImpl::Layout<impl::EnumValue, Entity>
+        : public hiddenImpl::Layout<impl::EnumValue, Type>
     {
+    public:
+        std::uint64_t numericalValue();
 
     };
 

@@ -3,18 +3,15 @@
 #include "lut/coupling/meta/sizeProvider.hpp"
 #include "lut/hiddenImpl/layout.hpp"
 
-#include "lut/coupling/meta/entity.hpp"
+#include "lut/coupling/meta/type.hpp"
 
 namespace lut { namespace coupling { namespace meta
 {
-    namespace impl
-    {
-        class Attribute;
-    }
-
     class Attribute
-        : public hiddenImpl::Layout<impl::Attribute, Entity>
+        : public hiddenImpl::Layout<impl::Attribute, Type>
     {
+    public:
+        Type *valueType();
 
     };
 

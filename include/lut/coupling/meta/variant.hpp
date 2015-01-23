@@ -10,11 +10,6 @@
 
 namespace lut { namespace coupling { namespace meta
 {
-    namespace impl
-    {
-        class Variant;
-    }
-
     class Variant
         : public hiddenImpl::Layout<impl::Variant, Scope, Compound<Attribute>, Inheritable<Variant>>
     {

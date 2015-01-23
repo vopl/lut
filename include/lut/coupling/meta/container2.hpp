@@ -7,15 +7,12 @@
 
 namespace lut { namespace coupling { namespace meta
 {
-    namespace impl
-    {
-        class Container2;
-    }
-
     class Container2
         : public hiddenImpl::Layout<impl::Container2, Type>
     {
-
+    public:
+        Type *elementType1();
+        Type *elementType2();
     };
 
 }}}

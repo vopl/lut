@@ -12,6 +12,8 @@
 #include <mutex>
 #include <atomic>
 #include <iostream>
+#include <vector>
+#include <string>
 
 #include <unistd.h>
 #include <sys/mman.h>

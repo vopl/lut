@@ -4,7 +4,7 @@
 
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
-    class String
+    class Alias
         : public Type
     {
     };

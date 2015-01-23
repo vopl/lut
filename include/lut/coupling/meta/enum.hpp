@@ -10,14 +10,14 @@
 
 namespace lut { namespace coupling { namespace meta
 {
-    namespace impl
-    {
-        class Enum;
-    }
-
     class Enum
         : public hiddenImpl::Layout<impl::Enum, Type, Compound<EnumValue>, Inheritable<Enum>>
     {
+    public:
+        std::vector<EnumValue *> values();
+
+        std::uint32_t bitness();
+
 
     };
 
