@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lut/coupling/meta/sizeProvider.hpp"
-#include "lut/hiddenImpl/layout.hpp"
+#include "lut/hiddenImpl/faceLayout.hpp"
 
 #include "lut/coupling/meta/type.hpp"
 #include "lut/coupling/meta/compound.hpp"
@@ -15,7 +15,7 @@ namespace lut { namespace coupling { namespace meta
     };
 
     class Method
-        : public hiddenImpl::Layout<impl::Method, Type, Compound<Attribute>>
+        : public hiddenImpl::FaceLayout<impl::Method, Type, Compound<Attribute>>
     {
     public:
         Iface *iface();

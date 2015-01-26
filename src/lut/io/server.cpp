@@ -7,12 +7,12 @@ namespace lut { namespace io
 {
 
     Server::Server()
-        : hiddenImpl::Layout<impl::Server>()
+        : hiddenImpl::FaceLayout<impl::Server>()
     {
     }
 
     Server::Server(Server &&from)
-        : hiddenImpl::Layout<impl::Server>(std::forward<hiddenImpl::Layout<impl::Server>>(from))
+        : hiddenImpl::FaceLayout<impl::Server>(std::forward<hiddenImpl::FaceLayout<impl::Server>>(from))
     {
     }
 

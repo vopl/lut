@@ -6,17 +6,17 @@
 namespace lut { namespace io
 {
     Data::Data()
-        : hiddenImpl::Layout<impl::Data>()
+        : hiddenImpl::FaceLayout<impl::Data>()
     {
     }
 
     Data::Data(Data &&from)
-        : hiddenImpl::Layout<impl::Data>(std::forward<hiddenImpl::Layout<impl::Data>>(from))
+        : hiddenImpl::FaceLayout<impl::Data>(std::forward<hiddenImpl::FaceLayout<impl::Data>>(from))
     {
     }
 
     Data::Data(impl::Data &&from)
-        : hiddenImpl::Layout<impl::Data>(std::forward<impl::Data>(from))
+        : hiddenImpl::FaceLayout<impl::Data>(std::forward<impl::Data>(from))
     {
     }
 

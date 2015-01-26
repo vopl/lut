@@ -149,7 +149,9 @@ macro(mkHiddenImplSizes)
 endmacro()
 
 add_library(${PROJECT} STATIC
-    ${PINC}/layout.hpp
+    ${PINC}/faceLayout.hpp
+    ${PINC}/implLayout.hpp
+    ${PINC}/layoutChecker.hpp
     ${PINC}/sizeProvider.hpp
     ${PINC}/sizeProviderDefault.hpp
     ${PINC}/sizeFetcher.hpp

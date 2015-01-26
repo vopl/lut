@@ -3,7 +3,7 @@
 #if !GENERATE_SIZEPROVIDER
 #   include "lut/async/sizeProvider.hpp"
 #endif
-#include "lut/hiddenImpl/layout.hpp"
+#include "lut/hiddenImpl/faceLayout.hpp"
 
 
 namespace lut { namespace async { namespace impl
@@ -16,7 +16,7 @@ namespace lut { namespace async { namespace details
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     class Task
-            : public hiddenImpl::Layout<impl::Task>
+            : public hiddenImpl::FaceLayout<impl::Task>
     {
         Task(const Task &) = delete;
         void operator=(const Task &) = delete;
@@ -30,8 +30,8 @@ namespace lut { namespace async { namespace details
         ~Task();
 
     public:
-        using hiddenImpl::Layout<impl::Task>::pimpl;
-        using hiddenImpl::Layout<impl::Task>::impl;
+        using hiddenImpl::FaceLayout<impl::Task>::pimpl;
+        using hiddenImpl::FaceLayout<impl::Task>::impl;
     };
 
     void spawn(details::Task *task);

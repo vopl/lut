@@ -6,7 +6,7 @@ namespace lut { namespace io
 {
 
     Client::Client()
-        : Layout<impl::Client>()
+        : FaceLayout<impl::Client>()
     {
     }
 
