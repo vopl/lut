@@ -4,12 +4,12 @@
 #include "lut/coupling/meta/impl/compound.hpp"
 #include "lut/coupling/meta/impl/inheritable.hpp"
 #include "lut/coupling/meta/impl/attribute.hpp"
-#include "lut/hiddenImpl/implLayout.hpp"
+#include "lut/himpl/implLayout.hpp"
 
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
     class Struct
-        : public hiddenImpl::ImplLayout<Scope, Compound<Attribute>, Inheritable<Struct>>
+        : public himpl::ImplLayout<Scope, Compound<Attribute>, Inheritable<Struct>>
     {
     };
 

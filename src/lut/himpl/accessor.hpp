@@ -1,21 +1,21 @@
 #pragma once
 
-#include "lut/hiddenImpl/faceLayout.hpp"
+#include "lut/himpl/faceLayout.hpp"
 
-namespace lut { namespace hiddenImpl
+namespace lut { namespace himpl
 {
     class Accessor
     {
     public:
 
         template <class TImpl, class... TBaseFaces>
-        static const TImpl &access(const hiddenImpl::FaceLayout<TImpl, TBaseFaces...> &impl)
+        static const TImpl &access(const himpl::FaceLayout<TImpl, TBaseFaces...> &impl)
         {
             return impl.impl();
         }
 
         template <class TImpl, class... TBaseFaces>
-        static TImpl &access(hiddenImpl::FaceLayout<TImpl, TBaseFaces...> &impl)
+        static TImpl &access(himpl::FaceLayout<TImpl, TBaseFaces...> &impl)
         {
             return impl.impl();
         }

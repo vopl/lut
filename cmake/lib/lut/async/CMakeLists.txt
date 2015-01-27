@@ -259,7 +259,7 @@ endif()
 
 
 
-mkHiddenImplSizes(
+mkHimplSizes(
     OUTPUT
         ${PINC}/sizeProvider.hpp
 

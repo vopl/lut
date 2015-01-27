@@ -5,7 +5,7 @@
 namespace lut { namespace async
 {
     Event::Event(bool autoReset)
-        : hiddenImpl::FaceLayout<impl::Event>(autoReset)
+        : himpl::FaceLayout<impl::Event>(autoReset)
     {
 
     }

@@ -132,7 +132,7 @@ include_directories(${SRCDIR})
 
 
 
-mkHiddenImplSizes(
+mkHimplSizes(
     OUTPUT
         ${PINC}/sizeProvider.hpp
 

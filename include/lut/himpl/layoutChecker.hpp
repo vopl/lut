@@ -1,6 +1,6 @@
 #pragma once
 
-namespace lut { namespace hiddenImpl
+namespace lut { namespace himpl
 {
     namespace details
     {

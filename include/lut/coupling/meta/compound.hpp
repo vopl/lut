@@ -1,13 +1,13 @@
 #pragma once
 
 #include "lut/coupling/meta/sizeProvider.hpp"
-#include "lut/hiddenImpl/faceLayout.hpp"
+#include "lut/himpl/faceLayout.hpp"
 
 namespace lut { namespace coupling { namespace meta
 {
     template <class E>
     class Compound
-        : public hiddenImpl::FaceLayout<impl::Compound<E>>
+        : public himpl::FaceLayout<impl::Compound<E>>
     {
     public:
         std::vector<E *> elements();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lut/hiddenImpl/faceLayout.hpp"
+#include "lut/himpl/faceLayout.hpp"
 #if !GENERATE_SIZEPROVIDER
 #   include "lut/io/sizeProvider.hpp"
 #endif
@@ -17,7 +17,7 @@ namespace lut { namespace io
     }
 
     class Data
-        : public hiddenImpl::FaceLayout<impl::Data>
+        : public himpl::FaceLayout<impl::Data>
     {
     private:
         Data(const Data &) = delete;

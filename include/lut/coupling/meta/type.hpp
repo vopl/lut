@@ -1,14 +1,14 @@
 #pragma once
 
 #include "lut/coupling/meta/sizeProvider.hpp"
-#include "lut/hiddenImpl/faceLayout.hpp"
+#include "lut/himpl/faceLayout.hpp"
 
 namespace lut { namespace coupling { namespace meta
 {
     struct Sign {};
 
     class Type
-        : public hiddenImpl::FaceLayout<impl::Type>
+        : public himpl::FaceLayout<impl::Type>
     {
     public:
 

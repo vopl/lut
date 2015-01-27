@@ -84,7 +84,7 @@ source_group(src/impl FILES ${SRC_IMPL})
 
 
 
-mkHiddenImplSizes(
+mkHimplSizes(
     OUTPUT
         ${PINC}/sizeProvider.hpp
 

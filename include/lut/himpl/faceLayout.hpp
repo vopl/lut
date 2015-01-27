@@ -1,10 +1,10 @@
 #pragma once
 
-#include "lut/hiddenImpl/sizeProvider.hpp"
-#include "lut/hiddenImpl/sizeFetcher.hpp"
+#include "lut/himpl/sizeProvider.hpp"
+#include "lut/himpl/sizeFetcher.hpp"
 #include <utility>
 
-namespace lut { namespace hiddenImpl
+namespace lut { namespace himpl
 {
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     class Accessor;

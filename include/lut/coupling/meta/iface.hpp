@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lut/coupling/meta/sizeProvider.hpp"
-#include "lut/hiddenImpl/faceLayout.hpp"
+#include "lut/himpl/faceLayout.hpp"
 
 #include "lut/coupling/meta/scope.hpp"
 #include "lut/coupling/meta/compound.hpp"
@@ -11,7 +11,7 @@
 namespace lut { namespace coupling { namespace meta
 {
     class Iface
-        : public hiddenImpl::FaceLayout<impl::Iface, Scope, Compound<Method>, Inheritable<Iface>>
+        : public himpl::FaceLayout<impl::Iface, Scope, Compound<Method>, Inheritable<Iface>>
     {
     public:
         std::vector<Method *> methods();

@@ -1,11 +1,11 @@
-set(PROJECT lut-hiddenImpl)
+set(PROJECT lut-himpl)
 project(${PROJECT})
-set(PINC ${INCDIR}/lut/hiddenImpl)
-set(PSRC ${SRCDIR}/lut/hiddenImpl)
+set(PINC ${INCDIR}/lut/himpl)
+set(PSRC ${SRCDIR}/lut/himpl)
 
 
 
-macro(mkHiddenImplSizes)
+macro(mkHimplSizes)
 
     ############################################################
     set(output)
@@ -28,7 +28,7 @@ macro(mkHiddenImplSizes)
             elseif(${_state} STREQUAL "PREDECL")
                 list(APPEND predecl ${arg})
             else()
-                message(WARNING "unknown arg kind for mkHiddenImplSizes: ${arg}")
+                message(WARNING "unknown arg kind for mkHimplSizes: ${arg}")
             endif()
         endif()
     endforeach()
@@ -40,8 +40,8 @@ macro(mkHiddenImplSizes)
 
     file(WRITE ${srcText} "#define GENERATE_SIZEPROVIDER 1\n")
     file(APPEND ${srcText} "#include \"lut/stable.hpp\"\n")
-    file(APPEND ${srcText} "#include \"lut/hiddenImpl/sizeProviderDefault.hpp\"\n")
-    file(APPEND ${srcText} "#include \"lut/hiddenImpl/sizeFetcher.hpp\"\n")
+    file(APPEND ${srcText} "#include \"lut/himpl/sizeProviderDefault.hpp\"\n")
+    file(APPEND ${srcText} "#include \"lut/himpl/sizeFetcher.hpp\"\n")
 
     if(predecl)
         file(APPEND ${srcText} "#include \"${predecl}\"\n")
@@ -57,7 +57,7 @@ macro(mkHiddenImplSizes)
     file(APPEND ${srcText} "    std::cout<<\n")
     file(APPEND ${srcText} "        \"#pragma once\\n\"\n")
     file(APPEND ${srcText} "        \"\\n\"\n")
-    file(APPEND ${srcText} "        \"#include \\\"lut/hiddenImpl/sizeProvider.hpp\\\"\\n\"\n")
+    file(APPEND ${srcText} "        \"#include \\\"lut/himpl/sizeProvider.hpp\\\"\\n\"\n")
     file(APPEND ${srcText} "        \"\\n\"\n")
 
     ############################################################
@@ -89,10 +89,10 @@ macro(mkHiddenImplSizes)
 
     ############################################################
     file(APPEND ${srcText} "        \"\\n\"\n")
-    file(APPEND ${srcText} "        \"namespace lut { namespace hiddenImpl {\\n\"\n")
+    file(APPEND ${srcText} "        \"namespace lut { namespace himpl {\\n\"\n")
 
     foreach(class ${classes})
-        file(APPEND ${srcText} "        \"    template <> struct sizeProvider<${class}> { static const std::size_t _value =  \" << lut::hiddenImpl::SizeFetcher<${class}>::_value << \";};\\n\"\n")
+        file(APPEND ${srcText} "        \"    template <> struct sizeProvider<${class}> { static const std::size_t _value =  \" << lut::himpl::SizeFetcher<${class}>::_value << \";};\\n\"\n")
     endforeach()
 
     file(APPEND ${srcText} "        \"}}\\n\"\n")

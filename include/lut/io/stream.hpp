@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lut/hiddenImpl/faceLayout.hpp"
+#include "lut/himpl/faceLayout.hpp"
 #if !GENERATE_SIZEPROVIDER
 #   include "lut/io/sizeProvider.hpp"
 #endif
@@ -18,7 +18,7 @@ namespace lut { namespace io
     }
 
     class Stream
-        : public hiddenImpl::FaceLayout<impl::Stream>
+        : public himpl::FaceLayout<impl::Stream>
     {
         Stream(const Stream &from) = delete;
         Stream &operator=(const Stream &from) = delete;

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "lut/hiddenImpl/sizeProvider.hpp"
+#include "lut/himpl/sizeProvider.hpp"
 
-namespace lut { namespace hiddenImpl
+namespace lut { namespace himpl
 {
     template <class T>
     struct sizeProvider

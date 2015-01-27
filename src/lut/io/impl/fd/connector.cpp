@@ -5,7 +5,7 @@
 #include "lut/io/impl/stream.hpp"
 #include "lut/io/stream.hpp"
 #include "lut/io/error.hpp"
-#include "lut/hiddenImpl/accessor.hpp"
+#include "lut/himpl/accessor.hpp"
 #include "lut/io/impl/utils/sockaddr.hpp"
 
 namespace lut { namespace io { namespace impl { namespace fd
@@ -151,7 +151,7 @@ namespace lut { namespace io { namespace impl { namespace fd
         }
 
         lut::io::Stream stream;
-        hiddenImpl::Accessor::access(stream).setEngine(engine);
+        himpl::Accessor::access(stream).setEngine(engine);
 
         _promise.setValue(std::error_code(), std::move(stream));
         delete this;

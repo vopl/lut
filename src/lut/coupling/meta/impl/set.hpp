@@ -1,12 +1,12 @@
 #pragma once
 
 #include "lut/coupling/meta/impl/container1.hpp"
-#include "lut/hiddenImpl/implLayout.hpp"
+#include "lut/himpl/implLayout.hpp"
 
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
     class Set
-        : public hiddenImpl::ImplLayout<Container1>
+        : public himpl::ImplLayout<Container1>
     {
     };
 

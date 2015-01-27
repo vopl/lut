@@ -6,13 +6,13 @@
 namespace lut { namespace io
 {
     Stream::Stream()
-        : hiddenImpl::FaceLayout<impl::Stream>()
+        : himpl::FaceLayout<impl::Stream>()
     {
 
     }
 
     Stream::Stream(Stream &&from)
-        : hiddenImpl::FaceLayout<impl::Stream>(std::forward<hiddenImpl::FaceLayout<impl::Stream>>(from))
+        : himpl::FaceLayout<impl::Stream>(std::forward<himpl::FaceLayout<impl::Stream>>(from))
     {
     }
 

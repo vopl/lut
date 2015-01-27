@@ -1,5 +1,5 @@
 #include "lut/stable.hpp"
-#include "lut/hiddenImpl/layoutChecker.hpp"
+#include "lut/himpl/layoutChecker.hpp"
 #include "lut/coupling/meta/array.hpp"
 #include "lut/coupling/meta/impl/array.hpp"
 
@@ -10,7 +10,7 @@ namespace lut { namespace coupling { namespace meta
 
 
 
-    static_assert(0!=sizeof(hiddenImpl::Checker<Array>), "check array layout");
+    static_assert(0!=sizeof(himpl::Checker<Array>), "check array layout");
 
 
 }}}

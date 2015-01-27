@@ -1,10 +1,10 @@
 #pragma once
 
-#include "lut/hiddenImpl/sizeProvider.hpp"
+#include "lut/himpl/sizeProvider.hpp"
 
 #include "lut/coupling/meta/predecl.hpp"
 
-namespace lut { namespace hiddenImpl {
+namespace lut { namespace himpl {
     template <> struct sizeProvider<::lut::coupling::meta::impl::Alias> { static const std::size_t _value =  0;};
     template <> struct sizeProvider<::lut::coupling::meta::impl::Array> { static const std::size_t _value =  0;};
     template <> struct sizeProvider<::lut::coupling::meta::impl::Attribute> { static const std::size_t _value =  0;};

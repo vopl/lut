@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lut/coupling/meta/sizeProvider.hpp"
-#include "lut/hiddenImpl/faceLayout.hpp"
+#include "lut/himpl/faceLayout.hpp"
 
 #include "lut/coupling/meta/type.hpp"
 
@@ -30,7 +30,7 @@ namespace lut { namespace coupling { namespace meta
     };
 
     class Primitive
-        : public hiddenImpl::FaceLayout<impl::Primitive, Type>
+        : public himpl::FaceLayout<impl::Primitive, Type>
     {
     public:
         PrimitiveKind kind();

@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-namespace lut { namespace hiddenImpl
+namespace lut { namespace himpl
 {
     template <class T>
     struct sizeProvider;
