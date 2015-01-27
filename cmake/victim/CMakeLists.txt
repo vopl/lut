@@ -1,8 +1,8 @@
-set(PROJECT entry)
-set(PSRC ${SRCDIR}/entry)
-set(PINC ${INCDIR}/entry)
+set(PROJECT victim)
+set(PSRC ${SRCDIR}/victim)
+set(PINC ${INCDIR}/victim)
 
-project(entry)
+project(${PROJECT})
 
 set(INC
 )
@@ -13,9 +13,9 @@ set(SRC
 )
 source_group(src FILES ${SRC})
 
-add_executable(entry ${INC} ${SRC} ${SRC_PCH})
+add_executable(${PROJECT} ${INC} ${SRC} ${SRC_PCH})
 
-target_link_libraries(entry 
+target_link_libraries(${PROJECT}
     lut-mm
     lut-async
     lut-io)

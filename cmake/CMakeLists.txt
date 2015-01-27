@@ -143,6 +143,6 @@ if(MSVC)
 	add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 endif()
 
-add_subdirectory(app)
-add_subdirectory(lib)
+add_subdirectory(victim)
+add_subdirectory(lut)
 
