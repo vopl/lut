@@ -1,7 +1,7 @@
-set(PROJECT lut-coupling-idl)
+set(PROJECT lut-coupling-generator)
 project(${PROJECT})
-set(PINC ${INCDIR}/lut/coupling/idl)
-set(PSRC ${SRCDIR}/lut/coupling/idl)
+set(PINC ${INCDIR}/lut/coupling/generator)
+set(PSRC ${SRCDIR}/lut/coupling/generator)
 
 
 
@@ -10,13 +10,13 @@ set(PSRC ${SRCDIR}/lut/coupling/idl)
 set(INC
     ${PINC}/test.hpp
 )
-source_group(include/coupling/idl FILES ${INC})
+source_group(include/coupling/generator FILES ${INC})
 
 ############################################################
 set(SRC
     ${PSRC}/test.cpp
 )
-source_group(src/coupling/idl FILES ${SRC})
+source_group(src/coupling/generator FILES ${SRC})
 
 
 
@@ -28,13 +28,13 @@ source_group(src/coupling/idl FILES ${SRC})
 set(INC_IMPL
     ${PSRC}/impl/test.hpp
 )
-source_group(src/coupling/idl/impl FILES ${INC_IMPL})
+source_group(src/coupling/generator/impl FILES ${INC_IMPL})
 
 ############################################################
 set(SRC_IMPL
     ${PSRC}/impl/test.cpp
 )
-source_group(src/coupling/idl/impl FILES ${SRC_IMPL})
+source_group(src/coupling/generator/impl FILES ${SRC_IMPL})
 
 
 

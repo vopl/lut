@@ -1,3 +1,4 @@
 add_subdirectory(meta)
-add_subdirectory(idl)
-add_subdirectory(compiler)
+add_subdirectory(parser)
+add_subdirectory(generator)
+add_subdirectory(translator)
