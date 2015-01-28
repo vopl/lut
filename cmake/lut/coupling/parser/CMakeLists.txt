@@ -31,6 +31,7 @@ source_group(src/coupling/parser FILES ${SRC})
 
 ############################################################
 set(INC_IMPL
+    ${PSRC}/impl/tokens.hpp
 )
 source_group(src/coupling/parser/impl FILES ${INC_IMPL})
 
@@ -119,7 +120,7 @@ mkHimplSizes(
 ############################################################
 add_library(${PROJECT} STATIC
     ${INC}                  ${SRC}
-    ${IMC_IMPL}             ${SRC_IMPL}
+    ${INC_IMPL}             ${SRC_IMPL}
 
     ${SRC_PCH}
 )

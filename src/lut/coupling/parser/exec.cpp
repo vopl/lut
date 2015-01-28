@@ -1,42 +1,20 @@
 #include "lut/stable.hpp"
 #include "lut/coupling/parser/exec.hpp"
+#include "lut/coupling/parser/impl/tokens.hpp"
 
 #include <boost/spirit/include/support_multi_pass.hpp>
+#include <boost/spirit/include/support_line_pos_iterator.hpp>
 #include <fstream>
 
-#include <boost/spirit/include/lex_lexertl.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/spirit/include/phoenix_statement.hpp>
-#include <boost/spirit/include/phoenix_algorithm.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/qi.hpp>
 
 
-namespace lex = boost::spirit::lex;
+using namespace boost::spirit;
+using namespace boost::spirit::ascii;
 
-template <typename Lexer>
-struct word_count_tokens : lex::lexer<Lexer>
-{
-    word_count_tokens()
-      : c(0), w(0), l(0)
-      , word("[^ \t\n]+")     // define tokens
-      , eol("\n")
-      , any(".")
-    {
-        using lex::_start;
-        using lex::_end;
-        using boost::phoenix::ref;
 
-        // associate tokens with the lexer
-        this->self
-            =   word
-            |   eol
-            |   any
-            ;
-    }
+//TODO ошибки, потом граматики
 
-    std::size_t c, w, l;
-    lex::token_def<> word, eol, any;
-};
 
 namespace lut { namespace coupling { namespace parser
 {
@@ -52,30 +30,68 @@ namespace lut { namespace coupling { namespace parser
         std::ifstream reader{fileName};
         if(!reader)
         {
-            errs.emplace_back(ErrorInfo {fileName, -1, std::error_code(errno, std::system_category())});
+            errs.emplace_back(ErrorInfo {fileName, -1, -1, strerror(errno)});
             return false;
         }
 
-        typedef std::istreambuf_iterator<char> rawIterator;
-        typedef boost::spirit::multi_pass<std::istreambuf_iterator<char>> iterator;
-
-        iterator lexFirst = boost::spirit::make_default_multi_pass(rawIterator{reader});
-        iterator lexEnd = boost::spirit::make_default_multi_pass(rawIterator());
+        using CharIterator = boost::spirit::line_pos_iterator<boost::spirit::multi_pass<std::istreambuf_iterator<char>>>;
+        CharIterator lexBegin{boost::spirit::multi_pass<std::istreambuf_iterator<char>>{std::istreambuf_iterator<char>{reader}}};
+        CharIterator lexEnd{boost::spirit::multi_pass<std::istreambuf_iterator<char>>{std::istreambuf_iterator<char>{}}};
 
 
-        typedef lex::lexertl::token<iterator> token;
-        typedef lex::lexertl::actor_lexer<token> lexer;
-        word_count_tokens<lexer> word_count_lexer;
+        using Toks = impl::Tokens<CharIterator>;
+        using TokIterator = Toks::iterator_type;
+        using Token = Toks::Token;
 
 
-        lexer::iterator_type iter = word_count_lexer.begin(lexFirst, lexEnd);
-        lexer::iterator_type end = word_count_lexer.end();
+        //tokenize
+        Toks toks;
+        CharIterator lexIter{lexBegin};
+        TokIterator tokBegin = toks.begin(lexIter, lexEnd);
+        TokIterator tokEnd = toks.end();
 
-        while (iter != end && token_is_valid(*iter))
         {
-            std::cout<<"token: "<<iter->value()<<", id: "<<iter->id()<<std::endl;
-            ++iter;
+            TokIterator tokIter = tokBegin;
+            for(; tokIter != tokEnd; ++tokIter)
+            {
+                if(!token_is_valid(*tokIter))
+                {
+                    CharIterator bol = get_line_start(lexBegin, lexIter);
+                    errs.emplace_back(ErrorInfo {
+                                          fileName,
+                                          static_cast<int>(lexIter.position()),
+                                          static_cast<int>(std::distance(bol, lexIter)),
+                                          "invalid input sequence"});
+                    return false;
+                }
+            }
         }
+
+        //parse
+        TokIterator tokIter{tokBegin};
+        bool r = qi::parse(tokIter, tokEnd, *(toks.id));
+
+        if(r)
+        {
+            if(tokIter == tokEnd)
+            {
+                std::cout<<"success: " << std::string(tokIter, tokEnd)<<std::endl;
+            }
+            else
+            {
+                const Token &t = (*tokIter);
+                CharIterator pos = t.value().begin();
+                std::cout<<"partial success, tail: " << std::string(tokIter, tokEnd)<<std::endl;
+
+                CharIterator bol = get_line_start(lexBegin, pos);
+                std::cout << " at "<< pos.position() << ", "<< std::distance(bol, pos)<<std::endl;
+            }
+        }
+        else
+        {
+            std::cout<<"fail: " << std::string(tokIter, tokEnd) << std::endl;
+        }
+
         assert(0);
     }
 
