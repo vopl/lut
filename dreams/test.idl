@@ -1,12 +1,5 @@
+
+in nowait { fname()
+      struct test { alias x=y;}
 a b c d
-
-/*
-    comment тратата
-*/
-
-
-// comment тратата
-
-//    тратата
-{}();:
 

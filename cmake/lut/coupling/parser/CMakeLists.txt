@@ -32,6 +32,23 @@ source_group(src/coupling/parser FILES ${SRC})
 ############################################################
 set(INC_IMPL
     ${PSRC}/impl/tokens.hpp
+    ${PSRC}/impl/common.hpp
+
+    ${PSRC}/impl/alias.hpp
+    ${PSRC}/impl/array.hpp
+    ${PSRC}/impl/attribute.hpp
+    ${PSRC}/impl/enum.hpp
+    ${PSRC}/impl/iface.hpp
+    ${PSRC}/impl/import.hpp
+    ${PSRC}/impl/list.hpp
+    ${PSRC}/impl/map.hpp
+    ${PSRC}/impl/method.hpp
+    ${PSRC}/impl/ptr.hpp
+    ${PSRC}/impl/scope.hpp
+    ${PSRC}/impl/scopeBody.hpp
+    ${PSRC}/impl/set.hpp
+    ${PSRC}/impl/struct.hpp
+    ${PSRC}/impl/variant.hpp
 )
 source_group(src/coupling/parser/impl FILES ${INC_IMPL})
 

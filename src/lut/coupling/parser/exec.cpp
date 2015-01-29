@@ -1,16 +1,9 @@
 #include "lut/stable.hpp"
 #include "lut/coupling/parser/exec.hpp"
 #include "lut/coupling/parser/impl/tokens.hpp"
+#include "lut/coupling/parser/impl/method.hpp"
 
-#include <boost/spirit/include/support_multi_pass.hpp>
-#include <boost/spirit/include/support_line_pos_iterator.hpp>
 #include <fstream>
-
-#include <boost/spirit/include/qi.hpp>
-
-
-using namespace boost::spirit;
-using namespace boost::spirit::ascii;
 
 
 //TODO ошибки, потом граматики
@@ -20,6 +13,8 @@ namespace lut { namespace coupling { namespace parser
 {
     bool exec(const std::string &fileName, const Config &cfg, meta::Library &lib, std::vector<ErrorInfo> &errs)
     {
+        using namespace impl;
+
         /*
          * load content
          * tokenize, remove comments
@@ -34,18 +29,13 @@ namespace lut { namespace coupling { namespace parser
             return false;
         }
 
-        using CharIterator = boost::spirit::line_pos_iterator<boost::spirit::multi_pass<std::istreambuf_iterator<char>>>;
         CharIterator lexBegin{boost::spirit::multi_pass<std::istreambuf_iterator<char>>{std::istreambuf_iterator<char>{reader}}};
         CharIterator lexEnd{boost::spirit::multi_pass<std::istreambuf_iterator<char>>{std::istreambuf_iterator<char>{}}};
 
 
-        using Toks = impl::Tokens<CharIterator>;
-        using TokIterator = Toks::iterator_type;
-        using Token = Toks::Token;
 
 
         //tokenize
-        Toks toks;
         CharIterator lexIter{lexBegin};
         TokIterator tokBegin = toks.begin(lexIter, lexEnd);
         TokIterator tokEnd = toks.end();
@@ -67,9 +57,30 @@ namespace lut { namespace coupling { namespace parser
             }
         }
 
+
         //parse
         TokIterator tokIter{tokBegin};
-        bool r = qi::parse(tokIter, tokEnd, *(toks.id));
+
+        std::vector<MethodPtr> res;
+
+        bool r;
+        try
+        {
+            r = qi::parse(
+                tokIter,
+                tokEnd,
+                method,
+                res);
+        }
+        catch(qi::expectation_failure<TokIterator> const& x)
+        {
+            //std::cout << "expected: "; print_info(x.what_);
+            //std::cout << "got: \"" << std::string(x.first, x.last) << '"' << std::endl;
+        }
+        catch(const std::runtime_error &re)
+        {
+            std::cout << "re: " << re.what() << std::endl;
+        }
 
         if(r)
         {
@@ -81,7 +92,7 @@ namespace lut { namespace coupling { namespace parser
             {
                 const Token &t = (*tokIter);
                 CharIterator pos = t.value().begin();
-                std::cout<<"partial success, tail: " << std::string(tokIter, tokEnd)<<std::endl;
+                std::cout<<"partial success, token: " << std::string(t.value().begin(), t.value().end())<<std::endl;
 
                 CharIterator bol = get_line_start(lexBegin, pos);
                 std::cout << " at "<< pos.position() << ", "<< std::distance(bol, pos)<<std::endl;
@@ -89,7 +100,12 @@ namespace lut { namespace coupling { namespace parser
         }
         else
         {
-            std::cout<<"fail: " << std::string(tokIter, tokEnd) << std::endl;
+            const Token &t = (*tokIter);
+            CharIterator pos = t.value().begin();
+            std::cout<<"fail, token: " << std::string(t.value().begin(), t.value().end())<<std::endl;
+
+            CharIterator bol = get_line_start(lexBegin, pos);
+            std::cout << " at "<< pos.position() << ", "<< std::distance(bol, pos)<<std::endl;
         }
 
         assert(0);

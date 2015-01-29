@@ -9,10 +9,7 @@
     scope       : type, compound <type>
 
     alias       : type
-    bool        : type
-    integer     : type
-    real        : type
-    string      : type
+    primitive   : type
 
     list        : container1
     set         : container1
