@@ -38,7 +38,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         , kwarray   {"\"array\""}
 
         , kwscope   {"\"scope\""}
-        , kwimport  {"\"import\""}
+        , kwinclude {"\"include\""}
         , kwalias   {"\"alias\""}
         , kwstruct  {"\"struct\""}
         , kwvariant {"\"variant\""}
@@ -72,7 +72,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
               | kwarray
 
               | kwscope
-              | kwimport
+              | kwinclude
               | kwalias
               | kwstruct
               | kwvariant
@@ -126,7 +126,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
             | kwarray
 
             | kwscope
-            | kwimport
+            | kwinclude
             | kwalias
             | kwstruct
             | kwvariant

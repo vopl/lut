@@ -40,7 +40,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
 
         include
 
-        decl = alias | variant | struct | enum | iface | scope | import
+        decl = alias | variant | struct | enum | iface | scope | include
 
 
 
@@ -138,9 +138,9 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     struct SScope;
     using Scope = std::shared_ptr<SScope>;
 
-    //    import
-    struct SImport;
-    using Import = std::shared_ptr<SImport>;
+    //    include
+    struct SInclude;
+    using Include = std::shared_ptr<SInclude>;
 
     //    decl = alias | variant | struct | enum | iface | scope | include
     using Decl = boost::variant<
@@ -150,7 +150,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         , Enum
         , Iface
         , Scope
-        , Import
+        , Include
     >;
 
 
@@ -317,12 +317,12 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         std::vector<Decl>       decls;
     };
 
-    //    import
-    struct SImport
+    //    include
+    struct SInclude
     {
         std::string             target;
     };
 
-    //    decl = alias | variant | struct | enum | iface | import
+    //    decl = alias | variant | struct | enum | iface | include
 
 }}}}

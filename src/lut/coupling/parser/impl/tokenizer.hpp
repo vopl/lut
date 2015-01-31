@@ -53,7 +53,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         TokenDef kwarray;
 
         TokenDef kwscope;
-        TokenDef kwimport;
+        TokenDef kwinclude;
         TokenDef kwalias;
         TokenDef kwstruct;
         TokenDef kwvariant;

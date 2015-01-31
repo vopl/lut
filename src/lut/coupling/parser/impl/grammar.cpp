@@ -29,7 +29,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         mkMethod();
         mkIface();
         mkScope();
-        mkImport();
+        mkInclude();
         mkDecl();
         mkDecls();
 

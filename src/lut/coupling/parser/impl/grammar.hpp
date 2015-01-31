@@ -37,7 +37,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         void mkMethod();
         void mkIface();
         void mkScope();
-        void mkImport();
+        void mkInclude();
         void mkDecl();
         void mkDecls();
 
@@ -63,7 +63,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         qi::rule<TokIterator, Method(), qi::locals<MethodDirection>>    method;
         qi::rule<TokIterator, Iface()>                                  iface;
         qi::rule<TokIterator, Scope()>                                  scope;
-        qi::rule<TokIterator, Import()>                                 import;
+        qi::rule<TokIterator, Include()>                                include;
         qi::rule<TokIterator, Decl()>                                   decl;
         qi::rule<TokIterator, std::vector<Decl>()>                      decls;
     };

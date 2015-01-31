@@ -69,7 +69,7 @@ set(SRC_IMPL
     ${PSRC}/impl/grammarMkMethod.cpp
     ${PSRC}/impl/grammarMkIface.cpp
     ${PSRC}/impl/grammarMkScope.cpp
-    ${PSRC}/impl/grammarMkImport.cpp
+    ${PSRC}/impl/grammarMkInclude.cpp
     ${PSRC}/impl/grammarMkDecl.cpp
     ${PSRC}/impl/grammarMkDecls.cpp
     ${PSRC}/impl/grammarError.cpp

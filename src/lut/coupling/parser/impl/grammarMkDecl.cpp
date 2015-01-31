@@ -6,7 +6,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     {
         ////////////////////////////////////////////////////////////////////////////////
         decl %=
-            alias | variant | struct_ | enum_ | iface | scope | import;
+            alias | variant | struct_ | enum_ | iface | scope | include;
     }
 
 }}}}

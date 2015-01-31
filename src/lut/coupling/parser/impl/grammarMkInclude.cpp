@@ -2,13 +2,13 @@
 
 namespace lut { namespace coupling { namespace parser { namespace impl
 {
-    void Grammar::mkImport()
+    void Grammar::mkInclude()
     {
         ////////////////////////////////////////////////////////////////////////////////
-        import =
-            toks.kwimport[qi::_val = phx::construct<Import>(phx::new_<SImport>())] >>
+        include =
+            toks.kwinclude[qi::_val = phx::construct<Include>(phx::new_<SInclude>())] >>
             (
-                toks.quotedString[phx::bind(&SImport::target, deref(qi::_val)) = phx::construct<std::string>(phx::begin(qi::_1), phx::end(qi::_1))] |
+                toks.quotedString[phx::bind(&SInclude::target, deref(qi::_val)) = phx::construct<std::string>(phx::begin(qi::_1), phx::end(qi::_1))] |
                 error(+"file name expected")
             ) >>
             (toks.semi | error(+"';' expected"));
