@@ -7,7 +7,7 @@
 
 namespace lut { namespace coupling { namespace meta
 {
-    enum PrimitiveKind
+    enum class PrimitiveKind
     {
         void_,
 
@@ -15,10 +15,10 @@ namespace lut { namespace coupling { namespace meta
 
         string,
 
-        sint8,
-        sint16,
-        sint32,
-        sint64,
+        int8,
+        int16,
+        int32,
+        int64,
 
         uint8,
         uint16,

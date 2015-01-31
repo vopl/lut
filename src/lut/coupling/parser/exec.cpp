@@ -1,12 +1,12 @@
 #include "lut/stable.hpp"
 #include "lut/coupling/parser/exec.hpp"
-#include "lut/coupling/parser/impl/tokens.hpp"
-#include "lut/coupling/parser/impl/method.hpp"
+#include "lut/coupling/parser/impl/grammar.hpp"
+#include "lut/coupling/parser/impl/grammarError.hpp"
 
 #include <fstream>
 
 
-//TODO ошибки, потом граматики
+//TODO ошибки, набивка мета-либы
 
 
 namespace lut { namespace coupling { namespace parser
@@ -36,6 +36,7 @@ namespace lut { namespace coupling { namespace parser
 
 
         //tokenize
+        impl::Tokenizer toks;
         CharIterator lexIter{lexBegin};
         TokIterator tokBegin = toks.begin(lexIter, lexEnd);
         TokIterator tokEnd = toks.end();
@@ -59,9 +60,10 @@ namespace lut { namespace coupling { namespace parser
 
 
         //parse
+        Grammar grammar(toks);
         TokIterator tokIter{tokBegin};
 
-        std::vector<MethodPtr> res;
+        std::vector<Decl> res;
 
         bool r;
         try
@@ -69,17 +71,21 @@ namespace lut { namespace coupling { namespace parser
             r = qi::parse(
                 tokIter,
                 tokEnd,
-                method,
+                grammar,
                 res);
         }
-        catch(qi::expectation_failure<TokIterator> const& x)
+        catch(const impl::GrammarError &e)
         {
-            //std::cout << "expected: "; print_info(x.what_);
-            //std::cout << "got: \"" << std::string(x.first, x.last) << '"' << std::endl;
-        }
-        catch(const std::runtime_error &re)
-        {
-            std::cout << "re: " << re.what() << std::endl;
+            std::cout << "grammar error: " << e.what() << std::endl;
+
+
+            const Token &t = *e.pos();
+            CharIterator pos = t.value().begin();
+            std::cout<<"token: " << std::string(t.value().begin(), t.value().end())<<std::endl;
+
+            CharIterator bol = get_line_start(lexBegin, pos);
+            std::cout << " at "<< pos.position() << ", "<< std::distance(bol, pos)<<std::endl;
+
         }
 
         if(r)

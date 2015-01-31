@@ -1,5 +1,28 @@
 
-in nowait { fname()
-      struct test { alias x=y;}
-a b c d
+scope s1
+{
 
+    struct xx
+    {
+        int8 x;
+        int8 y;
+
+
+        variant xx
+        {
+            int8 x;
+            int8 y;
+        }
+        
+        iface myf
+            : myfBase, base2
+        {
+            in void m1(p1 p1, p2 p2);
+            
+            
+            import "a/b/c.idl";
+        }
+
+
+    }
+}
