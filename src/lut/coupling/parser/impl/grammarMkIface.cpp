@@ -14,7 +14,17 @@ namespace lut { namespace coupling { namespace parser { namespace impl
             -bases[phx::bind(&SIface::bases, deref(qi::_val)) = qi::_1] >>
             (toks.ocb | error(+"'{' expected")) >>
             *(
-                decls[phx::insert(phx::bind(&SIface::decls, deref(qi::_val)), phx::end(phx::bind(&SIface::decls, deref(qi::_val))), phx::begin(qi::_1), phx::end(qi::_1))] |
+                //decls[phx::insert(phx::bind(&SIface::decls, deref(qi::_val)), phx::end(phx::bind(&SIface::decls, deref(qi::_val))), phx::begin(qi::_1), phx::end(qi::_1))] |
+
+                decls[
+                    phx::for_each(
+                        qi::_1,
+                        phx::lambda
+                            (phx::local_names::_a = phx::bind(&SIface::decls, deref(qi::_val)))
+                            [phx::push_back(phx::local_names::_a, phx::arg_names::_1)]
+                    )
+                ] |
+
                 method[phx::push_back(phx::bind(&SIface::methods, deref(qi::_val)), qi::_1)]
             ) >>
             (toks.ccb | error(+"'}' expected"));
