@@ -70,4 +70,6 @@ namespace lut { namespace coupling { namespace parser { namespace impl
 
     using TokIterator = Tokenizer::iterator_type;
 
+    extern Tokenizer toks;
+
 }}}}

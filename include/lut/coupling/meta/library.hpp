@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace lut { namespace coupling { namespace meta
 {
     enum class LoadResult

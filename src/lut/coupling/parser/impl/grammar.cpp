@@ -4,9 +4,9 @@
 namespace lut { namespace coupling { namespace parser { namespace impl
 {
 
-    Grammar::Grammar(const Tokenizer &toks)
+    Grammar::Grammar(ParseState &parseState)
         : Grammar::base_type(decls)
-        , toks(toks)
+        , _parseState(parseState)
     {
 
         mkPrimitive();

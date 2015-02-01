@@ -96,7 +96,7 @@ ELSEIF(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
 
 		ADD_CUSTOM_COMMAND(OUTPUT ${pchfile} 
 			COMMAND ${cxx_compiler} ${cxx_args}
-			DEPENDS ${header})
+                        DEPENDS ${header} ${srcfile})
 
 		#SET(CMAKE_CXX_FLAGS_${BUILD_TYPE_UC} "-I${pchfile_path} ${CMAKE_CXX_FLAGS_${BUILD_TYPE_UC}}")
 

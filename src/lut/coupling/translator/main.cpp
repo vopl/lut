@@ -27,7 +27,13 @@ int main(int argc, const char **argv)
                 "in,i",
                 boost::program_options::value<std::vector<std::string>>(),
                 "input file name"
+            )
+            (
+                "include,I",
+                boost::program_options::value<std::vector<std::string>>(),
+                "include directories"
             );
+
 
     desc.add(descInput);
 
@@ -81,7 +87,12 @@ int main(int argc, const char **argv)
     {
 
         lut::coupling::parser::Config cfg;
-        //fill cfg from program options
+        if(vars.count("include"))
+        {
+            cfg._includeDirectories = vars["include"].as<std::vector<std::string>>();
+        }
+
+        std::vector<std::string> idlFiles;
 
         for(const std::string &in: vars["in"].as<std::vector<std::string>>())
         {
@@ -93,19 +104,19 @@ int main(int argc, const char **argv)
                 std::cerr << "corrupted file: " << in << std::endl;
                 return EXIT_FAILURE;
             case lut::coupling::meta::LoadResult::malformedFile:
-                {
-                    std::vector<lut::coupling::parser::ErrorInfo> errs;
-                    if(!lut::coupling::parser::exec(in, cfg, lib, errs))
-                    {
-                        for(const lut::coupling::parser::ErrorInfo &err : errs)
-                        {
-                            std::cerr << err.toString() << std::endl;
-                        }
-                        return EXIT_FAILURE;
-                    }
+                idlFiles.push_back(in);
+            }
+        }
 
-                    break;
+        {
+            std::vector<lut::coupling::parser::ErrorInfo> errs;
+            if(!lut::coupling::parser::exec(idlFiles, cfg, errs, lib))
+            {
+                for(const lut::coupling::parser::ErrorInfo &err : errs)
+                {
+                    std::cerr << err.toString() << std::endl;
                 }
+                return EXIT_FAILURE;
             }
         }
     }

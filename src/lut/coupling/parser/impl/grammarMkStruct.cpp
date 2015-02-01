@@ -14,7 +14,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
             -bases[phx::bind(&SStruct::bases, deref(qi::_val)) = qi::_1]>>
             (toks.ocb | error(+"'{' expected")) >>
             *(
-                decl[phx::push_back(phx::bind(&SStruct::decls, deref(qi::_val)), qi::_1)] |
+                decls[phx::insert(phx::bind(&SStruct::decls, deref(qi::_val)), phx::end(phx::bind(&SStruct::decls, deref(qi::_val))), phx::begin(qi::_1), phx::end(qi::_1))] |
                 structField[phx::push_back(phx::bind(&SStruct::fields, deref(qi::_val)), qi::_1)]
             ) >>
             (toks.ccb | error(+"'}' expected"));

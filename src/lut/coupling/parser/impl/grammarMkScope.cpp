@@ -12,9 +12,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
                 error(+"scope name expected")
             ) >>
             (toks.ocb | error(+"'{' expected")) >>
-            *(
-                decl[phx::push_back(phx::bind(&SScope::decls, deref(qi::_val)), qi::_1)]
-            ) >>
+            -decls[phx::bind(&SScope::decls, deref(qi::_val)) = qi::_1] >>
             (toks.ccb | error(+"'}' expected"));
     }
 

@@ -23,7 +23,7 @@ scope s1
             in void m1(p1 p1, p2 p2);
             
             
-            include "inc.idl";
+            //include "inc2.idl";
         }
 
 

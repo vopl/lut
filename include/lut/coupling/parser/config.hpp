@@ -1,9 +1,13 @@
 #pragma once
 
+#include <vector>
+#include <string>
+
 namespace lut { namespace coupling { namespace parser
 {
-    class Config
+    struct Config
     {
+        std::vector<std::string> _includeDirectories;
 
     };
 }}}

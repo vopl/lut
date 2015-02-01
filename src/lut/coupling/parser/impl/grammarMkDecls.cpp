@@ -6,7 +6,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     {
         ////////////////////////////////////////////////////////////////////////////////
         decls %=
-            *decl;
+            +(+decl | include);
     }
 
 }}}}

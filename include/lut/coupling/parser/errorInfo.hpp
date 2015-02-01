@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace lut { namespace coupling { namespace parser
 {
     class ErrorInfo

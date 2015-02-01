@@ -4,6 +4,16 @@ set(PINC ${INCDIR}/lut/coupling/parser)
 set(PSRC ${SRCDIR}/lut/coupling/parser)
 
 
+############################################################
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost COMPONENTS filesystem system)
+
+if(NOT Boost_FOUND)
+    message(FATAL_ERROR "boost filesystem system not found")
+endif()
+
+include_directories(${Boost_INCLUDE_DIRS})
+
 
 
 ############################################################
@@ -41,6 +51,8 @@ set(INC_IMPL
     ${PSRC}/impl/tokenizer.hpp
     ${PSRC}/impl/grammar.hpp
     ${PSRC}/impl/grammarError.hpp
+    ${PSRC}/impl/parse.hpp
+    ${PSRC}/impl/parseState.hpp
 )
 source_group(src/coupling/parser/impl FILES ${INC_IMPL})
 
@@ -73,6 +85,7 @@ set(SRC_IMPL
     ${PSRC}/impl/grammarMkDecl.cpp
     ${PSRC}/impl/grammarMkDecls.cpp
     ${PSRC}/impl/grammarError.cpp
+    ${PSRC}/impl/parse.cpp
 )
 source_group(src/coupling/parser/impl FILES ${SRC_IMPL})
 
@@ -93,6 +106,8 @@ add_library(${PROJECT} STATIC
 
     ${SRC_PCH}
 )
+
+target_link_libraries(${PROJECT} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY})
 
 create_pch(${PROJECT} ${PSRC}/pch.hpp ${PSRC}/pch.cpp)
 use_pch(${PROJECT} ${PSRC}/pch.hpp ${SRC} ${SRC_IMPL})

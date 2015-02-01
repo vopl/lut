@@ -2,6 +2,7 @@
 
 #include "lut/coupling/parser/impl/tokenizer.hpp"
 #include "lut/coupling/parser/impl/ast.hpp"
+#include "lut/coupling/parser/impl/parseState.hpp"
 
 namespace lut { namespace coupling { namespace parser { namespace impl
 {
@@ -10,10 +11,12 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         : public qi::grammar<TokIterator, std::vector<Decl>()>
     {
     public:
-        Grammar(const Tokenizer &toks);
+        Grammar(ParseState &parseState);
+
+    public:
+        ParseState &_parseState;
 
     private:
-        const Tokenizer &toks;
         qi::rule<TokIterator, void(std::string)> error;
 
     private:
@@ -41,6 +44,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         void mkDecl();
         void mkDecls();
 
+        std::vector<Decl> doInclude(const Token::token_value_type &str);
 
     private:
         qi::rule<TokIterator, Primitive()>                              primitive;
@@ -63,7 +67,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         qi::rule<TokIterator, Method(), qi::locals<MethodDirection>>    method;
         qi::rule<TokIterator, Iface()>                                  iface;
         qi::rule<TokIterator, Scope()>                                  scope;
-        qi::rule<TokIterator, Include()>                                include;
+        qi::rule<TokIterator, std::vector<Decl>()>                      include;
         qi::rule<TokIterator, Decl()>                                   decl;
         qi::rule<TokIterator, std::vector<Decl>()>                      decls;
     };

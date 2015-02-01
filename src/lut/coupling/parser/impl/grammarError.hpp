@@ -9,11 +9,12 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     {
     public:
         GrammarError(TokIterator pos, const std::string &msg);
+        GrammarError(CharIterator pos, const std::string &msg);
 
-        const TokIterator &pos() const;
+        const CharIterator &pos() const;
 
     private:
-        TokIterator _pos;
+        CharIterator _pos;
     };
 
 }}}}

@@ -140,4 +140,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
 
         ;
     }
+
+    Tokenizer toks;
+
 }}}}

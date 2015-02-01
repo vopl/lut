@@ -14,7 +14,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
             -bases[phx::bind(&SVariant::bases, deref(qi::_val)) = qi::_1] >>
             (toks.ocb | error(+"'{' expected")) >>
             *(
-                decl[phx::push_back(phx::bind(&SVariant::decls, deref(qi::_val)), qi::_1)] |
+                decls[phx::insert(phx::bind(&SVariant::decls, deref(qi::_val)), phx::end(phx::bind(&SVariant::decls, deref(qi::_val))), phx::begin(qi::_1), phx::end(qi::_1))] |
                 variantField[phx::push_back(phx::bind(&SVariant::fields, deref(qi::_val)), qi::_1)]
             ) >>
             (toks.ccb | error(+"'}' expected"));
