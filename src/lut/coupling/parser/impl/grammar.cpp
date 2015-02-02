@@ -5,7 +5,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
 {
 
     Grammar::Grammar(ParseState &parseState)
-        : Grammar::base_type(decls)
+        : Grammar::base_type(file)
         , _parseState(parseState)
     {
 
@@ -15,6 +15,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         mkMap();
         mkPtr();
         mkArray();
+        mkName();
         mkTypeName();
         mkTypeUse();
         mkAlias();
@@ -32,6 +33,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         mkInclude();
         mkDecl();
         mkDecls();
+        mkFile();
 
         ////////////////////////////////////////////////////////////////////////////////
         error = boost::spirit::repository::qi::iter_pos[ phx::throw_(phx::construct<GrammarError>(qi::_1, qi::_r1))];

@@ -46,6 +46,7 @@ source_group(src/coupling/parser FILES ${SRC_PCH})
 
 ############################################################
 set(INC_IMPL
+    ${PSRC}/impl/posIterator.hpp
     ${PSRC}/impl/common.hpp
     ${PSRC}/impl/ast.hpp
     ${PSRC}/impl/tokenizer.hpp
@@ -67,6 +68,7 @@ set(SRC_IMPL
     ${PSRC}/impl/grammarMkMap.cpp
     ${PSRC}/impl/grammarMkPtr.cpp
     ${PSRC}/impl/grammarMkArray.cpp
+    ${PSRC}/impl/grammarMkName.cpp
     ${PSRC}/impl/grammarMkTypeName.cpp
     ${PSRC}/impl/grammarMkTypeUse.cpp
     ${PSRC}/impl/grammarMkAlias.cpp
@@ -84,6 +86,7 @@ set(SRC_IMPL
     ${PSRC}/impl/grammarMkInclude.cpp
     ${PSRC}/impl/grammarMkDecl.cpp
     ${PSRC}/impl/grammarMkDecls.cpp
+    ${PSRC}/impl/grammarMkFile.cpp
     ${PSRC}/impl/grammarError.cpp
     ${PSRC}/impl/parse.cpp
 )

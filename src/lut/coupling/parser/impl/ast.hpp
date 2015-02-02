@@ -15,6 +15,8 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         ptr
         array
 
+        name
+
         typeName
 
         typeUse = primitive | list | set | map | ptr | array | typeName
@@ -76,6 +78,10 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     struct SArray;
     using Array = std::shared_ptr<SArray>;
 
+    //    name
+    struct SName;
+    using Name = std::shared_ptr<SName>;
+
     //    typeName
     struct STypeName;
     using TypeName = std::shared_ptr<STypeName>;
@@ -97,8 +103,17 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     using Alias = std::shared_ptr<SAlias>;
 
     //    bases
-    struct SBases;
-    using Bases = std::shared_ptr<SBases>;
+    struct SBaseStructs;
+    using BaseStructs = std::shared_ptr<SBaseStructs>;
+
+    struct SBaseVariants;
+    using BaseVariants = std::shared_ptr<SBaseVariants>;
+
+    struct SBaseEnums;
+    using BaseEnums = std::shared_ptr<SBaseEnums>;
+
+    struct SBaseIfaces;
+    using BaseIfaces = std::shared_ptr<SBaseIfaces>;
 
     //    structField
     struct SStructField;
@@ -211,78 +226,119 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         std::string size;
     };
 
+    //    name
+    struct SName
+    {
+        Token::token_value_type pos;
+        std::string             value;
+    };
+
     //    typeName
     struct STypeName
+        : SName
     {
-        std::string name;
     };
 
     //    typeUse = primitive | list | set | map | ptr | array | typeName
 
+    struct SScopeEntry
+    {
+        SScope      *owner{0};
+        TypeName    name;
+    };
+
+    //    scope
+    struct SScope
+        : SScopeEntry
+    {
+        std::vector<Decl>       decls;
+    };
+
     //    alias
     struct SAlias
+        : SScopeEntry
     {
-        TypeName    name;
         TypeUse     type;
     };
 
     //    bases
-    struct SBases
+    struct SBaseStructs
     {
-        std::vector<TypeName> names;
+        std::vector<TypeName>   names;
+        std::vector<Struct>     instances;
+    };
+
+    struct SBaseVariants
+    {
+        std::vector<TypeName>   names;
+        std::vector<Variant>    instances;
+    };
+
+    struct SBaseEnums
+    {
+        std::vector<TypeName>   names;
+        std::vector<Enum>       instances;
+    };
+
+    struct SBaseIfaces
+    {
+        std::vector<TypeName>   names;
+        std::vector<Iface>      instances;
     };
 
     //    variantField
     struct SVariantField
     {
-        TypeName    name;
+        SVariant    *owner{0};
+        Name        name;
         TypeUse     type;
     };
 
     //    variant
     struct SVariant
+        : SScope
     {
-        TypeName                    name;
-        Bases                       bases;
-        std::vector<Decl>           decls;
+        BaseVariants                bases;
         std::vector<VariantField>   fields;
     };
 
     //    structField
     struct SStructField
     {
-        TypeName    name;
-        TypeUse     type;
+        SStruct *owner{0};
+        Name    name;
+        TypeUse type;
     };
 
     //    struct_
     struct SStruct
+        : SScope
     {
-        TypeName                    name;
-        Bases                       bases;
-        std::vector<Decl>           decls;
+        BaseStructs                 bases;
         std::vector<StructField>    fields;
     };
 
     //    enumField
     struct SEnumField
     {
-        TypeName name;
+        SEnum   *owner{0};
+        Name    name;
     };
 
     //    enum_
     struct SEnum
+        : SScopeEntry
     {
-        TypeName                name;
-        Bases                   bases;
+        BaseEnums               bases;
         std::vector<EnumField>  fields;
     };
 
     //    methodParam
     struct SMethodParam
     {
-        TypeName    name;
-        TypeUse     type;
+        SMethod *owner{0};
+        Name    name;
+        TypeUse type;
     };
 
     //    method
@@ -294,33 +350,27 @@ namespace lut { namespace coupling { namespace parser { namespace impl
 
     struct SMethod
     {
+        SIface                      *owner{0};
+
         MethodDirection             direction;
         TypeUse                     resultType;
         bool                        nowait;
-        TypeName                    name;
+        Name                        name;
         std::vector<MethodParam>    params;
     };
 
     //    iface
     struct SIface
+        : SScope
     {
-        TypeName                name;
-        Bases                   bases;
-        std::vector<Decl>       decls;
-        std::vector<Method>     methods;
-    };
-
-    //    scope
-    struct SScope
-    {
-        TypeName                name;
-        std::vector<Decl>       decls;
+        BaseIfaces              bases;
+        std::vector<Method>     fields;
     };
 
     //    include
 
     //    decl = alias | variant | struct | enum | iface
 
-    //    decls = *decl | include
+    //    decls = *(decl | include)
 
 }}}}

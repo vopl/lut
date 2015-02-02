@@ -20,7 +20,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
                 error(+"method result type expected")
             ) >>
             (
-                typeName[phx::bind(&SMethod::name, deref(qi::_val)) = qi::_1] |
+                name[phx::bind(&SMethod::name, deref(qi::_val)) = qi::_1] |
                 error(+"method name expected")
             ) >>
             (toks.ob | error(+"'(' expected")) >>

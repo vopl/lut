@@ -1,8 +1,5 @@
 #pragma once
 
-#include <boost/spirit/include/support_multi_pass.hpp>
-#include <boost/spirit/include/support_line_pos_iterator.hpp>
-
 #include <boost/spirit/include/lex_lexertl.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/repository/home/qi.hpp>

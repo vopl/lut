@@ -11,7 +11,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
                 typeName[phx::bind(&SVariant::name, deref(qi::_val)) = qi::_1] |
                 error(+"variant name expected")
             ) >>
-            -bases[phx::bind(&SVariant::bases, deref(qi::_val)) = qi::_1] >>
+            -baseVariants[phx::bind(&SVariant::bases, deref(qi::_val)) = qi::_1] >>
             (toks.ocb | error(+"'{' expected")) >>
             *(
                 //decls[phx::insert(phx::bind(&SVariant::decls, deref(qi::_val)), phx::end(phx::bind(&SVariant::decls, deref(qi::_val))), phx::begin(qi::_1), phx::end(qi::_1))] |

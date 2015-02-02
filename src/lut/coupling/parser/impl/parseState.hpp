@@ -4,7 +4,9 @@
 #include "lut/coupling/parser/errorInfo.hpp"
 
 #include <vector>
-#include <set>
+#include <map>
+#include <fstream>
+#include <memory>
 
 namespace  lut { namespace coupling { namespace parser { namespace impl
 {
@@ -15,9 +17,9 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
         const Config &          _cfg;
         std::vector<ErrorInfo> &_errors;
 
-        Grammar                 *_grammar;
-        std::string             _currentFile;
-        std::set<std::string>   _processedFiles;
+        Grammar                                 *_grammar;
+        std::string                             _currentFile;
+        std::map<std::string, std::shared_ptr<std::ifstream>>    _processedFiles;
     };
 
 

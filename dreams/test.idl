@@ -28,6 +28,11 @@ scope s1
 
 
     }
+    
 
 }
 
+scope s1
+{
+    alias x=y;
+}

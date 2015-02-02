@@ -26,6 +26,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         void mkMap();
         void mkPtr();
         void mkArray();
+        void mkName();
         void mkTypeName();
         void mkTypeUse();
         void mkAlias();
@@ -43,6 +44,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         void mkInclude();
         void mkDecl();
         void mkDecls();
+        void mkFile();
 
         std::vector<Decl> doInclude(const Token::token_value_type &str);
 
@@ -53,10 +55,14 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         qi::rule<TokIterator, Map()>                                    map;
         qi::rule<TokIterator, Ptr()>                                    ptr;
         qi::rule<TokIterator, Array()>                                  array;
+        qi::rule<TokIterator, Name()>                                   name;
         qi::rule<TokIterator, TypeName()>                               typeName;
         qi::rule<TokIterator, TypeUse()>                                typeUse;
         qi::rule<TokIterator, Alias()>                                  alias;
-        qi::rule<TokIterator, Bases()>                                  bases;
+        qi::rule<TokIterator, BaseStructs()>                            baseStructs;
+        qi::rule<TokIterator, BaseVariants()>                           baseVariants;
+        qi::rule<TokIterator, BaseEnums()>                              baseEnums;
+        qi::rule<TokIterator, BaseIfaces()>                             baseIfaces;
         qi::rule<TokIterator, VariantField()>                           variantField;
         qi::rule<TokIterator, Variant()>                                variant;
         qi::rule<TokIterator, StructField()>                            structField;
@@ -70,6 +76,8 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         qi::rule<TokIterator, std::vector<Decl>()>                      include;
         qi::rule<TokIterator, Decl()>                                   decl;
         qi::rule<TokIterator, std::vector<Decl>()>                      decls;
+
+        qi::rule<TokIterator, std::vector<Decl>()>                      file;
     };
 
 }}}}

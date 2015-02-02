@@ -11,7 +11,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
                 typeName[phx::bind(&SStruct::name, deref(qi::_val)) = qi::_1] |
                 error(+"structure name expected")
             ) >>
-            -bases[phx::bind(&SStruct::bases, deref(qi::_val)) = qi::_1]>>
+            -baseStructs[phx::bind(&SStruct::bases, deref(qi::_val)) = qi::_1]>>
             (toks.ocb | error(+"'{' expected")) >>
             *(
                 //decls[phx::insert(phx::bind(&SStruct::decls, deref(qi::_val)), phx::end(phx::bind(&SStruct::decls, deref(qi::_val))), phx::begin(qi::_1), phx::end(qi::_1))] |

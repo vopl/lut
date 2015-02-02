@@ -12,15 +12,10 @@ namespace lut { namespace coupling { namespace parser
     {
         std::vector<impl::Decl> parseResult;
 
-        for(const std::string &fileName : fileNames)
+        if(!impl::parse(fileNames, cfg, errs, parseResult))
         {
-            if(!impl::parse(fileName, cfg, errs, parseResult))
-            {
-                return false;
-            }
+            return false;
         }
-
-        //TODO resolve
 
         //TODO fill lib
 

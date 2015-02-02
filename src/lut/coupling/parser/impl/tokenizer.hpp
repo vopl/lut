@@ -1,11 +1,12 @@
 #pragma once
 
 #include "lut/coupling/parser/impl/common.hpp"
+#include "lut/coupling/parser/impl/posIterator.hpp"
 
 namespace lut { namespace coupling { namespace parser { namespace impl
 {
 
-    using CharIterator = boost::spirit::line_pos_iterator<boost::spirit::multi_pass<std::istreambuf_iterator<char>>>;
+    using CharIterator = PosIterator<boost::spirit::multi_pass<std::istreambuf_iterator<char>>>;
 
     using Token = boost::spirit::lex::lexertl::token<CharIterator, boost::mpl::vector0<>, boost::mpl::false_>;
 
