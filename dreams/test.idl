@@ -7,7 +7,7 @@ scope s1
 
     struct xx
     {
-        int8 x;
+        s1 x;
         int8 y;
 
 
@@ -17,13 +17,15 @@ scope s1
             int8 y;
         }
         
+        iface myfBase {}
+        
         iface myf
-            : myfBase, base2
+            : myfBase, ::s1::s2
         {
-            in void m1(p1 p1, p2 p2);
+            in void m1(xx p1, x p2);
             
             
-            include "inc.idl";
+            //include "inc.idl";
         }
 
 
@@ -34,5 +36,5 @@ scope s1
 
 scope s1
 {
-    alias x=y;
+    alias x=xx::myf;
 }

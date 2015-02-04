@@ -6,7 +6,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     {
         ////////////////////////////////////////////////////////////////////////////////
         typeUse %=
-            primitive | list | set | map | ptr | array | typeName;
+            primitive | list | set | map | ptr | array | scopedName;
     }
 
 }}}}

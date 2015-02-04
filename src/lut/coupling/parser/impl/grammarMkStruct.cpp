@@ -8,7 +8,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         struct_ =
             toks.kwstruct[qi::_val = phx::construct<Struct>(phx::new_<SStruct>())] >>
             (
-                typeName[phx::bind(&SStruct::name, deref(qi::_val)) = qi::_1] |
+                name[phx::bind(&SStruct::name, deref(qi::_val)) = qi::_1] |
                 error(+"structure name expected")
             ) >>
             -baseStructs[phx::bind(&SStruct::bases, deref(qi::_val)) = qi::_1]>>

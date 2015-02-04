@@ -8,7 +8,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         variant =
             toks.kwvariant[qi::_val = phx::construct<Variant>(phx::new_<SVariant>())] >>
             (
-                typeName[phx::bind(&SVariant::name, deref(qi::_val)) = qi::_1] |
+                name[phx::bind(&SVariant::name, deref(qi::_val)) = qi::_1] |
                 error(+"variant name expected")
             ) >>
             -baseVariants[phx::bind(&SVariant::bases, deref(qi::_val)) = qi::_1] >>

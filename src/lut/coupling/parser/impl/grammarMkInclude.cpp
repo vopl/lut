@@ -20,14 +20,14 @@ namespace lut { namespace coupling { namespace parser { namespace impl
             fileName.erase(fileName.begin() + pos);
         }
 
-        std::vector<Decl> res;
+        Scope res;
 
-        if(!impl::parse(fileName, _parseState, res))
+        if(! (res = impl::parse(fileName, _parseState)))
         {
             throw GrammarError(std::begin(str), "unable to include file");
         }
 
-        return res;
+        return res->decls;
     }
 
     void Grammar::mkInclude()

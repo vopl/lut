@@ -8,7 +8,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         enum_ =
             toks.kwenum[qi::_val = phx::construct<Enum>(phx::new_<SEnum>())] >>
             (
-                typeName[phx::bind(&SEnum::name, deref(qi::_val)) = qi::_1] |
+                name[phx::bind(&SEnum::name, deref(qi::_val)) = qi::_1] |
                 error(+"enum name expected")
             ) >>
             -baseEnums[phx::bind(&SEnum::bases, deref(qi::_val)) = qi::_1] >>

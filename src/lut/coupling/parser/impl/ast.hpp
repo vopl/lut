@@ -17,9 +17,9 @@ namespace lut { namespace coupling { namespace parser { namespace impl
 
         name
 
-        typeName
+        scopedName
 
-        typeUse = primitive | list | set | map | ptr | array | typeName
+        typeUse = primitive | list | set | map | ptr | array | scopedName
 
         alias
 
@@ -82,12 +82,12 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     struct SName;
     using Name = std::shared_ptr<SName>;
 
-    //    typeName
-    struct STypeName;
-    using TypeName = std::shared_ptr<STypeName>;
+    //    scopedName
+    struct SScopedName;
+    using ScopedName = std::shared_ptr<SScopedName>;
 
 
-    //    typeUse = primitive | list | set | map | ptr | array | typeName
+    //    typeUse = primitive | list | set | map | ptr | array | scopedName
     using TypeUse = boost::variant<
           Primitive
         , List
@@ -95,7 +95,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         , Map
         , Ptr
         , Array
-        , TypeName
+        , ScopedName
     >;
 
     //    alias
@@ -150,6 +150,8 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     //    iface
     struct SIface;
     using Iface = std::shared_ptr<SIface>;
+
+    struct SScopeEntry;
 
     //    scope
     struct SScope;
@@ -233,25 +235,45 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         std::string             value;
     };
 
-    //    typeName
-    struct STypeName
-        : SName
+    //    scopedName
+    struct SScopedName
     {
+        Token::token_value_type pos;
+        bool                    root{false};
+        std::vector<Name>       values;
+
+        boost::variant<
+              SAlias *
+            , SVariant *
+            , SStruct *
+            , SEnum *
+            , SIface *
+            , SScope *
+        > asDecl;
+
+        SScopeEntry *asScopedEntry;
     };
 
-    //    typeUse = primitive | list | set | map | ptr | array | typeName
+    //    typeUse = primitive | list | set | map | ptr | array | scopedName
 
     struct SScopeEntry
     {
-        SScope      *owner{0};
-        TypeName    name;
+        SScope  *owner{0};
+        Name    name;
     };
 
     //    scope
     struct SScope
         : SScopeEntry
     {
-        std::vector<Decl>       decls;
+        std::vector<Decl>                   decls;
+
+        std::map<std::string, SAlias *>     aliases;
+        std::map<std::string, SStruct *>    structs;
+        std::map<std::string, SVariant *>   variants;
+        std::map<std::string, SEnum *>      enums;
+        std::map<std::string, SIface *>     ifaces;
+        std::map<std::string, SScope *>     scopes;
     };
 
     //    alias
@@ -264,26 +286,26 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     //    bases
     struct SBaseStructs
     {
-        std::vector<TypeName>   names;
-        std::vector<Struct>     instances;
+        std::vector<ScopedName> scopedNames;
+        std::vector<SStruct*>   instances;
     };
 
     struct SBaseVariants
     {
-        std::vector<TypeName>   names;
-        std::vector<Variant>    instances;
+        std::vector<ScopedName> scopedNames;
+        std::vector<SVariant*>  instances;
     };
 
     struct SBaseEnums
     {
-        std::vector<TypeName>   names;
-        std::vector<Enum>       instances;
+        std::vector<ScopedName> scopedNames;
+        std::vector<SEnum*>     instances;
     };
 
     struct SBaseIfaces
     {
-        std::vector<TypeName>   names;
-        std::vector<Iface>      instances;
+        std::vector<ScopedName> scopedNames;
+        std::vector<SIface*>    instances;
     };
 
     //    variantField

@@ -8,7 +8,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
 {
 
     class Grammar
-        : public qi::grammar<TokIterator, std::vector<Decl>()>
+        : public qi::grammar<TokIterator, Scope()>
     {
     public:
         Grammar(ParseState &parseState);
@@ -27,7 +27,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         void mkPtr();
         void mkArray();
         void mkName();
-        void mkTypeName();
+        void mkScopedName();
         void mkTypeUse();
         void mkAlias();
         void mkBases();
@@ -56,7 +56,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         qi::rule<TokIterator, Ptr()>                                    ptr;
         qi::rule<TokIterator, Array()>                                  array;
         qi::rule<TokIterator, Name()>                                   name;
-        qi::rule<TokIterator, TypeName()>                               typeName;
+        qi::rule<TokIterator, ScopedName()>                             scopedName;
         qi::rule<TokIterator, TypeUse()>                                typeUse;
         qi::rule<TokIterator, Alias()>                                  alias;
         qi::rule<TokIterator, BaseStructs()>                            baseStructs;
@@ -77,7 +77,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         qi::rule<TokIterator, Decl()>                                   decl;
         qi::rule<TokIterator, std::vector<Decl>()>                      decls;
 
-        qi::rule<TokIterator, std::vector<Decl>()>                      file;
+        qi::rule<TokIterator, Scope()>                                  file;
     };
 
 }}}}

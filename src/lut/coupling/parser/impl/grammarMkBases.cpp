@@ -9,7 +9,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
             toks.colon[qi::_val = phx::construct<BaseStructs>(phx::new_<SBaseStructs>())] >>
             (
                 (
-                    typeName[phx::push_back(phx::bind(&SBaseStructs::names, deref(qi::_val)), qi::_1)] |
+                    scopedName[phx::push_back(phx::bind(&SBaseStructs::scopedNames, deref(qi::_val)), qi::_1)] |
                     error(+"base struct name expected")
                 ) % toks.comma
             );
@@ -19,7 +19,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
             toks.colon[qi::_val = phx::construct<BaseVariants>(phx::new_<SBaseVariants>())] >>
             (
                 (
-                    typeName[phx::push_back(phx::bind(&SBaseVariants::names, deref(qi::_val)), qi::_1)] |
+                    scopedName[phx::push_back(phx::bind(&SBaseVariants::scopedNames, deref(qi::_val)), qi::_1)] |
                     error(+"base variant name expected")
                 ) % toks.comma
             );
@@ -29,7 +29,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
             toks.colon[qi::_val = phx::construct<BaseEnums>(phx::new_<SBaseEnums>())] >>
             (
                 (
-                    typeName[phx::push_back(phx::bind(&SBaseEnums::names, deref(qi::_val)), qi::_1)] |
+                    scopedName[phx::push_back(phx::bind(&SBaseEnums::scopedNames, deref(qi::_val)), qi::_1)] |
                     error(+"base enum type expected")
                 ) % toks.comma
             );
@@ -39,7 +39,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
             toks.colon[qi::_val = phx::construct<BaseIfaces>(phx::new_<SBaseIfaces>())] >>
             (
                 (
-                    typeName[phx::push_back(phx::bind(&SBaseIfaces::names, deref(qi::_val)), qi::_1)] |
+                    scopedName[phx::push_back(phx::bind(&SBaseIfaces::scopedNames, deref(qi::_val)), qi::_1)] |
                     error(+"base iface type expected")
                 ) % toks.comma
             );

@@ -10,9 +10,9 @@ namespace lut { namespace coupling { namespace parser
 {
     bool exec(const std::vector<std::string> &fileNames, const Config &cfg, std::vector<ErrorInfo> &errs, meta::Library &lib)
     {
-        std::vector<impl::Decl> parseResult;
+        impl::Scope parseResult = impl::parse(fileNames, cfg, errs);
 
-        if(!impl::parse(fileNames, cfg, errs, parseResult))
+        if(!parseResult)
         {
             return false;
         }

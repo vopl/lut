@@ -22,6 +22,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         TokenDef oab, cab;      // <>
         TokenDef semi;          // ;
         TokenDef comma;         // ,
+        TokenDef dcolon;        // ::
         TokenDef colon;         // :
         TokenDef eq;            // =
 

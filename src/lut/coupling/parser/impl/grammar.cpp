@@ -16,7 +16,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         mkPtr();
         mkArray();
         mkName();
-        mkTypeName();
+        mkScopedName();
         mkTypeUse();
         mkAlias();
         mkBases();

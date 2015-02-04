@@ -8,7 +8,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         iface =
             toks.kwiface[qi::_val = phx::construct<Iface>(phx::new_<SIface>())] >>
             (
-                typeName[phx::bind(&SIface::name, deref(qi::_val)) = qi::_1] |
+                name[phx::bind(&SIface::name, deref(qi::_val)) = qi::_1] |
                 error(+"interface name expected")
             ) >>
             -baseIfaces[phx::bind(&SIface::bases, deref(qi::_val)) = qi::_1] >>

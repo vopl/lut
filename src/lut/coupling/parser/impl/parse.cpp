@@ -102,9 +102,8 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    bool parse(const std::string &fileNameUnresolved, ParseState &parseState, std::vector<Decl> &decls)
+    Scope parse(const std::string &fileNameUnresolved, ParseState &parseState)
     {
-        //TODO resolve file name
         std::string resolverErrorMessage;
         std::string fileName = resolveFileName(fileNameUnresolved, parseState, resolverErrorMessage);
         if(fileName.empty())
@@ -166,7 +165,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
         //parse
         TokIterator tokIter{tokBegin};
 
-        std::vector<Decl> res;
+        Scope res;
 
         bool r;
         try
@@ -180,23 +179,22 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
         catch(const GrammarError &e)
         {
             pushError(e.pos(), std::string("error: ") + e.what());
-            return false;
+            return Scope();
         }
 
         if(!r)
         {
             pushError(tokIter->value().begin(), std::string("fail"));
-            return false;
+            return Scope();
         }
 
         if(tokIter != tokEnd)
         {
             pushError(tokIter->value().begin(), std::string("unexpected extra input"));
-            return false;
+            return Scope();
         }
 
-        decls.insert(decls.end(), res.begin(), res.end());
-        return true;
+        return res;
     }
 
     namespace
@@ -206,15 +204,19 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
         {
             std::map<std::string, Scope> _scopes;
         public:
-            static void exec(std::vector<Decl> &decls)
+            void exec(const Scope &s)
             {
-                ScopeMerger instance;
+                return exec(s->decls);
+            }
 
+        private:
+            void exec(std::vector<Decl> &decls)
+            {
                 decls.erase(
                     std::remove_if(
                         decls.begin(),
                         decls.end(),
-                        [&](Decl &d)->bool{return boost::apply_visitor(instance, d);}
+                        [&](Decl &d)->bool{return boost::apply_visitor(*this, d);}
                     )
                     , decls.end()
                 );
@@ -247,7 +249,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
             template <class TScope>
             bool operator()(const TScope &v)
             {
-                exec(v->decls);
+                ScopeMerger().exec(v->decls);
                 return false;
             }
         };
@@ -260,23 +262,28 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
         {
             std::vector<ErrorInfo> &_errs;
 
-            std::map<std::string, TypeName> _typeNames;
-            std::map<std::string, Name> _names;
+            std::map<std::string, Name> _typeNames;
+            std::map<std::string, Name> _fieldNames;
 
+        public:
             NamesChecker(std::vector<ErrorInfo> &errs)
                 : _errs(errs)
             {}
 
         public:
-            static bool exec(const std::vector<Decl> &decls, std::vector<ErrorInfo> &errs)
+            bool exec(const Scope &s)
             {
-                NamesChecker instance(errs);
+                return exec(s->decls);
+            }
 
+        private:
+            bool exec(const std::vector<Decl> &decls)
+            {
                 return std::accumulate(
                     decls.begin(),
                     decls.end(),
                     true,
-                    [&](bool v, const Decl &d)->bool{return boost::apply_visitor(instance, d) && v;}
+                    [&](bool v, const Decl &d)->bool{return boost::apply_visitor(*this, d) && v;}
                 );
             }
 
@@ -300,7 +307,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
             template <class T>
             typename std::enable_if<sizeof(T::name)!=0, bool>::type checkTypeName(const T *v)
             {
-                const TypeName &cur = v->name;
+                const Name &cur = v->name;
                 auto ires = _typeNames.insert(std::make_pair(cur->value, cur));
                 if(!ires.second)
                 {
@@ -310,7 +317,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
                                           static_cast<int>(cur->pos.begin().column()),
                                           "duplicate name: "+cur->value});
 
-                    const TypeName &prev = ires.first->second;
+                    const Name &prev = ires.first->second;
 
                     _errs.emplace_back(ErrorInfo {
                                           prev->pos.begin().file(),
@@ -338,7 +345,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
                 {
                     const Name &cur = f->name;
 
-                    auto ires = _names.insert(std::make_pair(cur->value, cur));
+                    auto ires = _fieldNames.insert(std::make_pair(cur->value, cur));
                     if(!ires.second)
                     {
                         _errs.emplace_back(ErrorInfo {
@@ -370,7 +377,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
             template <class T>
             typename std::enable_if<std::is_base_of<SScope, T>::value, bool>::type checkChildren(const T *v)
             {
-                return exec(v->decls, _errs);
+                return NamesChecker(_errs).exec(v->decls);
             }
         };
     }
@@ -390,9 +397,16 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
         public:
             OwnerIndexer()
             {
-                _scopes.push(nullptr);// simulate global scope as null value
             }
 
+            void exec(const Scope &s)
+            {
+                _scopes.push(s.get());
+                exec(s->decls);
+                _scopes.pop();
+            }
+
+        private:
             template <class V>
             void exec(std::vector<V> &vs)
             {
@@ -472,11 +486,14 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
             void operator()(SAlias *v)
             {
                 v->owner = _scopes.top();
+                _scopes.top()->aliases.insert(std::make_pair(v->name->value, v));
             }
 
             void operator()(SVariant *v)
             {
                 v->owner = _scopes.top();
+                _scopes.top()->variants.insert(std::make_pair(v->name->value, v));
+                _scopes.top()->scopes.insert(std::make_pair(v->name->value, v));
 
                 _variants.push(v);
                 _scopes.push(v);
@@ -489,6 +506,8 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
             void operator()(SStruct *v)
             {
                 v->owner = _scopes.top();
+                _scopes.top()->structs.insert(std::make_pair(v->name->value, v));
+                _scopes.top()->scopes.insert(std::make_pair(v->name->value, v));
 
                 _structs.push(v);
                 _scopes.push(v);
@@ -501,6 +520,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
             void operator()(SEnum *v)
             {
                 v->owner = _scopes.top();
+                _scopes.top()->enums.insert(std::make_pair(v->name->value, v));
 
                 _enums.push(v);
                 exec(v->fields);
@@ -510,6 +530,8 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
             void operator()(SIface *v)
             {
                 v->owner = _scopes.top();
+                _scopes.top()->ifaces.insert(std::make_pair(v->name->value, v));
+                _scopes.top()->scopes.insert(std::make_pair(v->name->value, v));
 
                 _ifaces.push(v);
                 _scopes.push(v);
@@ -522,6 +544,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
             void operator()(SScope *v)
             {
                 v->owner = _scopes.top();
+                _scopes.top()->scopes.insert(std::make_pair(v->name->value, v));
 
                 _scopes.push(v);
                 exec(v->decls);
@@ -531,9 +554,289 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
 
     }
 
-    ////////////////////////////////////////////////////////////////////////////////
-    bool parse(const std::vector<std::string> &fileNames, const Config &cfg, std::vector<ErrorInfo> &errs, std::vector<Decl> &decls)
+    namespace
     {
+        class ScopedNamesResolver
+                : public boost::static_visitor<bool>
+        {
+            std::vector<ErrorInfo> &_errs;
+            SScope *_rootScope{nullptr};
+        public:
+            ScopedNamesResolver(std::vector<ErrorInfo> &errs)
+                : _errs(errs)
+            {
+            }
+
+        public:
+            bool exec(const Scope &s)
+            {
+                assert(!_rootScope);
+                _rootScope = s.get();
+                bool res = exec(s->decls);
+                _rootScope = nullptr;
+                return res;
+            }
+
+        private:
+            template <class V>
+            bool exec(std::vector<V> &vs)
+            {
+                return std::accumulate(
+                    vs.begin(),
+                    vs.end(),
+                    true,
+                    [&](bool state, const V &v)->bool {return boost::apply_visitor(*this, v) && state;}
+                );
+            }
+
+            bool exec(std::vector<EnumField> &)
+            {
+                return true;
+            }
+
+            bool exec(std::vector<VariantField> &vs)
+            {
+                return std::accumulate(
+                    vs.begin(),
+                    vs.end(),
+                    true,
+                    [&](bool state, const VariantField &v)->bool {
+                        return resolve(v->owner, v->type) && state;
+                    }
+                );
+            }
+
+            bool exec(std::vector<StructField> &vs)
+            {
+                return std::accumulate(
+                    vs.begin(),
+                    vs.end(),
+                    true,
+                    [&](bool state, const StructField &v)->bool {
+                        return resolve(v->owner, v->type) && state;
+                    }
+                );
+            }
+
+            bool exec(std::vector<Method> &vs)
+            {
+                return std::accumulate(
+                    vs.begin(),
+                    vs.end(),
+                    true,
+                    [&](bool state, const Method &v)->bool {
+                        state &= resolve(v->owner, v->resultType);
+                        state &= exec(v->params);
+                        return state;
+                    }
+                );
+            }
+
+            bool exec(std::vector<MethodParam> &vs)
+            {
+                return std::accumulate(
+                    vs.begin(),
+                    vs.end(),
+                    true,
+                    [&](bool state, const MethodParam &v)->bool {
+                        return resolve(v->owner->owner, v->type) && state;
+                    }
+                );
+            }
+
+        private:
+            template <class T>
+            bool resolveOne(const std::map<std::string, T> &map, const std::string &name, SScopedName &scopedName)
+            {
+                auto target = map.find(name);
+
+                if(map.end() == target)
+                {
+                    return false;
+                }
+
+                scopedName.asDecl = target->second;
+                scopedName.asScopedEntry = target->second;
+                return true;
+            }
+
+            bool resolveOne(const SScope *scope, SScopedName &scopedName)
+            {
+                auto iter = scopedName.values.begin();
+                auto last = --scopedName.values.end();
+
+                for(; iter!=last; ++iter)
+                {
+                    const Name &name = *iter;
+                    auto scopeIter = scope->scopes.find(name->value);
+
+                    if(scope->scopes.end() == scopeIter)
+                    {
+                        return false;
+                    }
+                    scope = scopeIter->second;
+                }
+
+                const Name &name = *last;
+                const std::string &nameValue = name->value;
+
+                if(resolveOne(scope->aliases, nameValue, scopedName))
+                {
+                    return true;
+                }
+
+                if(resolveOne(scope->structs, nameValue, scopedName))
+                {
+                    return true;
+                }
+
+                if(resolveOne(scope->variants, nameValue, scopedName))
+                {
+                    return true;
+                }
+
+                if(resolveOne(scope->enums, nameValue, scopedName))
+                {
+                    return true;
+                }
+
+                if(resolveOne(scope->ifaces, nameValue, scopedName))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            bool resolve(const SScope *scope, SScopedName &scopedName)
+            {
+                assert(!scopedName.values.empty());
+
+                if(scopedName.root)
+                {
+                    return resolveOne(_rootScope, scopedName);
+                }
+
+                for(; scope; scope=scope->owner)
+                {
+                    if(resolveOne(scope, scopedName))
+                    {
+                        return true;
+                    }
+                }
+
+                _errs.emplace_back(ErrorInfo {
+                                      scopedName.pos.begin().file(),
+                                      static_cast<int>(scopedName.pos.begin().line()),
+                                      static_cast<int>(scopedName.pos.begin().column()),
+                                      "unable to resolve type name: " + scopedName.values.back()->value});
+
+                return false;
+            }
+
+            bool resolve(const SScope *scope, TypeUse &typeUse)
+            {
+                ScopedName *sn = boost::get<ScopedName>(&typeUse);
+                if(!sn)
+                {
+                    return true;
+                }
+                assert(*sn);
+
+                return resolve(scope, *sn->get());
+            }
+
+        public:
+            template <class T>
+            bool operator()(T &v)
+            {
+                bool res = true;
+
+                res &= resolveScope(v.get());
+                res &= resolveBases(v.get());
+                res &= resolveFields(v.get());
+                res &= resolveAlias(v.get());
+
+                return res;
+            }
+
+            /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+            bool resolveScope(...)
+            {
+                return true;
+            }
+
+            bool resolveScope(SScope *v)
+            {
+                return exec(v->decls);
+            }
+
+            /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+            bool resolveBases(...)
+            {
+                return true;
+            }
+
+            template <class T>
+            typename std::enable_if<sizeof(T::bases)!=0, bool>::type resolveBases(T *v)
+            {
+                bool res = true;
+                if(v->bases)
+                {
+                    std::for_each(
+                        v->bases->scopedNames.begin(),
+                        v->bases->scopedNames.end(),
+                        [&](const ScopedName &a) {
+                            bool localRes = resolve(v->owner, *a);
+                            if(!localRes)
+                            {
+                                res = false;
+                            }
+                            else if((typeid(v) != a->asDecl.type()))
+                            {
+                                _errs.emplace_back(ErrorInfo {
+                                                      a->pos.begin().file(),
+                                                      static_cast<int>(a->pos.begin().line()),
+                                                      static_cast<int>(a->pos.begin().column()),
+                                                      "resolved type name is incompatible: " + a->values.back()->value});
+                                res = false;
+                            }
+                        }
+                    );
+                }
+
+                return res;
+            }
+
+            /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+            bool resolveFields(...)
+            {
+                return true;
+            }
+
+            template <class T>
+            typename std::enable_if<sizeof(T::fields)!=0, bool>::type resolveFields(T *v)
+            {
+                return exec(v->fields);
+            }
+
+            /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+            bool resolveAlias(...)
+            {
+                return true;
+            }
+
+            bool resolveAlias(SAlias *v)
+            {
+                return resolve(v->owner, v->type);
+            }
+        };
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    Scope parse(const std::vector<std::string> &fileNames, const Config &cfg, std::vector<ErrorInfo> &errs)
+    {
+        Scope res;
         {
             ParseState parseState = {cfg, errs, nullptr, {}, {}};
             Grammar g(parseState);
@@ -541,30 +844,44 @@ namespace  lut { namespace coupling { namespace parser { namespace impl
 
             for(const std::string &fileName : fileNames)
             {
-                if(!parse(fileName, parseState, decls))
+                Scope localRes = parse(fileName, parseState);
+                if(!localRes)
                 {
-                    return false;
+                    return Scope();
+                }
+
+                if(!res)
+                {
+                    res = localRes;
+                }
+                else
+                {
+                    res->decls.insert(res->decls.end(), localRes->decls.begin(), localRes->decls.end());
                 }
             }
         }
 
         //merge scopes
-        ScopeMerger::exec(decls);
+        ScopeMerger().exec(res);
 
         //check names uniqueness
-        if(!NamesChecker::exec(decls, errs))
+        if(!NamesChecker(errs).exec(res))
         {
-            return false;
+            return Scope();
         }
 
         //index owners
-        OwnerIndexer().exec(decls);
+        OwnerIndexer().exec(res);
 
-        //resolve typeUse.typeName
+        //resolve typeUse.scopedName
+        if(!ScopedNamesResolver(errs).exec(res))
+        {
+            return Scope();
+        }
 
-        //resolve bases
+        //check bases
 
-        return true;
+        return res;
     }
 
 }}}}

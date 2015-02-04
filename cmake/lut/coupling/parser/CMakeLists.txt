@@ -69,7 +69,7 @@ set(SRC_IMPL
     ${PSRC}/impl/grammarMkPtr.cpp
     ${PSRC}/impl/grammarMkArray.cpp
     ${PSRC}/impl/grammarMkName.cpp
-    ${PSRC}/impl/grammarMkTypeName.cpp
+    ${PSRC}/impl/grammarMkScopedName.cpp
     ${PSRC}/impl/grammarMkTypeUse.cpp
     ${PSRC}/impl/grammarMkAlias.cpp
     ${PSRC}/impl/grammarMkBases.cpp

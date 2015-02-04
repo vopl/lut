@@ -11,6 +11,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         , cab       {'>'}
         , semi      {';'}
         , comma     {','}
+        , dcolon    {"\"::\""}
         , colon     {':'}
         , eq        {'='}
 
@@ -98,6 +99,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
             | cab
             | semi
             | comma
+            | dcolon
             | colon
             | eq
 
