@@ -144,7 +144,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
 
         void operator()(SScope *v)
         {
-            v->meta = _lib.addScope(v->owner ? v->owner->meta : nullptr, v->name->value);
+            v->meta = _lib.addScope(v->owner ? v->owner->meta : nullptr, v->name ? v->name->value : std::string());
 
             exec(v->decls);
         }

@@ -2,13 +2,12 @@
 
 #include "lut/himpl/sizeProvider.hpp"
 #include "lut/himpl/sizeFetcher.hpp"
+#include "lut/himpl/face2Impl.hpp"
+#include "lut/himpl/impl2Face.hpp"
 #include <utility>
 
 namespace lut { namespace himpl
 {
-    /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
-    class Accessor;
-
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     namespace details
     {
@@ -49,8 +48,6 @@ namespace lut { namespace himpl
         using BaseFaces = std::tuple<TBaseFaces...>;
 
     protected:
-        friend class Accessor;
-
         FaceLayout();
 
         template <typename... Arg>
@@ -196,7 +193,7 @@ namespace lut { namespace himpl
     template <class TImpl, class... TBaseFaces>
     TImpl *FaceLayout<TImpl, TBaseFaces...>::pimpl()
     {
-        return reinterpret_cast<Impl*>(this);
+        return face2Impl(this);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -210,7 +207,7 @@ namespace lut { namespace himpl
     template <class TImpl, class... TBaseFaces>
     const TImpl *FaceLayout<TImpl, TBaseFaces...>::pimpl() const
     {
-        return reinterpret_cast<const Impl*>(this);
+        return face2Impl(this);
     }
 
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7

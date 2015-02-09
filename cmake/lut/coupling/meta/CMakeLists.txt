@@ -91,6 +91,7 @@ set(INC_IMPL
     ${PSRC}/impl/struct.hpp
     ${PSRC}/impl/type.hpp
     ${PSRC}/impl/variant.hpp
+    ${PSRC}/impl/library.hpp
 )
 source_group(src/coupling/meta/impl FILES ${INC_IMPL})
 
@@ -116,6 +117,7 @@ set(SRC_IMPL
     ${PSRC}/impl/struct.cpp
     ${PSRC}/impl/type.cpp
     ${PSRC}/impl/variant.cpp
+    ${PSRC}/impl/library.cpp
 )
 source_group(src/coupling/meta/impl FILES ${SRC_IMPL})
 
@@ -160,6 +162,7 @@ mkHimplSizes(
         ${PSRC}/impl/struct.hpp
         ${PSRC}/impl/type.hpp
         ${PSRC}/impl/variant.hpp
+        ${PSRC}/impl/library.hpp
 
     PREDECL
         lut/coupling/meta/predecl.hpp
@@ -191,6 +194,7 @@ mkHimplSizes(
         ::lut::coupling::meta::impl::Struct
         ::lut::coupling::meta::impl::Type
         ::lut::coupling::meta::impl::Variant
+        ::lut::coupling::meta::impl::Library
 )
 
 

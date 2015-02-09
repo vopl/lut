@@ -7,6 +7,7 @@
 
 namespace lut { namespace coupling { namespace meta
 {
+    class Primitive;
     class List;
     class Set;
     class Map;

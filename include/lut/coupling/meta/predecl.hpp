@@ -22,6 +22,8 @@ namespace lut { namespace coupling { namespace meta
     class Struct;
     class Type;
     class Variant;
+
+    class Library;
 }}}
 
 namespace lut { namespace coupling { namespace meta { namespace impl
@@ -47,4 +49,5 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     class Type;
     class Variant;
 
+    class Library;
 }}}}

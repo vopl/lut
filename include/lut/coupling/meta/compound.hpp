@@ -1,6 +1,9 @@
 #pragma once
 
-#include "lut/coupling/meta/sizeProvider.hpp"
+#if !GENERATE_SIZEPROVIDER
+#   include "lut/coupling/meta/sizeProvider.hpp"
+#endif
+
 #include "lut/himpl/faceLayout.hpp"
 
 namespace lut { namespace coupling { namespace meta

@@ -1,41 +1,12 @@
 #pragma once
 
-#include "lut/coupling/meta/alias.hpp"
-#include "lut/coupling/meta/array.hpp"
-#include "lut/coupling/meta/enum.hpp"
-#include "lut/coupling/meta/iface.hpp"
-#include "lut/coupling/meta/list.hpp"
-#include "lut/coupling/meta/map.hpp"
-#include "lut/coupling/meta/ptr.hpp"
-#include "lut/coupling/meta/primitive.hpp"
-#include "lut/coupling/meta/scope.hpp"
-#include "lut/coupling/meta/set.hpp"
-#include "lut/coupling/meta/struct.hpp"
-#include "lut/coupling/meta/variant.hpp"
+#include "lut/himpl/implLayout.hpp"
+#include "lut/coupling/meta/library.hpp"
 
-#include <string>
-#include <system_error>
-
-namespace lut { namespace coupling { namespace meta
+namespace lut { namespace coupling { namespace meta { namespace impl
 {
-    enum class LoadResult
-    {
-        readyForCommit,
-        corruptedFile,
-        malformedFile,
-    };
-
-    struct LibraryCommitError
-    {
-        std::error_code _ec;
-        std::string     _comment;
-
-        std::string toString() const;
-    };
-
-
     class Library
-        : public himpl::FaceLayout<impl::Library>
+        : public himpl::ImplLayout<>
     {
     public:
         Library();
@@ -89,8 +60,9 @@ namespace lut { namespace coupling { namespace meta
         void setArraySize(Array *target, std::uint32_t size);
 
     public:// commit
-        bool commitChanges(std::vector<LibraryCommitError> &errors);
+        bool commitChanges(std::vector<meta::LibraryCommitError> &errors);
         void rollbackChanges();
 
     };
-}}}
+
+}}}}

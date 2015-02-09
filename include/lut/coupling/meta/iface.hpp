@@ -1,8 +1,5 @@
 #pragma once
 
-#include "lut/coupling/meta/sizeProvider.hpp"
-#include "lut/himpl/faceLayout.hpp"
-
 #include "lut/coupling/meta/scope.hpp"
 #include "lut/coupling/meta/compound.hpp"
 #include "lut/coupling/meta/method.hpp"

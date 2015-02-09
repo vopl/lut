@@ -155,6 +155,7 @@ add_library(${PROJECT} STATIC
     ${PINC}/sizeProvider.hpp
     ${PINC}/sizeProviderDefault.hpp
     ${PINC}/sizeFetcher.hpp
-    ${PSRC}/accessor.hpp)
+    ${PINC}/face2Impl.hpp
+    ${PINC}/impl2Face.hpp)
 
 set_target_properties(${PROJECT} PROPERTIES LINKER_LANGUAGE CXX)

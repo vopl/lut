@@ -98,7 +98,19 @@ int main(int argc, const char **argv)
         {
             switch(lib.load(in))
             {
-            case lut::coupling::meta::LoadResult::ok:
+            case lut::coupling::meta::LoadResult::readyForCommit:
+                {
+                    std::vector<lut::coupling::meta::LibraryCommitError> errs;
+                    if(!lib.commitChanges(errs))
+                    {
+                        for(const lut::coupling::meta::LibraryCommitError &err : errs)
+                        {
+                            std::cerr << err.toString() << std::endl;
+                        }
+                        return EXIT_FAILURE;
+                    }
+                }
+                std::cout << "file loaded: " << in << std::endl;
                 break;
             case lut::coupling::meta::LoadResult::corruptedFile:
                 std::cerr << "corrupted file: " << in << std::endl;
@@ -119,14 +131,22 @@ int main(int argc, const char **argv)
                 }
                 return EXIT_FAILURE;
             }
-        }
-    }
 
-    if(!lib.resolve())
-    {
-        //TODO
-        //std::cerr << "incomplete types: " << lib.incomplete() << std::endl;
-        return EXIT_FAILURE;
+            for(const std::string &idlFile : idlFiles)
+            {
+                std::cout << "parsed: " << idlFile << std::endl;
+            }
+        }
+
+        std::vector<lut::coupling::meta::LibraryCommitError> errs;
+        if(!lib.commitChanges(errs))
+        {
+            for(const lut::coupling::meta::LibraryCommitError &err : errs)
+            {
+                std::cerr << err.toString() << std::endl;
+            }
+            return EXIT_FAILURE;
+        }
     }
 
     if(vars.count("out"))
