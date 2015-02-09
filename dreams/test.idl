@@ -17,7 +17,7 @@ scope s1
             int8 y;
         }
         
-        iface myfBase : myf {}
+        iface myfBase {}
         iface myfBase2 {}
         
         iface myf

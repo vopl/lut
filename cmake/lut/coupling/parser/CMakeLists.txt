@@ -60,6 +60,8 @@ set(INC_IMPL
     ${PSRC}/impl/ast/scopeMerger.hpp
     ${PSRC}/impl/ast/scopedNamesResolver.hpp
     ${PSRC}/impl/ast/basesChecker.hpp
+    ${PSRC}/impl/ast/metaCreator.hpp
+    ${PSRC}/impl/ast/metaLinker.hpp
 )
 source_group(src/coupling/parser/impl FILES ${INC_IMPL})
 

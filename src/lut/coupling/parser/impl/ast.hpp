@@ -2,7 +2,28 @@
 
 #include "lut/coupling/parser/impl/common.hpp"
 #include "lut/coupling/parser/impl/tokenizer.hpp"
+
 #include <boost/variant.hpp>
+
+namespace lut { namespace coupling { namespace meta
+{
+    class List;
+    class Set;
+    class Map;
+    class Ptr;
+    class Array;
+    class Scope;
+    class Alias;
+    class Attribute;
+    class Variant;
+    class Attribute;
+    class Struct;
+    class EnumValue;
+    class Enum;
+    class Attribute;
+    class Method;
+    class Iface;
+}}}
 
 namespace lut { namespace coupling { namespace parser { namespace impl
 {
@@ -55,12 +76,12 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     // predecls
 
     //    primitive
-    enum class Primitive;
+    struct SPrimitive;
+    using Primitive = std::shared_ptr<SPrimitive>;
 
     //    list
     struct SList;
     using List = std::shared_ptr<SList>;
-
 
     //    set
     struct SSet;
@@ -174,7 +195,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
 
     ////////////////////////////////////////////////////////////////////////////////
     //    primitive
-    enum class Primitive
+    enum class PrimitiveKind
     {
         void_,
 
@@ -196,29 +217,43 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         real64,
     };
 
+    struct SPrimitive
+    {
+        PrimitiveKind   kind;
+        meta::Primitive *meta{nullptr};
+    };
+
     //    list
     struct SList
     {
-        TypeUse elementType;
+        TypeUse     elementType;
+
+        meta::List  *meta{nullptr};
     };
 
     //    set
     struct SSet
     {
-        TypeUse elementType;
+        TypeUse     elementType;
+
+        meta::Set   *meta{nullptr};
     };
 
     //    map
     struct SMap
     {
-        TypeUse keyType;
-        TypeUse valueType;
+        TypeUse     keyType;
+        TypeUse     valueType;
+
+        meta::Map   *meta{nullptr};
     };
 
     //    ptr
     struct SPtr
     {
-        TypeUse valueType;
+        TypeUse     valueType;
+
+        meta::Ptr   *meta{nullptr};
     };
 
     //    array
@@ -226,6 +261,8 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     {
         TypeUse     elementType;
         std::string size;
+
+        meta::Array *meta{nullptr};
     };
 
     //    name
@@ -285,6 +322,8 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         std::map<std::string, SEnum *>      enums;
         std::map<std::string, SIface *>     ifaces;
         std::map<std::string, SScope *>     scopes;
+
+        meta::Scope                         *meta{nullptr};
     };
 
     //    alias
@@ -292,6 +331,8 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         : SScopeEntry
     {
         TypeUse     type;
+
+        meta::Alias *meta{nullptr};
     };
 
     //    bases
@@ -322,9 +363,11 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     //    variantField
     struct SVariantField
     {
-        SVariant    *owner{0};
-        Name        name;
-        TypeUse     type;
+        SVariant        *owner{0};
+        Name            name;
+        TypeUse         type;
+
+        meta::Attribute *meta{nullptr};
     };
 
     //    variant
@@ -333,14 +376,18 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     {
         BaseVariants                bases;
         std::vector<VariantField>   fields;
+
+        meta::Variant               *meta{nullptr};
     };
 
     //    structField
     struct SStructField
     {
-        SStruct *owner{0};
-        Name    name;
-        TypeUse type;
+        SStruct         *owner{0};
+        Name            name;
+        TypeUse         type;
+
+        meta::Attribute *meta{nullptr};
     };
 
     //    struct_
@@ -349,13 +396,17 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     {
         BaseStructs                 bases;
         std::vector<StructField>    fields;
+
+        meta::Struct                *meta{nullptr};
     };
 
     //    enumField
     struct SEnumField
     {
-        SEnum   *owner{0};
-        Name    name;
+        SEnum           *owner{0};
+        Name            name;
+
+        meta::EnumValue *meta{nullptr};
     };
 
     //    enum_
@@ -364,14 +415,18 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     {
         BaseEnums               bases;
         std::vector<EnumField>  fields;
+
+        meta::Enum              *meta{nullptr};
     };
 
     //    methodParam
     struct SMethodParam
     {
-        SMethod *owner{0};
-        Name    name;
-        TypeUse type;
+        SMethod         *owner{0};
+        Name            name;
+        TypeUse         type;
+
+        meta::Attribute *meta{nullptr};
     };
 
     //    method
@@ -390,6 +445,8 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         bool                        nowait;
         Name                        name;
         std::vector<MethodParam>    params;
+
+        meta::Method                *meta{nullptr};
     };
 
     //    iface
@@ -398,6 +455,8 @@ namespace lut { namespace coupling { namespace parser { namespace impl
     {
         BaseIfaces              bases;
         std::vector<Method>     fields;
+
+        meta::Iface             *meta{nullptr};
     };
 
     //    include

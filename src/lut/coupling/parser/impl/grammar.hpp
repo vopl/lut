@@ -49,7 +49,7 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         std::vector<Decl> doInclude(const Token::token_value_type &str);
 
     private:
-        qi::rule<TokIterator, Primitive()>                              primitive;
+        qi::rule<TokIterator, Primitive(), qi::locals<PrimitiveKind>>   primitive;
         qi::rule<TokIterator, List()>                                   list;
         qi::rule<TokIterator, Set()>                                    set;
         qi::rule<TokIterator, Map()>                                    map;
