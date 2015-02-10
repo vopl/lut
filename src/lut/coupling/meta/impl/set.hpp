@@ -8,6 +8,9 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     class Set
         : public himpl::ImplLayout<Container1>
     {
+    public:
+        Set();
+        ~Set();
     };
 
 }}}}

@@ -1,5 +1,6 @@
 #include "lut/stable.hpp"
 
+#include "lut/coupling/meta/libraryBuilder.hpp"
 #include "lut/coupling/meta/library.hpp"
 #include "lut/coupling/parser/config.hpp"
 #include "lut/coupling/parser/errorInfo.hpp"
@@ -81,7 +82,7 @@ int main(int argc, const char **argv)
         return EXIT_SUCCESS;
     }
 
-    lut::coupling::meta::Library lib;
+    lut::coupling::meta::LibraryBuilder lb;
 
     if(vars.count("in"))
     {
@@ -96,14 +97,16 @@ int main(int argc, const char **argv)
 
         for(const std::string &in: vars["in"].as<std::vector<std::string>>())
         {
+            lut::coupling::meta::Library lib;
             switch(lib.load(in))
             {
-            case lut::coupling::meta::LoadResult::readyForCommit:
+            case lut::coupling::meta::LoadResult::ok:
                 {
-                    std::vector<lut::coupling::meta::LibraryCommitError> errs;
-                    if(!lib.commitChanges(errs))
+                    lb.merge(lib);
+                    std::vector<lut::coupling::meta::CommitError> errs;
+                    if(!lb.commitChanges(errs))
                     {
-                        for(const lut::coupling::meta::LibraryCommitError &err : errs)
+                        for(const lut::coupling::meta::CommitError &err : errs)
                         {
                             std::cerr << err.toString() << std::endl;
                         }
@@ -122,7 +125,7 @@ int main(int argc, const char **argv)
 
         {
             std::vector<lut::coupling::parser::ErrorInfo> errs;
-            if(!lut::coupling::parser::exec(idlFiles, cfg, errs, lib))
+            if(!lut::coupling::parser::exec(idlFiles, cfg, errs, lb))
             {
                 std::cerr << "parse failed" << std::endl;
                 for(const lut::coupling::parser::ErrorInfo &err : errs)
@@ -138,10 +141,10 @@ int main(int argc, const char **argv)
             }
         }
 
-        std::vector<lut::coupling::meta::LibraryCommitError> errs;
-        if(!lib.commitChanges(errs))
+        std::vector<lut::coupling::meta::CommitError> errs;
+        if(!lb.commitChanges(errs))
         {
-            for(const lut::coupling::meta::LibraryCommitError &err : errs)
+            for(const lut::coupling::meta::CommitError &err : errs)
             {
                 std::cerr << err.toString() << std::endl;
             }

@@ -8,7 +8,7 @@ namespace lut { namespace coupling { namespace meta
         : public himpl::FaceLayout<impl::Array, Container1>
     {
     public:
-        std::uint64_t size();
+        std::uint32_t size();
 
     };
 

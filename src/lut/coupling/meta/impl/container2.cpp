@@ -3,5 +3,24 @@
 
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
+    Container2::Container2()
+    {
+
+    }
+
+    Container2::~Container2()
+    {
+
+    }
+
+    void Container2::setElementType1(Type *v)
+    {
+        assert(0);
+    }
+
+    void Container2::setElementType2(Type *v)
+    {
+        assert(0);
+    }
 
 }}}}

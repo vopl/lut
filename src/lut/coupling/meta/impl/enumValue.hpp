@@ -8,6 +8,9 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     class EnumValue
         : public himpl::ImplLayout<Type>
     {
+    public:
+        EnumValue();
+        ~EnumValue();
     };
 
 }}}}

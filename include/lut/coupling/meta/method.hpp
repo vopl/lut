@@ -19,7 +19,7 @@ namespace lut { namespace coupling { namespace meta
 
         Type *resultType();
 
-        CallDirection callDirection();
+        CallDirection direction();
 
         bool nowait();
 

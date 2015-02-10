@@ -3,5 +3,19 @@
 
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
+    Attribute::Attribute()
+    {
+
+    }
+
+    Attribute::~Attribute()
+    {
+
+    }
+
+    void Attribute::setValueType(Type *v)
+    {
+        assert(0);
+    }
 
 }}}}

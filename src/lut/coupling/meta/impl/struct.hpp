@@ -11,6 +11,12 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     class Struct
         : public himpl::ImplLayout<Scope, Compound<Attribute>, Inheritable<Struct>>
     {
+    public:
+        using Compound<Attribute>::add;
+        using Compound<Type>::add;
+
+        Struct();
+        ~Struct();
     };
 
 }}}}

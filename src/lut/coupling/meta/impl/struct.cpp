@@ -3,5 +3,14 @@
 
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
+    Struct::Struct()
+    {
+
+    }
+
+    Struct::~Struct()
+    {
+
+    }
 
 }}}}

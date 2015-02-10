@@ -8,6 +8,11 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     class Alias
         : public himpl::ImplLayout<Type>
     {
+    public:
+        Alias();
+        ~Alias();
+
+        void setTarget(Type *v);
     };
 
 }}}}

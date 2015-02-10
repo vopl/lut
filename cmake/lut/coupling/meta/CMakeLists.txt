@@ -33,6 +33,7 @@ set(INC
     ${PINC}/predecl.hpp
 
     ${PINC}/library.hpp
+    ${PINC}/libraryBuilder.hpp
 )
 source_group(include/coupling/meta FILES ${INC})
 
@@ -60,6 +61,7 @@ set(SRC
     ${PSRC}/variant.cpp
 
     ${PSRC}/library.cpp
+    ${PSRC}/libraryBuilder.cpp
 )
 source_group(src/coupling/meta FILES ${SRC})
 
@@ -92,6 +94,7 @@ set(INC_IMPL
     ${PSRC}/impl/type.hpp
     ${PSRC}/impl/variant.hpp
     ${PSRC}/impl/library.hpp
+    ${PSRC}/impl/libraryBuilder.hpp
 )
 source_group(src/coupling/meta/impl FILES ${INC_IMPL})
 
@@ -118,6 +121,7 @@ set(SRC_IMPL
     ${PSRC}/impl/type.cpp
     ${PSRC}/impl/variant.cpp
     ${PSRC}/impl/library.cpp
+    ${PSRC}/impl/libraryBuilder.cpp
 )
 source_group(src/coupling/meta/impl FILES ${SRC_IMPL})
 
@@ -163,6 +167,7 @@ mkHimplSizes(
         ${PSRC}/impl/type.hpp
         ${PSRC}/impl/variant.hpp
         ${PSRC}/impl/library.hpp
+        ${PSRC}/impl/libraryBuilder.hpp
 
     PREDECL
         lut/coupling/meta/predecl.hpp
@@ -195,6 +200,7 @@ mkHimplSizes(
         ::lut::coupling::meta::impl::Type
         ::lut::coupling::meta::impl::Variant
         ::lut::coupling::meta::impl::Library
+        ::lut::coupling::meta::impl::LibraryBuilder
 )
 
 

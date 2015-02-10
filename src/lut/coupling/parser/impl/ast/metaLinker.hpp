@@ -1,6 +1,6 @@
 #include "lut/coupling/parser/errorInfo.hpp"
 #include "lut/coupling/parser/impl/ast.hpp"
-#include "lut/coupling/meta/library.hpp"
+#include "lut/coupling/meta/libraryBuilder.hpp"
 #include <algorithm>
 
 namespace  lut { namespace coupling { namespace parser { namespace impl { namespace ast
@@ -8,11 +8,11 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
     class MetaLinker
         : public boost::static_visitor<>
     {
-        meta::Library &_lib;
+        meta::LibraryBuilder &_lb;
 
     public:
-        MetaLinker(meta::Library &lib)
-            : _lib(lib)
+        MetaLinker(meta::LibraryBuilder &lib)
+            : _lb(lib)
         {
         }
 
@@ -70,8 +70,8 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
                 vs.begin(),
                 vs.end(),
                 [&](const Method &v) {
-                    _lib.setMethodDirection(v->meta, MethodDirection::in==v->direction ? meta::CallDirection::in : meta::CallDirection::out);
-                    _lib.setMethodNowait(v->meta, v->nowait);
+                    _lb.setMethodDirection(v->meta, MethodDirection::in==v->direction ? meta::CallDirection::in : meta::CallDirection::out);
+                    _lb.setMethodNowait(v->meta, v->nowait);
                     exec(v->params);
                     boost::apply_visitor(*this, v->resultType);
                 }
@@ -115,7 +115,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
                     v->bases->instances.begin(),
                     v->bases->instances.end(),
                     [&](SVariant *b) {
-                        _lib.addBase(v->meta, b->meta);
+                        _lb.addBase(v->meta, b->meta);
                     }
                 );
             }
@@ -132,7 +132,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
                     v->bases->instances.begin(),
                     v->bases->instances.end(),
                     [&](SStruct *b) {
-                        _lib.addBase(v->meta, b->meta);
+                        _lb.addBase(v->meta, b->meta);
                     }
                 );
             }
@@ -149,7 +149,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
                     v->bases->instances.begin(),
                     v->bases->instances.end(),
                     [&](SEnum *b) {
-                        _lib.addBase(v->meta, b->meta);
+                        _lb.addBase(v->meta, b->meta);
                     }
                 );
             }
@@ -165,7 +165,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
                     v->bases->instances.begin(),
                     v->bases->instances.end(),
                     [&](SIface *b) {
-                        _lib.addBase(v->meta, b->meta);
+                        _lb.addBase(v->meta, b->meta);
                     }
                 );
             }
@@ -187,37 +187,37 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
 
         void operator()(SList *v)
         {
-            _lib.setElementType(v->meta, typeUse2Meta(v->elementType));
+            _lb.setElementType(v->meta, typeUse2Meta(v->elementType));
         }
 
         void operator()(SSet *v)
         {
-            _lib.setElementType(v->meta, typeUse2Meta(v->elementType));
+            _lb.setElementType(v->meta, typeUse2Meta(v->elementType));
         }
 
         void operator()(SMap *v)
         {
-            _lib.setElementType(v->meta, typeUse2Meta(v->keyType), typeUse2Meta(v->valueType));
+            _lb.setElementType(v->meta, typeUse2Meta(v->keyType), typeUse2Meta(v->valueType));
         }
 
         void operator()(SPtr *v)
         {
-            _lib.setElementType(v->meta, typeUse2Meta(v->valueType));
+            _lb.setElementType(v->meta, typeUse2Meta(v->valueType));
         }
 
         void operator()(SArray *v)
         {
-            _lib.setElementType(v->meta, typeUse2Meta(v->elementType));
+            _lb.setElementType(v->meta, typeUse2Meta(v->elementType));
 
             //TODO
             try
             {
-                _lib.setArraySize(v->meta, static_cast<std::uint32_t>(std::stoull(v->size)));
+                _lb.setArraySize(v->meta, static_cast<std::uint32_t>(std::stoull(v->size)));
             }
             catch(const std::runtime_error &e)
             {
                 std::cerr<<e.what()<<std::endl;
-                _lib.setArraySize(v->meta, 0);
+                _lb.setArraySize(v->meta, 0);
             }
         }
 

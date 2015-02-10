@@ -9,6 +9,11 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     class Scope
         : public himpl::ImplLayout<Type, Compound<Type>>
     {
+    public:
+        using Compound<Type>::add;
+
+        Scope();
+        ~Scope();
     };
 
 }}}}

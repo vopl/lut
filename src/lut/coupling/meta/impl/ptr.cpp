@@ -3,5 +3,14 @@
 
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
+    Ptr::Ptr()
+    {
+
+    }
+
+    Ptr::~Ptr()
+    {
+
+    }
 
 }}}}

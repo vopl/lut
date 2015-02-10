@@ -1,6 +1,6 @@
 #include "lut/coupling/parser/errorInfo.hpp"
 #include "lut/coupling/parser/impl/ast.hpp"
-#include "lut/coupling/meta/library.hpp"
+#include "lut/coupling/meta/libraryBuilder.hpp"
 #include <algorithm>
 
 namespace  lut { namespace coupling { namespace parser { namespace impl { namespace ast
@@ -8,11 +8,11 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
     class MetaCreator
         : public boost::static_visitor<>
     {
-        meta::Library &_lib;
+        meta::LibraryBuilder &_lb;
 
     public:
-        MetaCreator(meta::Library &lib)
-            : _lib(lib)
+        MetaCreator(meta::LibraryBuilder &lib)
+            : _lb(lib)
         {
         }
 
@@ -38,7 +38,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
                 vs.begin(),
                 vs.end(),
                 [&](const VariantField &v) {
-                    v->meta = _lib.addAttribute(v->owner->meta, v->name->value);
+                    v->meta = _lb.addAttribute(v->owner->meta, v->name->value);
                     boost::apply_visitor(*this, v->type);
                 }
             );
@@ -50,7 +50,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
                 vs.begin(),
                 vs.end(),
                 [&](const StructField &v) {
-                    v->meta = _lib.addAttribute(v->owner->meta, v->name->value);
+                    v->meta = _lb.addAttribute(v->owner->meta, v->name->value);
                     boost::apply_visitor(*this, v->type);
                 }
             );
@@ -62,7 +62,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
                 vs.begin(),
                 vs.end(),
                 [&](const EnumField &v) {
-                    v->meta = _lib.addEnumValue(v->owner->meta, v->name->value);
+                    v->meta = _lb.addEnumValue(v->owner->meta, v->name->value);
                 }
             );
         }
@@ -73,7 +73,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
                 vs.begin(),
                 vs.end(),
                 [&](const Method &v) {
-                    v->meta = _lib.addMethod(v->owner->meta, v->name->value);
+                    v->meta = _lb.addMethod(v->owner->meta, v->name->value);
                     exec(v->params);
                     boost::apply_visitor(*this, v->resultType);
                 }
@@ -86,7 +86,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
                 vs.begin(),
                 vs.end(),
                 [&](const MethodParam &v) {
-                    v->meta = _lib.addAttribute(v->owner->meta, v->name->value);
+                    v->meta = _lb.addAttribute(v->owner->meta, v->name->value);
                     boost::apply_visitor(*this, v->type);
                 }
             );
@@ -107,13 +107,14 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
 
         void operator()(SAlias *v)
         {
-            v->meta = _lib.addAlias(v->owner->meta, v->name->value);
+            v->meta = _lb.addAlias(v->owner->meta, v->name->value);
             boost::apply_visitor(*this, v->type);
         }
 
         void operator()(SVariant *v)
         {
-            v->meta = _lib.addVariant(v->owner->meta, v->name->value);
+            v->meta = _lb.addVariant(v->owner->meta, v->name->value);
+            v->SScope::meta = v->meta;
 
             exec(v->decls);
             exec(v->fields);
@@ -121,7 +122,8 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
 
         void operator()(SStruct *v)
         {
-            v->meta = _lib.addStruct(v->owner->meta, v->name->value);
+            v->meta = _lb.addStruct(v->owner->meta, v->name->value);
+            v->SScope::meta = v->meta;
 
             exec(v->decls);
             exec(v->fields);
@@ -129,14 +131,15 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
 
         void operator()(SEnum *v)
         {
-            v->meta = _lib.addEnum(v->owner->meta, v->name->value);
+            v->meta = _lb.addEnum(v->owner->meta, v->name->value);
 
             exec(v->fields);
         }
 
         void operator()(SIface *v)
         {
-            v->meta = _lib.addIface(v->owner->meta, v->name->value);
+            v->meta = _lb.addIface(v->owner->meta, v->name->value);
+            v->SScope::meta = v->meta;
 
             exec(v->decls);
             exec(v->fields);
@@ -144,45 +147,45 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
 
         void operator()(SScope *v)
         {
-            v->meta = _lib.addScope(v->owner ? v->owner->meta : nullptr, v->name ? v->name->value : std::string());
+            v->meta = _lb.addScope(v->owner ? v->owner->meta : nullptr, v->name ? v->name->value : std::string());
 
             exec(v->decls);
         }
 
         void operator()(SList *v)
         {
-            v->meta = _lib.addList();
+            v->meta = _lb.addList();
             boost::apply_visitor(*this, v->elementType);
         }
 
         void operator()(SSet *v)
         {
-            v->meta = _lib.addSet();
+            v->meta = _lb.addSet();
             boost::apply_visitor(*this, v->elementType);
         }
 
         void operator()(SMap *v)
         {
-            v->meta = _lib.addMap();
+            v->meta = _lb.addMap();
             boost::apply_visitor(*this, v->keyType);
             boost::apply_visitor(*this, v->valueType);
         }
 
         void operator()(SPtr *v)
         {
-            v->meta = _lib.addPtr();
+            v->meta = _lb.addPtr();
             boost::apply_visitor(*this, v->valueType);
         }
 
         void operator()(SArray *v)
         {
-            v->meta = _lib.addArray();
+            v->meta = _lb.addArray();
             boost::apply_visitor(*this, v->elementType);
         }
 
         void operator()(SPrimitive *v)
         {
-            v->meta = _lib.addPrimitive();
+            v->meta = _lb.addPrimitive();
         }
 
         void operator()(SScopedName *v)

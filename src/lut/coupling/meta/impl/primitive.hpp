@@ -8,6 +8,9 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     class Primitive
         : public himpl::ImplLayout<Type>
     {
+    public:
+        Primitive();
+        ~Primitive();
     };
 
 }}}}

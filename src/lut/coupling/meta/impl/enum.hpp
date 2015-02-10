@@ -11,6 +11,11 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     class Enum
         : public himpl::ImplLayout<Type, Compound<EnumValue>, Inheritable<Enum>>
     {
+    public:
+        Enum();
+        ~Enum();
+
+        using Compound<EnumValue>::add;
     };
 
 }}}}

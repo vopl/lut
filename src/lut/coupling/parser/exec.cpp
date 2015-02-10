@@ -7,7 +7,7 @@
 
 namespace lut { namespace coupling { namespace parser
 {
-    bool exec(const std::vector<std::string> &fileNames, const Config &cfg, std::vector<ErrorInfo> &errs, meta::Library &lib)
+    bool exec(const std::vector<std::string> &fileNames, const Config &cfg, std::vector<ErrorInfo> &errs, meta::LibraryBuilder &lb)
     {
         //parse
         impl::Scope parseResult = impl::parse(fileNames, cfg, errs);
@@ -17,8 +17,8 @@ namespace lut { namespace coupling { namespace parser
         }
 
         //fill lib
-        impl::ast::MetaCreator(lib).exec(parseResult);
-        impl::ast::MetaLinker(lib).exec(parseResult);
+        impl::ast::MetaCreator(lb).exec(parseResult);
+        impl::ast::MetaLinker(lb).exec(parseResult);
 
         return true;
     }

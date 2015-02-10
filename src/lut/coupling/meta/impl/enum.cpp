@@ -3,5 +3,14 @@
 
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
+    Enum::Enum()
+    {
+
+    }
+
+    Enum::~Enum()
+    {
+
+    }
 
 }}}}

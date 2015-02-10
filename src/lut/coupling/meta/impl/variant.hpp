@@ -11,6 +11,12 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     class Variant
         : public himpl::ImplLayout<Scope, Compound<Attribute>, Inheritable<Variant>>
     {
+    public:
+        using Compound<Attribute>::add;
+        using Compound<Type>::add;
+
+        Variant();
+        ~Variant();
     };
 
 }}}}

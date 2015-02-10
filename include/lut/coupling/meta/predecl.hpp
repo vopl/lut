@@ -24,6 +24,7 @@ namespace lut { namespace coupling { namespace meta
     class Variant;
 
     class Library;
+    class LibraryBuilder;
 }}}
 
 namespace lut { namespace coupling { namespace meta { namespace impl
@@ -50,4 +51,5 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     class Variant;
 
     class Library;
+    class LibraryBuilder;
 }}}}
