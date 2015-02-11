@@ -8,7 +8,7 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 {
     template <class E>
     class Compound
-        : public himpl::ImplLayout<>
+        : public himpl::ImplLayout<Compound<E>>
     {
     public:
         Compound();

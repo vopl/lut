@@ -23,9 +23,6 @@ namespace lut { namespace coupling { namespace meta
         //расположение
         Type *parent();
 
-        //имя
-        std::string name();
-
     };
 
 }}}

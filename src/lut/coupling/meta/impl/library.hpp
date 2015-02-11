@@ -6,7 +6,7 @@
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
     class Library
-        : public himpl::ImplLayout<>
+        : public himpl::ImplLayout<Library>
     {
     public:
         Library();

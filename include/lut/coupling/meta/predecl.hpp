@@ -20,6 +20,7 @@ namespace lut { namespace coupling { namespace meta
     class Scope;
     class Set;
     class Struct;
+    class Named;
     class Type;
     class Variant;
 
@@ -47,6 +48,7 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     class Scope;
     class Set;
     class Struct;
+    class Named;
     class Type;
     class Variant;
 

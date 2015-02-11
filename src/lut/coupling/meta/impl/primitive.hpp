@@ -6,7 +6,7 @@
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
     class Primitive
-        : public himpl::ImplLayout<Type>
+        : public himpl::ImplLayout<Primitive, Type>
     {
     public:
         Primitive();

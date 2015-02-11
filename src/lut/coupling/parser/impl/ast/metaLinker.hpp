@@ -179,10 +179,34 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
             exec(v->decls);
         }
 
+        struct TypeUseMetaFetcher
+            : public boost::static_visitor<meta::Type *>
+        {
+            template <class T>
+            meta::Type *operator()(const T &v) const
+            {
+                return v->meta;
+            }
+
+            struct ScopedNameMetaFetcher
+                : public boost::static_visitor<meta::Type *>
+            {
+                template <class T>
+                meta::Type *operator()(const T &v) const
+                {
+                    return v->meta;
+                }
+            };
+
+            meta::Type *operator()(const ScopedName &v) const
+            {
+                return boost::apply_visitor(ScopedNameMetaFetcher(), v->asDecl);
+            }
+        };
+
         meta::Type *typeUse2Meta(TypeUse &tu)
         {
-            assert(0);
-            return nullptr;
+            return boost::apply_visitor(TypeUseMetaFetcher(), tu);
         }
 
         void operator()(SList *v)

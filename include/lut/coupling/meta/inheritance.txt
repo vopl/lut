@@ -1,4 +1,5 @@
 абстрактные
+    named
     type
     container1 : type
     container2 : type
@@ -6,9 +7,9 @@
     inheritable<B>
 
 конкретные
-    scope       : type, compound <type>
+    scope       : named, compound <type>, compound <scope>
 
-    alias       : type
+    alias       : type, named
     primitive   : type
 
     list        : container1
@@ -18,12 +19,12 @@
 
     map         : container2
 
-    enum        : type, compound<enumValue>, inheritable<enum>
+    enum        : type, named, compound<enumValue>, inheritable<enum>
 
-    variant     : scope, compound<attribute>, inheritable<variant>
-    struct      : scope, compound<attribute>, inheritable<struct>
-    iface       : scope, compound<method>, inheritable<iface>
+    variant     : type, scope, compound<attribute>, inheritable<variant>
+    struct      : type, scope, compound<attribute>, inheritable<struct>
+    iface       : type, scope, compound<method>, inheritable<iface>
 
-    enumValue   : type
-    attribute   : type
-    method      : type, compound<attribute>
+    enumValue   : named
+    attribute   : named
+    method      : named, compound<attribute>

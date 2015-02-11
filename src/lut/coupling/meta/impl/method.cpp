@@ -16,17 +16,17 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     void Method::setResultType(Type *v)
     {
-        assert(0);
+        _resultType = v;
     }
 
     void Method::setDirection(CallDirection v)
     {
-        assert(0);
+        _direction = v;
     }
 
     void Method::setNowait(bool v)
     {
-        assert(0);
+        _nowait = v;
     }
 
 }}}}

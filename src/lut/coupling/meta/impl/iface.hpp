@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lut/coupling/meta/impl/type.hpp"
 #include "lut/coupling/meta/impl/scope.hpp"
 #include "lut/coupling/meta/impl/compound.hpp"
 #include "lut/coupling/meta/impl/inheritable.hpp"
@@ -9,7 +10,7 @@
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
     class Iface
-        : public himpl::ImplLayout<Scope, Compound<Method>, Inheritable<Iface>>
+        : public himpl::ImplLayout<Iface, Type, Scope, Compound<Method>, Inheritable<Iface>>
     {
     public:
         Iface();

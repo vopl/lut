@@ -12,7 +12,6 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
         std::vector<ErrorInfo> &_errs;
 
         std::map<std::string, Name> _typeNames;
-        std::map<std::string, Name> _fieldNames;
 
     public:
         NamesChecker(std::vector<ErrorInfo> &errs)
@@ -89,28 +88,33 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
         template <class T>
         typename std::enable_if<sizeof(T::fields)!=0, bool>::type checkFields(const T *v)
         {
+            std::map<std::string, Name> fieldNames;
+
             bool res = true;
             for(const auto &f : v->fields)
             {
                 const Name &cur = f->name;
 
-                auto ires = _fieldNames.insert(std::make_pair(cur->value, cur));
-                if(!ires.second)
+                if(cur)
                 {
-                    _errs.emplace_back(ErrorInfo {
-                                          cur->pos.begin().file(),
-                                          static_cast<int>(cur->pos.begin().line()),
-                                          static_cast<int>(cur->pos.begin().column()),
-                                          "duplicate name: "+cur->value});
+                    auto ires = fieldNames.insert(std::make_pair(cur->value, cur));
+                    if(!ires.second)
+                    {
+                        _errs.emplace_back(ErrorInfo {
+                                              cur->pos.begin().file(),
+                                              static_cast<int>(cur->pos.begin().line()),
+                                              static_cast<int>(cur->pos.begin().column()),
+                                              "duplicate name: "+cur->value});
 
-                    const Name &prev = ires.first->second;
+                        const Name &prev = ires.first->second;
 
-                    _errs.emplace_back(ErrorInfo {
-                                          prev->pos.begin().file(),
-                                          static_cast<int>(prev->pos.begin().line()),
-                                          static_cast<int>(prev->pos.begin().column()),
-                                          "previous declaration of "+prev->value});
-                    res = false;
+                        _errs.emplace_back(ErrorInfo {
+                                              prev->pos.begin().file(),
+                                              static_cast<int>(prev->pos.begin().line()),
+                                              static_cast<int>(prev->pos.begin().column()),
+                                              "previous declaration of "+prev->value});
+                        res = false;
+                    }
                 }
             }
 

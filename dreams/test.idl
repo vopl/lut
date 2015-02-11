@@ -1,6 +1,221 @@
 
 
 
+
+
+
+//scope       : named, compound <type>, compound <scope>
+
+scope scope1{}
+scope scope1{scope scope11{}}
+scope scope2{}
+scope scope1
+{
+    scope scope11{}
+    scope scope11{}
+    scope scope12{}
+    
+    scope scope11
+    {
+        alias x=int32;
+        alias y=list<set<ptr<array<map<x, real64>, 10>>>>;
+        variant variant1{}
+        struct struct1{}
+        iface iface1{}
+    }
+    
+    scope scope12{}
+    scope scope12{}
+    scope scope12{}
+    scope scope12
+    {
+        scope scope121{}
+        scope scope121{}
+        scope scope121
+        {
+            alias x=int32;
+            alias y=list<set<ptr<array<map<x, real64>, 10>>>>;
+            variant variant1{}
+            struct struct1{}
+            iface iface1{}
+        }
+    }
+
+}
+
+//alias       : type, named
+scope aliases
+{
+    alias alias1 = int32;
+    alias alias2 = alias1;
+    
+    struct  s1{}
+    enum    e1{}
+    variant v1{}
+    iface   i1{}
+    
+    alias alias3 = s1;
+    alias alias4 = e1;
+    alias alias5 = v1;
+    alias alias6 = i1;
+}
+
+//primitive   : type
+scope primitives
+{
+    alias a1 = void;
+    
+    alias a2 = bool;
+
+    alias a3 = string;
+
+    alias a4 = int8;
+    alias a5 = int16;
+    alias a6 = int32;
+    alias a7 = int64;
+
+    alias a8 = uint8;
+    alias a9 = uint16;
+    alias a10 = uint32;
+    alias a11 = uint64;
+
+    alias a12 = real32;
+    alias a13 = real64;
+
+}
+
+//list        : container1
+scope lists
+{
+    alias a = list<primitives::a1>;
+    alias a2 = list<list<a>>;
+}
+
+//set         : container1
+scope sets
+{
+    alias a = set<primitives::a1>;
+    alias a2 = set<list<a>>;
+}
+
+//ptr         : container1
+scope ptrs
+{
+    alias a = ptr<primitives::a1>;
+    alias a2 = ptr<ptr<a>>;
+}
+
+//array       : container1
+scope arrays
+{
+    alias a = array<primitives::a1, 10>;
+    alias a2 = array<array<a, 3>, 0>;
+}
+
+//map         : container2
+scope maps
+{
+    alias a = map<primitives::a1, int32>;
+    alias a2 = map<map<a, real32>, a>;
+}
+
+//enum        : type, named, compound<enumValue>, inheritable<enum>
+scope enums
+{
+    enum e1{}
+    enum e2
+    {
+        v1;
+        v2;
+    }
+    
+    enum e3
+        : e1, e2
+    {
+        v3;
+        v4;
+    }
+
+    alias a = list<e3>;
+}
+
+
+//variant     : type, scope, compound<attribute>, inheritable<variant>
+scope variants
+{
+    variant v1{}
+    variant v2
+    {
+        int32;
+        real64 name;
+    }
+    
+    variant v3
+        : v1, v2
+    {
+        v1;
+        v2 name;
+    }
+
+    alias a = list<v3>;
+}
+
+//struct      : type, scope, compound<attribute>, inheritable<struct>
+scope structs
+{
+    struct s1{}
+    struct s2
+    {
+        int32 f1;
+        real64 f2;
+    }
+    
+    struct s3
+        : s1, s2
+    {
+        s1 f1;
+        s2 f2;
+
+        alias a = list<s3>;
+    }
+    
+    alias a = list<s3>;
+}
+
+//iface       : type, scope, compound<method>, inheritable<iface>
+scope ifaces
+{
+    iface i1{}
+    iface i2
+    {
+        in void m1();
+    }
+
+    iface i3
+        : i1, i2
+    {
+        in i1 m1(i1,i1,i1);
+        in nowait i1 m2(i1,i1,i1);
+        
+        out nowait i1 m3(list<i1> p1, i1, array<int32, 10> p3);
+    }
+}
+//enumValue   : named
+//attribute   : named
+//method      : named, compound<attribute>
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////
+
+/*
 scope s1
 {
     struct s1 {}
@@ -39,3 +254,5 @@ scope s1
 {
     alias x=xx::myf;
 }
+
+*/

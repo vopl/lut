@@ -29,7 +29,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
         }
 
     public:
-        bool operator()(const Scope &v)
+        bool operator()(Scope &v)
         {
             auto ires = _scopes.insert(std::make_pair(v->name->value, v));
             if(ires.second)
@@ -39,6 +39,8 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
 
             Scope old = ires.first->second;
             old->decls.insert(old->decls.end(), v->decls.begin(), v->decls.end());
+
+            ScopeMerger().exec(old->decls);
 
             return true;
         }

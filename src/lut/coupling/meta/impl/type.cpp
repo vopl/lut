@@ -13,9 +13,4 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     }
 
-    void Type::setName(const std::string &name)
-    {
-        _name = name;
-    }
-
 }}}}

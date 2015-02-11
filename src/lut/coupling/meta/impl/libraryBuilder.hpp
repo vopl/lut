@@ -20,11 +20,12 @@
 #include <vector>
 #include <set>
 #include <memory>
+#include <functional>
 
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
     class LibraryBuilder
-        : public himpl::ImplLayout<>
+        : public himpl::ImplLayout<LibraryBuilder>
     {
     public:
         LibraryBuilder();
@@ -84,31 +85,40 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     private:
         template <class T>
-        using Holder = std::set<T *>;
+        using Items = std::set<T *>;
 
         template <class T>
-        Holder<T> &holder();
-
-        template <class T>
-        void resetHolder();
+        Items<T> &items();
 
     private:
         template <class T>
-        T *emplace();
+        T *create();
+
+        template <class T>
+        void locate(T *p);
 
         template <class T>
         void checkPresense(T *p);
 
     private:
-        Holder<Scope>       _holderScope;
-        Holder<Alias>       _holderAlias;
-        Holder<Struct>      _holderStruct;
-        Holder<Variant>     _holderVariant;
-        Holder<Enum>        _holderEnum;
-        Holder<Iface>       _holderIface;
-        Holder<Method>      _holderMethod;
-        Holder<Attribute>   _holderAttribute;
-        Holder<EnumValue>   _holderEnumValue;
+        using Holder = std::unique_ptr<void, void(*)(void*)>;
+        std::vector<Holder> _holders;
+
+        Items<List>         _lists;
+        Items<Set>          _sets;
+        Items<Map>          _maps;
+        Items<Ptr>          _ptrs;
+        Items<Array>        _arrays;
+        Items<Primitive>    _primitives;
+        Items<Scope>        _scopes;
+        Items<Alias>        _aliases;
+        Items<Struct>       _structs;
+        Items<Variant>      _variants;
+        Items<Enum>         _enums;
+        Items<Iface>        _ifaces;
+        Items<Method>       _methods;
+        Items<Attribute>    _attributes;
+        Items<EnumValue>    _enumValues;
 
     };
 

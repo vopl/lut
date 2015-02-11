@@ -2,17 +2,22 @@
 
 #include "lut/himpl/implLayout.hpp"
 
+#include <vector>
+
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
     template <class B>
     class Inheritable
-        : public himpl::ImplLayout<>
+        : public himpl::ImplLayout<Inheritable<B>>
     {
     public:
         Inheritable();
         ~Inheritable();
 
         void addBase(B *);
+
+    private:
+        std::vector<B*> _bases;
     };
 
 
@@ -28,9 +33,9 @@ namespace lut { namespace coupling { namespace meta { namespace impl
     }
 
     template <class B>
-    void Inheritable<B>::addBase(B *)
+    void Inheritable<B>::addBase(B *v)
     {
-        assert(0);
+        _bases.push_back(v);
     }
 
 }}}}

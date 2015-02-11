@@ -6,7 +6,7 @@
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
     class Map
-        : public himpl::ImplLayout<Container2>
+        : public himpl::ImplLayout<Map, Container2>
     {
     public:
         Map();

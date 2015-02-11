@@ -10,6 +10,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
     {
         std::vector<ErrorInfo> &_errs;
         SScope *_rootScope{nullptr};
+        SScope *_currentScope{nullptr};
 
     public:
         ScopedNamesResolver(std::vector<ErrorInfo> &errs)
@@ -22,7 +23,9 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
         {
             assert(!_rootScope);
             _rootScope = s.get();
+            _currentScope = _rootScope;
             bool res = exec(s->decls);
+            _currentScope = nullptr;
             _rootScope = nullptr;
             return res;
         }
@@ -200,7 +203,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
             ScopedName *sn = boost::get<ScopedName>(&typeUse);
             if(!sn)
             {
-                return true;
+                return boost::apply_visitor(*this, typeUse);
             }
             assert(*sn);
 
@@ -218,6 +221,10 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
             res &= resolveFields(v.get());
             res &= resolveAlias(v.get());
 
+            res &= resolveElementType(v.get());
+            res &= resolveValueType(v.get());
+            res &= resolveKeyType(v.get());
+
             return res;
         }
 
@@ -229,7 +236,12 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
 
         bool resolveScope(SScope *v)
         {
-            return exec(v->decls);
+            SScope *old = _currentScope;
+            _currentScope = v;
+            bool res = exec(v->decls);
+            _currentScope = old;
+
+            return res;
         }
 
         /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
@@ -296,6 +308,42 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
         bool resolveAlias(SAlias *v)
         {
             return resolve(v->owner, v->type);
+        }
+
+        /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+        bool resolveElementType(...)
+        {
+            return true;
+        }
+
+        template <class T>
+        typename std::enable_if<sizeof(T::elementType)!=0, bool>::type resolveElementType(T *v)
+        {
+            return resolve(_currentScope, v->elementType);
+        }
+
+        /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+        bool resolveValueType(...)
+        {
+            return true;
+        }
+
+        template <class T>
+        typename std::enable_if<sizeof(T::valueType)!=0, bool>::type resolveValueType(T *v)
+        {
+            return resolve(_currentScope, v->valueType);
+        }
+
+        /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
+        bool resolveKeyType(...)
+        {
+            return true;
+        }
+
+        template <class T>
+        typename std::enable_if<sizeof(T::keyType)!=0, bool>::type resolveKeyType(T *v)
+        {
+            return resolve(_currentScope, v->keyType);
         }
     };
 

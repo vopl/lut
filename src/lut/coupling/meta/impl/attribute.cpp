@@ -15,7 +15,7 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     void Attribute::setValueType(Type *v)
     {
-        assert(0);
+        _valueType = v;
     }
 
 }}}}

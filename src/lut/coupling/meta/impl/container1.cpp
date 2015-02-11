@@ -15,7 +15,7 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     void Container1::setElementType(Type *v)
     {
-        assert(0);
+        _elementType = v;
     }
 
 }}}}

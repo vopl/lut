@@ -15,7 +15,7 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     void Array::setSize(std::uint32_t v)
     {
-        assert(0);
+        _size = v;
     }
 
 }}}}

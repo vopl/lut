@@ -38,7 +38,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
                 vs.begin(),
                 vs.end(),
                 [&](const VariantField &v) {
-                    v->meta = _lb.addAttribute(v->owner->meta, v->name->value);
+                    v->meta = _lb.addAttribute(v->owner->meta, v->name ? v->name->value : std::string());
                     boost::apply_visitor(*this, v->type);
                 }
             );
@@ -86,7 +86,7 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
                 vs.begin(),
                 vs.end(),
                 [&](const MethodParam &v) {
-                    v->meta = _lb.addAttribute(v->owner->meta, v->name->value);
+                    v->meta = _lb.addAttribute(v->owner->meta, v->name ? v->name->value : std::string());
                     boost::apply_visitor(*this, v->type);
                 }
             );

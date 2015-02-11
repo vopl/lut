@@ -26,6 +26,7 @@ set(INC
     ${PINC}/scope.hpp
     ${PINC}/set.hpp
     ${PINC}/struct.hpp
+    ${PINC}/named.hpp
     ${PINC}/type.hpp
     ${PINC}/variant.hpp
 
@@ -57,6 +58,7 @@ set(SRC
     ${PSRC}/scope.cpp
     ${PSRC}/set.cpp
     ${PSRC}/struct.cpp
+    ${PSRC}/named.cpp
     ${PSRC}/type.cpp
     ${PSRC}/variant.cpp
 
@@ -91,6 +93,7 @@ set(INC_IMPL
     ${PSRC}/impl/scope.hpp
     ${PSRC}/impl/set.hpp
     ${PSRC}/impl/struct.hpp
+    ${PSRC}/impl/named.hpp
     ${PSRC}/impl/type.hpp
     ${PSRC}/impl/variant.hpp
     ${PSRC}/impl/library.hpp
@@ -118,6 +121,7 @@ set(SRC_IMPL
     ${PSRC}/impl/scope.cpp
     ${PSRC}/impl/set.cpp
     ${PSRC}/impl/struct.cpp
+    ${PSRC}/impl/named.cpp
     ${PSRC}/impl/type.cpp
     ${PSRC}/impl/variant.cpp
     ${PSRC}/impl/library.cpp
@@ -164,6 +168,7 @@ mkHimplSizes(
         ${PSRC}/impl/scope.hpp
         ${PSRC}/impl/set.hpp
         ${PSRC}/impl/struct.hpp
+        ${PSRC}/impl/named.hpp
         ${PSRC}/impl/type.hpp
         ${PSRC}/impl/variant.hpp
         ${PSRC}/impl/library.hpp
@@ -180,6 +185,7 @@ mkHimplSizes(
         ::lut::coupling::meta::impl::Compound<::lut::coupling::meta::EnumValue>
         ::lut::coupling::meta::impl::Compound<::lut::coupling::meta::Method>
         ::lut::coupling::meta::impl::Compound<::lut::coupling::meta::Type>
+        ::lut::coupling::meta::impl::Compound<::lut::coupling::meta::Scope>
         ::lut::coupling::meta::impl::Container1
         ::lut::coupling::meta::impl::Container2
         ::lut::coupling::meta::impl::Enum
@@ -197,6 +203,7 @@ mkHimplSizes(
         ::lut::coupling::meta::impl::Scope
         ::lut::coupling::meta::impl::Set
         ::lut::coupling::meta::impl::Struct
+        ::lut::coupling::meta::impl::Named
         ::lut::coupling::meta::impl::Type
         ::lut::coupling::meta::impl::Variant
         ::lut::coupling::meta::impl::Library

@@ -286,7 +286,6 @@ namespace lut { namespace coupling { namespace parser { namespace impl
             , SStruct *
             , SEnum *
             , SIface *
-            , SScope *
         > asDecl;
 
         SScopeEntry *asScopedEntry;

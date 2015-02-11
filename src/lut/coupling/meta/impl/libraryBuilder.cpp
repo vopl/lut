@@ -21,37 +21,37 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Primitive *LibraryBuilder::addPrimitive()
     {
-        return emplace<Primitive>();
+        return create<Primitive>();
     }
 
     List *LibraryBuilder::addList()
     {
-        return emplace<List>();
+        return create<List>();
     }
 
     Set *LibraryBuilder::addSet()
     {
-        return emplace<Set>();
+        return create<Set>();
     }
 
     Map *LibraryBuilder::addMap()
     {
-        return emplace<Map>();
+        return create<Map>();
     }
 
     Ptr *LibraryBuilder::addPtr()
     {
-        return emplace<Ptr>();
+        return create<Ptr>();
     }
 
     Array *LibraryBuilder::addArray()
     {
-        return emplace<Array>();
+        return create<Array>();
     }
 
     Scope *LibraryBuilder::addScope(Scope *parent, const std::string &name)
     {
-        auto res = emplace<Scope>();
+        auto res = create<Scope>();
         res->setName(name);
 
         if(parent)
@@ -65,7 +65,7 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Alias *LibraryBuilder::addAlias(Scope *parent, const std::string &name)
     {
-        auto res = emplace<Alias>();
+        auto res = create<Alias>();
         res->setName(name);
 
         checkPresense(parent);
@@ -76,29 +76,31 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Struct *LibraryBuilder::addStruct(Scope *parent, const std::string &name)
     {
-        auto res = emplace<Struct>();
+        auto res = create<Struct>();
         res->setName(name);
 
         checkPresense(parent);
-        parent->add(res);
+        parent->add(static_cast<Type *>(res));
+        parent->add(static_cast<Scope *>(res));
 
         return res;
     }
 
     Variant *LibraryBuilder::addVariant(Scope *parent, const std::string &name)
     {
-        auto res = emplace<Variant>();
+        auto res = create<Variant>();
         res->setName(name);
 
         checkPresense(parent);
-        parent->add(res);
+        parent->add(static_cast<Type *>(res));
+        parent->add(static_cast<Scope *>(res));
 
         return res;
     }
 
     Enum *LibraryBuilder::addEnum(Scope *parent, const std::string &name)
     {
-        auto res = emplace<Enum>();
+        auto res = create<Enum>();
         res->setName(name);
 
         checkPresense(parent);
@@ -109,18 +111,19 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Iface *LibraryBuilder::addIface(Scope *parent, const std::string &name)
     {
-        auto res = emplace<Iface>();
+        auto res = create<Iface>();
         res->setName(name);
 
         checkPresense(parent);
-        parent->add(res);
+        parent->add(static_cast<Type *>(res));
+        parent->add(static_cast<Scope *>(res));
 
         return res;
     }
 
     Method *LibraryBuilder::addMethod(Iface *parent, const std::string &name)
     {
-        auto res = emplace<Method>();
+        auto res = create<Method>();
         res->setName(name);
 
         checkPresense(parent);
@@ -131,7 +134,7 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Attribute *LibraryBuilder::addAttribute(Struct *parent, const std::string &name)
     {
-        auto res = emplace<Attribute>();
+        auto res = create<Attribute>();
         res->setName(name);
 
         checkPresense(parent);
@@ -142,7 +145,7 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Attribute *LibraryBuilder::addAttribute(Variant *parent, const std::string &name)
     {
-        auto res = emplace<Attribute>();
+        auto res = create<Attribute>();
         res->setName(name);
 
         checkPresense(parent);
@@ -153,7 +156,7 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Attribute *LibraryBuilder::addAttribute(Method *parent, const std::string &name)
     {
-        auto res = emplace<Attribute>();
+        auto res = create<Attribute>();
         res->setName(name);
 
         checkPresense(parent);
@@ -164,7 +167,7 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     EnumValue *LibraryBuilder::addEnumValue(Enum *parent, const std::string &name)
     {
-        auto res = emplace<EnumValue>();
+        auto res = create<EnumValue>();
         res->setName(name);
 
         checkPresense(parent);
@@ -271,103 +274,157 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     void LibraryBuilder::rollbackChanges()
     {
-        resetHolder<Scope>();
-        resetHolder<Alias>();
-        resetHolder<Struct>();
-        resetHolder<Variant>();
-        resetHolder<Enum>();
-        resetHolder<Iface>();
-        resetHolder<Method>();
-        resetHolder<Attribute>();
-        resetHolder<EnumValue>();
+        _lists.clear();
+        _sets.clear();
+        _maps.clear();
+        _ptrs.clear();
+        _arrays.clear();
+        _primitives.clear();
+        _scopes.clear();
+        _aliases.clear();
+        _structs.clear();
+        _variants.clear();
+        _enums.clear();
+        _ifaces.clear();
+        _methods.clear();
+        _attributes.clear();
+        _enumValues.clear();
+
+        _holders.clear();
+    }
+
+    template <>
+    LibraryBuilder::Items<List> &LibraryBuilder::items<List>()
+    {
+        return _lists;
+    }
+
+    template <>
+    LibraryBuilder::Items<Set> &LibraryBuilder::items<Set>()
+    {
+        return _sets;
+    }
+
+    template <>
+    LibraryBuilder::Items<Map> &LibraryBuilder::items<Map>()
+    {
+        return _maps;
+    }
+
+    template <>
+    LibraryBuilder::Items<Ptr> &LibraryBuilder::items<Ptr>()
+    {
+        return _ptrs;
+    }
+
+    template <>
+    LibraryBuilder::Items<Array> &LibraryBuilder::items<Array>()
+    {
+        return _arrays;
+    }
+
+    template <>
+    LibraryBuilder::Items<Primitive> &LibraryBuilder::items<Primitive>()
+    {
+        return _primitives;
+    }
+
+    template <>
+    LibraryBuilder::Items<Scope> &LibraryBuilder::items<Scope>()
+    {
+        return _scopes;
+    }
+
+    template <>
+    LibraryBuilder::Items<Alias> &LibraryBuilder::items<Alias>()
+    {
+        return _aliases;
+    }
+
+    template <>
+    LibraryBuilder::Items<Struct> &LibraryBuilder::items<Struct>()
+    {
+        return _structs;
+    }
+
+    template <>
+    LibraryBuilder::Items<Variant> &LibraryBuilder::items<Variant>()
+    {
+        return _variants;
+    }
+
+    template <>
+    LibraryBuilder::Items<Enum> &LibraryBuilder::items<Enum>()
+    {
+        return _enums;
+    }
+
+    template <>
+    LibraryBuilder::Items<Iface> &LibraryBuilder::items<Iface>()
+    {
+        return _ifaces;
+    }
+
+    template <>
+    LibraryBuilder::Items<Method> &LibraryBuilder::items<Method>()
+    {
+        return _methods;
+    }
+
+    template <>
+    LibraryBuilder::Items<Attribute> &LibraryBuilder::items<Attribute>()
+    {
+        return _attributes;
+    }
+
+    template <>
+    LibraryBuilder::Items<EnumValue> &LibraryBuilder::items<EnumValue>()
+    {
+        return _enumValues;
     }
 
     template <class T>
-    LibraryBuilder::Holder<T> &LibraryBuilder::holder()
-    {
-        assert(0);
-        abort();
-
-        static Holder<T> stub;
-        return stub;
-    }
-
-    template <>
-    LibraryBuilder::Holder<Scope> &LibraryBuilder::holder<Scope>()
-    {
-        return _holderScope;
-    }
-
-    template <>
-    LibraryBuilder::Holder<Alias> &LibraryBuilder::holder<Alias>()
-    {
-        return _holderAlias;
-    }
-
-    template <>
-    LibraryBuilder::Holder<Struct> &LibraryBuilder::holder<Struct>()
-    {
-        return _holderStruct;
-    }
-
-    template <>
-    LibraryBuilder::Holder<Variant> &LibraryBuilder::holder<Variant>()
-    {
-        return _holderVariant;
-    }
-
-    template <>
-    LibraryBuilder::Holder<Enum> &LibraryBuilder::holder<Enum>()
-    {
-        return _holderEnum;
-    }
-
-    template <>
-    LibraryBuilder::Holder<Iface> &LibraryBuilder::holder<Iface>()
-    {
-        return _holderIface;
-    }
-
-    template <>
-    LibraryBuilder::Holder<Method> &LibraryBuilder::holder<Method>()
-    {
-        return _holderMethod;
-    }
-
-    template <>
-    LibraryBuilder::Holder<Attribute> &LibraryBuilder::holder<Attribute>()
-    {
-        return _holderAttribute;
-    }
-
-    template <>
-    LibraryBuilder::Holder<EnumValue> &LibraryBuilder::holder<EnumValue>()
-    {
-        return _holderEnumValue;
-    }
-
-    template <class T>
-    void LibraryBuilder::resetHolder()
-    {
-        for(auto v : holder<T>())
-        {
-            delete v;
-        }
-        holder<T>().clear();
-    }
-
-    template <class T>
-    T *LibraryBuilder::emplace()
+    T *LibraryBuilder::create()
     {
         T *res = new T;
-        holder<T>().emplace(res);
+        _holders.emplace(_holders.end(), res, [](void *p){delete static_cast<T *>(p);});
+
+        locate(res);
+
         return res;
+    }
+
+    template <class T>
+    void LibraryBuilder::locate(T *p)
+    {
+        items<T>().emplace(p);
+    }
+
+    template <>
+    void LibraryBuilder::locate<Struct>(Struct *p)
+    {
+        items<Struct>().emplace(p);
+        items<Scope>().emplace(p);
+    }
+
+    template <>
+    void LibraryBuilder::locate<Variant>(Variant *p)
+    {
+        items<Variant>().emplace(p);
+        items<Scope>().emplace(p);
+    }
+
+    template <>
+    void LibraryBuilder::locate<Iface>(Iface *p)
+    {
+        items<Iface>().emplace(p);
+        items<Scope>().emplace(p);
     }
 
     template <class T>
     void LibraryBuilder::checkPresense(T *p)
     {
-        if(holder<T>().end() == holder<T>().find(p))
+        if(items<T>().end() == items<T>().find(p))
         {
             assert(!"requested object is not presented in builder");
             abort();

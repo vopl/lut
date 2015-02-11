@@ -6,7 +6,7 @@
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
     class Ptr
-        : public himpl::ImplLayout<Container1>
+        : public himpl::ImplLayout<Ptr, Container1>
     {
     public:
         Ptr();

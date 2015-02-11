@@ -15,7 +15,7 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     void Alias::setTarget(Type *v)
     {
-        assert(0);
+        _target = v;
     }
 
 }}}}

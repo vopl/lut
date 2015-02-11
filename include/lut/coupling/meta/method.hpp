@@ -1,7 +1,8 @@
 #pragma once
 
-#include "lut/coupling/meta/type.hpp"
+#include "lut/coupling/meta/named.hpp"
 #include "lut/coupling/meta/compound.hpp"
+#include "lut/coupling/meta/type.hpp"
 
 namespace lut { namespace coupling { namespace meta
 {
@@ -12,7 +13,7 @@ namespace lut { namespace coupling { namespace meta
     };
 
     class Method
-        : public himpl::FaceLayout<impl::Method, Type, Compound<Attribute>>
+        : public himpl::FaceLayout<impl::Method, Named, Compound<Attribute>>
     {
     public:
         Iface *iface();
