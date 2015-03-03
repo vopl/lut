@@ -50,41 +50,6 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         , kwnowait  {"\"nowait\""}
 
         , id        {"[a-zA-Z_]+\\w*"}
-
-        , word {
-                kwvoid
-              | kwbool
-              | kwstring
-              | kwint8
-              | kwint16
-              | kwint32
-              | kwint64
-              | kwuint8
-              | kwuint16
-              | kwuint32
-              | kwuint64
-              | kwreal32
-              | kwreal64
-
-              | kwlist
-              | kwset
-              | kwmap
-              | kwptr
-              | kwarray
-
-              | kwscope
-              | kwinclude
-              | kwalias
-              | kwstruct
-              | kwvariant
-              | kwiface
-              | kwenum
-              | kwin
-              | kwout
-              | kwnowait
-
-              | id
-        }
     {
         this->self
             = TokenDef{"\\s"}                       [boost::spirit::lex::_pass = boost::spirit::lex::pass_flags::pass_ignore]

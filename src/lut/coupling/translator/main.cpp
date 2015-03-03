@@ -82,7 +82,7 @@ int main(int argc, const char **argv)
         return EXIT_SUCCESS;
     }
 
-    lut::coupling::meta::LibraryBuilder lb;
+    lut::coupling::meta::Library lib;
 
     if(vars.count("in"))
     {
@@ -95,24 +95,15 @@ int main(int argc, const char **argv)
 
         std::vector<std::string> idlFiles;
 
+        lut::coupling::meta::LibraryBuilder lb;
+
         for(const std::string &in: vars["in"].as<std::vector<std::string>>())
         {
             lut::coupling::meta::Library lib;
             switch(lib.load(in))
             {
             case lut::coupling::meta::LoadResult::ok:
-                {
-                    lb.merge(lib);
-                    std::vector<lut::coupling::meta::CommitError> errs;
-                    if(!lb.commitChanges(errs))
-                    {
-                        for(const lut::coupling::meta::CommitError &err : errs)
-                        {
-                            std::cerr << err.toString() << std::endl;
-                        }
-                        return EXIT_FAILURE;
-                    }
-                }
+                lb.merge(lib);
                 std::cout << "file loaded: " << in << std::endl;
                 break;
             case lut::coupling::meta::LoadResult::corruptedFile:
@@ -142,7 +133,7 @@ int main(int argc, const char **argv)
         }
 
         std::vector<lut::coupling::meta::CommitError> errs;
-        if(!lb.commitChanges(errs))
+        if(!lb.commitChanges(lib, errs))
         {
             for(const lut::coupling::meta::CommitError &err : errs)
             {

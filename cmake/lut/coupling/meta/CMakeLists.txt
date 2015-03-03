@@ -98,6 +98,7 @@ set(INC_IMPL
     ${PSRC}/impl/variant.hpp
     ${PSRC}/impl/library.hpp
     ${PSRC}/impl/libraryBuilder.hpp
+    ${PSRC}/impl/libraryContent.hpp
 )
 source_group(src/coupling/meta/impl FILES ${INC_IMPL})
 
@@ -126,6 +127,7 @@ set(SRC_IMPL
     ${PSRC}/impl/variant.cpp
     ${PSRC}/impl/library.cpp
     ${PSRC}/impl/libraryBuilder.cpp
+    ${PSRC}/impl/libraryContent.cpp
 )
 source_group(src/coupling/meta/impl FILES ${SRC_IMPL})
 

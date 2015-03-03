@@ -33,7 +33,7 @@ namespace lut { namespace himpl {
     template <> struct sizeProvider<::lut::coupling::meta::impl::Named> { static const std::size_t _value =  8;};
     template <> struct sizeProvider<::lut::coupling::meta::impl::Type> { static const std::size_t _value =  0;};
     template <> struct sizeProvider<::lut::coupling::meta::impl::Variant> { static const std::size_t _value =  104;};
-    template <> struct sizeProvider<::lut::coupling::meta::impl::Library> { static const std::size_t _value =  0;};
-    template <> struct sizeProvider<::lut::coupling::meta::impl::LibraryBuilder> { static const std::size_t _value =  744;};
+    template <> struct sizeProvider<::lut::coupling::meta::impl::Library> { static const std::size_t _value =  792;};
+    template <> struct sizeProvider<::lut::coupling::meta::impl::LibraryBuilder> { static const std::size_t _value =  792;};
 }}
 

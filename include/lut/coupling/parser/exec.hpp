@@ -9,5 +9,5 @@
 
 namespace lut { namespace coupling { namespace parser
 {
-    bool exec(const std::vector<std::string> &fileNames, const Config &cfg, std::vector<ErrorInfo> &errs, meta::LibraryBuilder &lib);
+    bool exec(const std::vector<std::string> &fileNames, const Config &cfg, std::vector<ErrorInfo> &errs, meta::LibraryBuilder &lb);
 }}}

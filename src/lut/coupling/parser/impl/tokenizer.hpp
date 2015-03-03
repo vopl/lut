@@ -66,11 +66,10 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         TokenDef kwnowait;
 
         TokenDef id;            // any identifier but not keyword
-
-        boost::spirit::qi::rule<typename Tokenizer::iterator_type, typename Token::token_value_type ()> word; // any identifier or keyword
     };
 
     using TokIterator = Tokenizer::iterator_type;
+    using TokValue = Token::token_value_type;
 
     extern Tokenizer toks;
 

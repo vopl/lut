@@ -1,7 +1,8 @@
 #include "lut/stable.hpp"
 #include "lut/coupling/meta/impl/libraryBuilder.hpp"
+#include "lut/coupling/meta/impl/library.hpp"
 
-#include "lut/coupling/meta/impl/scope.hpp"
+#include <type_traits>
 
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
@@ -21,42 +22,42 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Primitive *LibraryBuilder::addPrimitive()
     {
-        return create<Primitive>();
+        return _lc.create<Primitive>();
     }
 
     List *LibraryBuilder::addList()
     {
-        return create<List>();
+        return _lc.create<List>();
     }
 
     Set *LibraryBuilder::addSet()
     {
-        return create<Set>();
+        return _lc.create<Set>();
     }
 
     Map *LibraryBuilder::addMap()
     {
-        return create<Map>();
+        return _lc.create<Map>();
     }
 
     Ptr *LibraryBuilder::addPtr()
     {
-        return create<Ptr>();
+        return _lc.create<Ptr>();
     }
 
     Array *LibraryBuilder::addArray()
     {
-        return create<Array>();
+        return _lc.create<Array>();
     }
 
     Scope *LibraryBuilder::addScope(Scope *parent, const std::string &name)
     {
-        auto res = create<Scope>();
+        auto res = _lc.create<Scope>();
         res->setName(name);
 
         if(parent)
         {
-            checkPresense(parent);
+            _lc.checkPresense(parent);
             parent->add(res);
         }
 
@@ -65,10 +66,10 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Alias *LibraryBuilder::addAlias(Scope *parent, const std::string &name)
     {
-        auto res = create<Alias>();
+        auto res = _lc.create<Alias>();
         res->setName(name);
 
-        checkPresense(parent);
+        _lc.checkPresense(parent);
         parent->add(res);
 
         return res;
@@ -76,10 +77,10 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Struct *LibraryBuilder::addStruct(Scope *parent, const std::string &name)
     {
-        auto res = create<Struct>();
+        auto res = _lc.create<Struct>();
         res->setName(name);
 
-        checkPresense(parent);
+        _lc.checkPresense(parent);
         parent->add(static_cast<Type *>(res));
         parent->add(static_cast<Scope *>(res));
 
@@ -88,10 +89,10 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Variant *LibraryBuilder::addVariant(Scope *parent, const std::string &name)
     {
-        auto res = create<Variant>();
+        auto res = _lc.create<Variant>();
         res->setName(name);
 
-        checkPresense(parent);
+        _lc.checkPresense(parent);
         parent->add(static_cast<Type *>(res));
         parent->add(static_cast<Scope *>(res));
 
@@ -100,10 +101,10 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Enum *LibraryBuilder::addEnum(Scope *parent, const std::string &name)
     {
-        auto res = create<Enum>();
+        auto res = _lc.create<Enum>();
         res->setName(name);
 
-        checkPresense(parent);
+        _lc.checkPresense(parent);
         parent->add(res);
 
         return res;
@@ -111,10 +112,10 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Iface *LibraryBuilder::addIface(Scope *parent, const std::string &name)
     {
-        auto res = create<Iface>();
+        auto res = _lc.create<Iface>();
         res->setName(name);
 
-        checkPresense(parent);
+        _lc.checkPresense(parent);
         parent->add(static_cast<Type *>(res));
         parent->add(static_cast<Scope *>(res));
 
@@ -123,10 +124,10 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Method *LibraryBuilder::addMethod(Iface *parent, const std::string &name)
     {
-        auto res = create<Method>();
+        auto res = _lc.create<Method>();
         res->setName(name);
 
-        checkPresense(parent);
+        _lc.checkPresense(parent);
         parent->add(res);
 
         return res;
@@ -134,10 +135,10 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Attribute *LibraryBuilder::addAttribute(Struct *parent, const std::string &name)
     {
-        auto res = create<Attribute>();
+        auto res = _lc.create<Attribute>();
         res->setName(name);
 
-        checkPresense(parent);
+        _lc.checkPresense(parent);
         parent->add(res);
 
         return res;
@@ -145,10 +146,10 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Attribute *LibraryBuilder::addAttribute(Variant *parent, const std::string &name)
     {
-        auto res = create<Attribute>();
+        auto res = _lc.create<Attribute>();
         res->setName(name);
 
-        checkPresense(parent);
+        _lc.checkPresense(parent);
         parent->add(res);
 
         return res;
@@ -156,10 +157,10 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     Attribute *LibraryBuilder::addAttribute(Method *parent, const std::string &name)
     {
-        auto res = create<Attribute>();
+        auto res = _lc.create<Attribute>();
         res->setName(name);
 
-        checkPresense(parent);
+        _lc.checkPresense(parent);
         parent->add(res);
 
         return res;
@@ -167,10 +168,10 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     EnumValue *LibraryBuilder::addEnumValue(Enum *parent, const std::string &name)
     {
-        auto res = create<EnumValue>();
+        auto res = _lc.create<EnumValue>();
         res->setName(name);
 
-        checkPresense(parent);
+        _lc.checkPresense(parent);
         parent->add(res);
 
         return res;
@@ -178,258 +179,120 @@ namespace lut { namespace coupling { namespace meta { namespace impl
 
     void LibraryBuilder::addBase(Variant *target, Variant *base)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
+        _lc.checkPresense(base);
         target->addBase(base);
     }
 
     void LibraryBuilder::addBase(Struct *target, Struct *base)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
+        _lc.checkPresense(base);
         target->addBase(base);
     }
 
     void LibraryBuilder::addBase(Enum *target, Enum *base)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
+        _lc.checkPresense(base);
         target->addBase(base);
     }
 
     void LibraryBuilder::addBase(Iface *target, Iface *base)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
+        _lc.checkPresense(base);
         target->addBase(base);
     }
 
     void LibraryBuilder::setType(Attribute *target, Type *type)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
+        _lc.checkPresense(type);
         target->setValueType(type);
     }
 
     void LibraryBuilder::setType(Alias *target, Type *type)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
+        _lc.checkPresense(type);
         target->setTarget(type);
     }
 
     void LibraryBuilder::setType(Method *target, Type *type)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
+        _lc.checkPresense(type);
         target->setResultType(type);
     }
 
     void LibraryBuilder::setElementType(Set *target, Type *type)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
+        _lc.checkPresense(type);
         target->setElementType(type);
     }
 
     void LibraryBuilder::setElementType(List *target, Type *type)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
+        _lc.checkPresense(type);
         target->setElementType(type);
     }
 
     void LibraryBuilder::setElementType(Array *target, Type *type)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
+        _lc.checkPresense(type);
         target->setElementType(type);
     }
 
     void LibraryBuilder::setElementType(Ptr *target, Type *type)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
+        _lc.checkPresense(type);
         target->setElementType(type);
     }
 
     void LibraryBuilder::setElementType(Map *target, Type *keyType, Type *valueType)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
+        _lc.checkPresense(keyType);
+        _lc.checkPresense(valueType);
         target->setElementType1(keyType);
         target->setElementType2(valueType);
     }
 
     void LibraryBuilder::setMethodDirection(Method *target, CallDirection direction)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
         target->setDirection(direction);
     }
 
     void LibraryBuilder::setMethodNowait(Method *target, bool nowait)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
         target->setNowait(nowait);
     }
 
     void LibraryBuilder::setArraySize(Array *target, std::uint32_t size)
     {
-        checkPresense(target);
+        _lc.checkPresense(target);
         target->setSize(size);
     }
 
-    bool LibraryBuilder::commitChanges(std::vector<CommitError> &errors)
+    bool LibraryBuilder::commitChanges(Library &lib, std::vector<CommitError> &errors)
     {
-        assert(0);
+        //TODO: check errors
+
+        lib = std::move(_lc);
+        _lc.clear();
+        return true;
     }
 
     void LibraryBuilder::rollbackChanges()
     {
-        _lists.clear();
-        _sets.clear();
-        _maps.clear();
-        _ptrs.clear();
-        _arrays.clear();
-        _primitives.clear();
-        _scopes.clear();
-        _aliases.clear();
-        _structs.clear();
-        _variants.clear();
-        _enums.clear();
-        _ifaces.clear();
-        _methods.clear();
-        _attributes.clear();
-        _enumValues.clear();
-
-        _holders.clear();
+        _lc.clear();
     }
-
-    template <>
-    LibraryBuilder::Items<List> &LibraryBuilder::items<List>()
-    {
-        return _lists;
-    }
-
-    template <>
-    LibraryBuilder::Items<Set> &LibraryBuilder::items<Set>()
-    {
-        return _sets;
-    }
-
-    template <>
-    LibraryBuilder::Items<Map> &LibraryBuilder::items<Map>()
-    {
-        return _maps;
-    }
-
-    template <>
-    LibraryBuilder::Items<Ptr> &LibraryBuilder::items<Ptr>()
-    {
-        return _ptrs;
-    }
-
-    template <>
-    LibraryBuilder::Items<Array> &LibraryBuilder::items<Array>()
-    {
-        return _arrays;
-    }
-
-    template <>
-    LibraryBuilder::Items<Primitive> &LibraryBuilder::items<Primitive>()
-    {
-        return _primitives;
-    }
-
-    template <>
-    LibraryBuilder::Items<Scope> &LibraryBuilder::items<Scope>()
-    {
-        return _scopes;
-    }
-
-    template <>
-    LibraryBuilder::Items<Alias> &LibraryBuilder::items<Alias>()
-    {
-        return _aliases;
-    }
-
-    template <>
-    LibraryBuilder::Items<Struct> &LibraryBuilder::items<Struct>()
-    {
-        return _structs;
-    }
-
-    template <>
-    LibraryBuilder::Items<Variant> &LibraryBuilder::items<Variant>()
-    {
-        return _variants;
-    }
-
-    template <>
-    LibraryBuilder::Items<Enum> &LibraryBuilder::items<Enum>()
-    {
-        return _enums;
-    }
-
-    template <>
-    LibraryBuilder::Items<Iface> &LibraryBuilder::items<Iface>()
-    {
-        return _ifaces;
-    }
-
-    template <>
-    LibraryBuilder::Items<Method> &LibraryBuilder::items<Method>()
-    {
-        return _methods;
-    }
-
-    template <>
-    LibraryBuilder::Items<Attribute> &LibraryBuilder::items<Attribute>()
-    {
-        return _attributes;
-    }
-
-    template <>
-    LibraryBuilder::Items<EnumValue> &LibraryBuilder::items<EnumValue>()
-    {
-        return _enumValues;
-    }
-
-    template <class T>
-    T *LibraryBuilder::create()
-    {
-        T *res = new T;
-        _holders.emplace(_holders.end(), res, [](void *p){delete static_cast<T *>(p);});
-
-        locate(res);
-
-        return res;
-    }
-
-    template <class T>
-    void LibraryBuilder::locate(T *p)
-    {
-        items<T>().emplace(p);
-    }
-
-    template <>
-    void LibraryBuilder::locate<Struct>(Struct *p)
-    {
-        items<Struct>().emplace(p);
-        items<Scope>().emplace(p);
-    }
-
-    template <>
-    void LibraryBuilder::locate<Variant>(Variant *p)
-    {
-        items<Variant>().emplace(p);
-        items<Scope>().emplace(p);
-    }
-
-    template <>
-    void LibraryBuilder::locate<Iface>(Iface *p)
-    {
-        items<Iface>().emplace(p);
-        items<Scope>().emplace(p);
-    }
-
-    template <class T>
-    void LibraryBuilder::checkPresense(T *p)
-    {
-        if(items<T>().end() == items<T>().find(p))
-        {
-            assert(!"requested object is not presented in builder");
-            abort();
-        }
-    }
-
 
 }}}}

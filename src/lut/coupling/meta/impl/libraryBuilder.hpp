@@ -2,25 +2,7 @@
 
 #include "lut/himpl/implLayout.hpp"
 #include "lut/coupling/meta/libraryBuilder.hpp"
-
-#include "lut/coupling/meta/impl/alias.hpp"
-#include "lut/coupling/meta/impl/array.hpp"
-#include "lut/coupling/meta/impl/enum.hpp"
-#include "lut/coupling/meta/impl/iface.hpp"
-#include "lut/coupling/meta/impl/list.hpp"
-#include "lut/coupling/meta/impl/map.hpp"
-#include "lut/coupling/meta/impl/ptr.hpp"
-#include "lut/coupling/meta/impl/primitive.hpp"
-#include "lut/coupling/meta/impl/scope.hpp"
-#include "lut/coupling/meta/impl/set.hpp"
-#include "lut/coupling/meta/impl/struct.hpp"
-#include "lut/coupling/meta/impl/variant.hpp"
-
-
-#include <vector>
-#include <set>
-#include <memory>
-#include <functional>
+#include "lut/coupling/meta/impl/libraryContent.hpp"
 
 namespace lut { namespace coupling { namespace meta { namespace impl
 {
@@ -41,7 +23,6 @@ namespace lut { namespace coupling { namespace meta { namespace impl
         Map         *addMap();
         Ptr         *addPtr();
         Array       *addArray();
-
 
         Scope       *addScope(Scope *parent, const std::string &name);
         Alias       *addAlias(Scope *parent, const std::string &name);
@@ -79,47 +60,11 @@ namespace lut { namespace coupling { namespace meta { namespace impl
         void setArraySize(Array *target, std::uint32_t size);
 
     public:// commit
-        bool commitChanges(std::vector<meta::CommitError> &errors);
+        bool commitChanges(Library &lib, std::vector<meta::CommitError> &errors);
         void rollbackChanges();
 
-
     private:
-        template <class T>
-        using Items = std::set<T *>;
-
-        template <class T>
-        Items<T> &items();
-
-    private:
-        template <class T>
-        T *create();
-
-        template <class T>
-        void locate(T *p);
-
-        template <class T>
-        void checkPresense(T *p);
-
-    private:
-        using Holder = std::unique_ptr<void, void(*)(void*)>;
-        std::vector<Holder> _holders;
-
-        Items<List>         _lists;
-        Items<Set>          _sets;
-        Items<Map>          _maps;
-        Items<Ptr>          _ptrs;
-        Items<Array>        _arrays;
-        Items<Primitive>    _primitives;
-        Items<Scope>        _scopes;
-        Items<Alias>        _aliases;
-        Items<Struct>       _structs;
-        Items<Variant>      _variants;
-        Items<Enum>         _enums;
-        Items<Iface>        _ifaces;
-        Items<Method>       _methods;
-        Items<Attribute>    _attributes;
-        Items<EnumValue>    _enumValues;
-
+        LibraryContent _lc;
     };
 
 }}}}

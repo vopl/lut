@@ -16,4 +16,10 @@ namespace lut { namespace coupling { namespace meta { namespace impl
         return LoadResult::malformedFile;
     }
 
+    Library &Library::operator=(LibraryContent &&lc)
+    {
+        _lc = std::forward<LibraryContent>(lc);
+        return *this;
+    }
+
 }}}}

@@ -197,9 +197,9 @@ namespace lut { namespace coupling { namespace meta
         return impl().setArraySize(face2Impl(target), size);
     }
 
-    bool LibraryBuilder::commitChanges(std::vector<CommitError> &errors)
+    bool LibraryBuilder::commitChanges(Library &lib, std::vector<CommitError> &errors)
     {
-        return impl().commitChanges(errors);
+        return impl().commitChanges(*face2Impl(&lib), errors);
     }
 
     void LibraryBuilder::rollbackChanges()

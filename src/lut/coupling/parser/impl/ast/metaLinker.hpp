@@ -11,8 +11,8 @@ namespace  lut { namespace coupling { namespace parser { namespace impl { namesp
         meta::LibraryBuilder &_lb;
 
     public:
-        MetaLinker(meta::LibraryBuilder &lib)
-            : _lb(lib)
+        MetaLinker(meta::LibraryBuilder &lb)
+            : _lb(lb)
         {
         }
 

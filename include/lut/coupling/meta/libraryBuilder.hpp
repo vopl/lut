@@ -83,7 +83,7 @@ namespace lut { namespace coupling { namespace meta
         void setArraySize(Array *target, std::uint32_t size);
 
     public:// commit
-        bool commitChanges(std::vector<CommitError> &errors);
+        bool commitChanges(Library &lib, std::vector<CommitError> &errors);
         void rollbackChanges();
 
     };
