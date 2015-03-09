@@ -190,8 +190,15 @@ namespace lut { namespace io { namespace impl { namespace loop
                     break;
                 }
 
-                res = std::error_code(errno, std::system_category());
-                break;
+                if(EINTR == errno)
+                {
+                    continue;
+                }
+                else
+                {
+                    res = std::error_code(errno, std::system_category());
+                    break;
+                }
             }
 
             for(int idx(0); idx<eventsAmount; ++idx)
