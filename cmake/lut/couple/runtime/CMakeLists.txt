@@ -6,6 +6,8 @@ set(PSRC ${SRCDIR}/lut/couple/runtime)
 
 ############################################################
 set(INC
+    ${PINC}/identifier.hpp
+    ${PINC}/intrusivePtr.hpp
     ${PINC}/iface.hpp
     ${PINC}/hub.hpp
 

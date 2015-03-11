@@ -1,5 +1,6 @@
 #include "lut/site/impl/instance.hpp"
 #include "lut/io/loop.hpp"
+#include "lut/async/acquire.hpp"
 #include <cassert>
 
 namespace lut { namespace site { namespace impl
@@ -33,8 +34,27 @@ namespace lut { namespace site { namespace impl
             if(StopMode::nonStop == _stopMode)
             {
                 _stopMode = StopMode::graceful;
-                //assert(!"not impl");
-                //abort();
+
+                {
+                    std::vector<async::Future<std::error_code>> events;
+                    events.reserve(_controllers.size());
+                    for(const auto &c : _controllers)
+                    {
+                        events.emplace_back(c->stop());
+                    }
+                    async::acquireAll(events);
+                }
+
+                {
+                    std::vector<async::Future<std::error_code>> events;
+                    events.reserve(_controllers.size());
+                    for(const auto &c : _controllers)
+                    {
+                        events.emplace_back(c->unload());
+                    }
+                    async::acquireAll(events);
+                }
+
                 return std::error_code{};
             }
             return lut::io::loop::stop();

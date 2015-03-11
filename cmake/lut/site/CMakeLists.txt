@@ -49,4 +49,5 @@ target_link_libraries(${PROJECT} ${Boost_PROGRAM_OPTIONS_LIBRARY})
 target_link_libraries(${PROJECT}
     lut-mm
     lut-async
-    lut-io)
+    lut-io
+    lut-module)

@@ -10,6 +10,9 @@
 
 namespace lut { namespace async
 {
+    template <typename... T>
+    class Future;
+
     /////////0/////////1/////////2/////////3/////////4/////////5/////////6/////////7
     namespace details
     {
@@ -26,6 +29,15 @@ namespace lut { namespace async
             typename std::aligned_storage<sizeof(Value), alignof(Value)>::type   _valueArea;
             std::exception_ptr _exception;
         };
+
+        struct FutureStateAccessos
+        {
+            template <typename... T>
+            static FutureState<T...> &exec(Future<T...> &src)
+            {
+                return src.instance();
+            }
+        };
     }
 
     template <typename... T> class Promise;
@@ -36,6 +48,7 @@ namespace lut { namespace async
         : private lut::mm::SharedInstance<details::FutureState<T...>>
     {
         friend class Promise<T...>;
+        friend class details::FutureStateAccessos;
         using StateInstance = lut::mm::SharedInstance<details::FutureState<T...>>;
         Future(const StateInstance &state);
 
@@ -126,7 +139,7 @@ namespace lut { namespace async
 
     template <typename... T>
     Future<T...>::Future(const Future &other)
-        : StateInstance(other._state)
+        : StateInstance(static_cast<const StateInstance &>(other))
     {
     }
 

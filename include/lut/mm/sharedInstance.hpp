@@ -41,7 +41,7 @@ namespace lut { namespace mm
         void ref();
         void unref();
 
-    private:
+    protected:
         struct State
         {
             Instance        _instance;
