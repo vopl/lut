@@ -1,112 +1,116 @@
 #include "lut/module/controller.hpp"
 #include "lut/module/impl/controller.hpp"
+#include "lut/himpl/face2Impl.hpp"
 
 namespace lut { namespace module
 {
-    Controller::Controller(...)
+    Controller::Controller()
         : himpl::FaceLayout<impl::Controller>()
     {
-        assert(0);
+    }
+
+    Controller::Controller(const Place &place)
+        : himpl::FaceLayout<impl::Controller>(himpl::face2Impl(place))
+    {
     }
 
     Controller::~Controller()
     {
-        assert(0);
     }
 
     const std::string &Controller::getProvider() const
     {
-        assert(0);
+        return impl().getProvider();
     }
 
     Mid Controller::getId() const
     {
-        assert(0);
+        return impl().getId();
     }
 
     const std::vector<couple::runtime::Iid> &Controller::getServieceIds() const
     {
-        assert(0);
+        return impl().getServieceIds();
     }
 
     std::size_t Controller::getRevision() const
     {
-        assert(0);
+        return impl().getRevision();
     }
 
     const std::string &Controller::getName() const
     {
-        assert(0);
+        return impl().getName();
     }
 
     const std::string &Controller::getDescription() const
     {
-        assert(0);
+        return impl().getDescription();
     }
 
     const std::vector<std::string> &Controller::getTags() const
     {
-        assert(0);
+        return impl().getTags();
     }
 
     const std::vector<couple::runtime::Iid> &Controller::getRequiredServiceIds() const
     {
-        assert(0);
+        return impl().getRequiredServiceIds();
     }
 
     const std::vector<Mid> &Controller::getRequiredModuleIds() const
     {
-        assert(0);
+        return impl().getRequiredModuleIds();
     }
 
     State Controller::getState() const
     {
-        assert(0);
+        return impl().getState();
     }
 
     async::Future<std::error_code> Controller::install(const Place &place)
     {
-        assert(0);
+        return impl().install(himpl::face2Impl(place));
     }
 
-    async::Future<std::error_code> Controller::uninstall(const Place &place)
+    async::Future<std::error_code> Controller::uninstall()
     {
-        assert(0);
+        return impl().uninstall();
     }
 
     async::Future<std::error_code> Controller::installAfterUpgrade(const Place &place)
     {
-        assert(0);
+        return impl().installAfterUpgrade(himpl::face2Impl(place));
     }
 
-    async::Future<std::error_code> Controller::uninstallBeforeUpgrade(const Place &place)
+    async::Future<std::error_code> Controller::uninstallBeforeUpgrade()
     {
-        assert(0);
+        return impl().uninstallBeforeUpgrade();
     }
 
-    async::Future<std::error_code> Controller::load(const Place &place)
+    async::Future<std::error_code> Controller::load()
     {
-        assert(0);
+        return impl().load();
     }
 
     async::Future<std::error_code> Controller::unload()
     {
-        assert(0);
+        return impl().unload();
     }
 
     async::Future<std::error_code> Controller::start()
     {
-        assert(0);
+        return impl().start();
     }
 
     async::Future<std::error_code> Controller::stop()
     {
-        assert(0);
+        return impl().stop();
     }
 
     async::Future<std::error_code, couple::runtime::IfacePtr> Controller::getServiceInstance(const couple::runtime::Iid &iid)
     {
-        assert(0);
+        return impl().getServiceInstance(iid);
     }
 
 }}

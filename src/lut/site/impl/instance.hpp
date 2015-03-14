@@ -23,12 +23,17 @@ namespace lut { namespace site { namespace impl
         async::Future<std::error_code> stop(bool graceful = true);
 
     private:
+        async::Future<std::error_code> initializeModules();
         async::Future<std::error_code> loadModules();
         async::Future<std::error_code> startModules();
         async::Future<std::error_code> stopModules();
         async::Future<std::error_code> unloadModules();
 
+        template <class F>
+        async::Future<std::error_code> massModulesOperation(const std::string &name, F operation);
+
     private:
+        bool        _modulesInitialized;
         bool        _modulesLoaded;
         bool        _modulesStarted;
         WorkState   _workState;

@@ -4,6 +4,9 @@
 #include "lut/module/sizeProvider.hpp"
 
 #include "lut/module/place.hpp"
+#include "lut/module/mid.hpp"
+#include "lut/module/state.hpp"
+
 #include "lut/couple/runtime/identifier.hpp"
 #include "lut/couple/runtime/iface.hpp"
 
@@ -16,17 +19,6 @@
 
 namespace lut { namespace module
 {
-    struct ModuleIdentifierTag;
-    using Mid = couple::runtime::Identifier<ModuleIdentifierTag>;
-
-    enum class State
-    {
-        unknown,
-        installed,
-        loaded,
-        started,
-    };
-
     namespace impl
     {
         class Controller;
@@ -39,7 +31,8 @@ namespace lut { namespace module
         void operator=(const Controller &) = delete;
 
     public:
-        Controller(...);//from some identification info
+        Controller();
+        Controller(const Place &place);
         ~Controller();
 
         ////////////// identify
@@ -69,12 +62,12 @@ namespace lut { namespace module
         State getState() const;
 
         async::Future<std::error_code> install(const Place &place);
-        async::Future<std::error_code> uninstall(const Place &place);
+        async::Future<std::error_code> uninstall();
 
         async::Future<std::error_code> installAfterUpgrade(const Place &place);
-        async::Future<std::error_code> uninstallBeforeUpgrade(const Place &place);
+        async::Future<std::error_code> uninstallBeforeUpgrade();
 
-        async::Future<std::error_code> load(const Place &place);
+        async::Future<std::error_code> load();
         async::Future<std::error_code> unload();
 
 

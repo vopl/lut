@@ -17,7 +17,8 @@ namespace fs = boost::filesystem;
 namespace lut { namespace site { namespace impl
 {
     Instance::Instance()
-        : _modulesLoaded{false}
+        : _modulesInitialized{false}
+        , _modulesLoaded{false}
         , _modulesStarted{false}
         , _workState{WorkState::null}
     {
@@ -48,17 +49,25 @@ namespace lut { namespace site { namespace impl
 
         _workState = WorkState::run;
         async::spawn([this](){
-            std::error_code ec = loadModules().value<0>();
+
+            std::error_code ec = initializeModules().value<0>();
+            if(ec)
+            {
+                LOGE("initialize modules: "<<ec.message());
+                return;
+            }
+
+            ec = loadModules().value<0>();
             if(ec)
             {
                 LOGE("load modules: "<<ec.message());
+                return;
             }
-            else
+
+            ec = startModules().value<0>();
             {
-                ec = startModules().value<0>();
-                {
-                    LOGE("start modules: "<<ec.message());
-                }
+                LOGE("start modules: "<<ec.message());
+                return;
             }
         });
 
@@ -104,24 +113,66 @@ namespace lut { namespace site { namespace impl
         return async::mkReadyFuture(lut::io::loop::stop());
     }
 
-    async::Future<std::error_code> Instance::loadModules()
+    async::Future<std::error_code> Instance::initializeModules()
     {
-        fs::path modulesDir = fs::current_path() / "modules";
 
-        if(!fs::exists(modulesDir))
+        if(!_modulesInitialized)
         {
-            return async::mkReadyFuture(make_error_code(error::general::modules_directory_absent));
+            _modulesInitialized = true;
+
+            fs::path modulesDir = fs::current_path() / "modules";
+
+            if(!fs::exists(modulesDir))
+            {
+                LOGE("site initialization: modules direactory is absent");
+                return async::mkReadyFuture(make_error_code(error::general::modules_directory_absent));
+            }
+
+            fs::directory_iterator diter(modulesDir);
+            fs::directory_iterator dend;
+            for(; diter!=dend; ++diter)
+            {
+                if(fs::is_directory(*diter))
+                {
+                    module::Place place{diter->path().string()};
+                    _modules.emplace_back(module::ControllerPtr{new module::Controller{place}});
+                }
+            }
         }
 
         return async::mkReadyFuture(std::error_code{});
     }
 
+    async::Future<std::error_code> Instance::loadModules()
+    {
+        return massModulesOperation("load", [](const module::ControllerPtr &c)->async::Future<std::error_code> {
+            return c->load();
+        });
+    }
+
     async::Future<std::error_code> Instance::startModules()
     {
-        assert(0);
+        return massModulesOperation("start", [](const module::ControllerPtr &c)->async::Future<std::error_code> {
+            return c->start();
+        });
     }
 
     async::Future<std::error_code> Instance::stopModules()
+    {
+        return massModulesOperation("stop", [](const module::ControllerPtr &c)->async::Future<std::error_code> {
+            return c->stop();
+        });
+    }
+
+    async::Future<std::error_code> Instance::unloadModules()
+    {
+        return massModulesOperation("unload", [](const module::ControllerPtr &c)->async::Future<std::error_code> {
+            return c->unload();
+        });
+    }
+
+    template <class F>
+    async::Future<std::error_code> Instance::massModulesOperation(const std::string &name, F operation)
     {
         bool hasErrors = false;
 
@@ -129,14 +180,14 @@ namespace lut { namespace site { namespace impl
         results.reserve(_modules.size());
         for(const auto &c : _modules)
         {
-            results.emplace_back(std::make_tuple(c.get(), c->stop()));
+            results.emplace_back(std::make_tuple(c.get(), operation(c)));
         }
 
         for(auto &r : results)
         {
             if(std::get<1>(r).value<0>())
             {
-                LOGE("stop module "<<std::get<0>(r)->getName()<<": "<<std::get<1>(r).value<0>().message());
+                LOGE(name<<" module "<<std::get<0>(r)->getName()<<": "<<std::get<1>(r).value<0>().message());
                 hasErrors = true;
             }
         }
@@ -149,9 +200,5 @@ namespace lut { namespace site { namespace impl
         return async::mkReadyFuture(std::error_code{});
     }
 
-    async::Future<std::error_code> Instance::unloadModules()
-    {
-        assert(0);
-    }
 
 }}}

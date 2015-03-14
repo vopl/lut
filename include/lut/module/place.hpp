@@ -3,6 +3,8 @@
 #include "lut/himpl/faceLayout.hpp"
 #include "lut/module/sizeProvider.hpp"
 
+#include <string>
+
 namespace lut { namespace module
 {
     namespace impl
@@ -10,9 +12,13 @@ namespace lut { namespace module
         class Place;
     }
 
-    struct Place
+    class Place
         : public himpl::FaceLayout<impl::Place>
     {
+
+    public:
+        Place(const std::string &dir);
+        ~Place();
 
     };
 }}
