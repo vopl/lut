@@ -5,35 +5,37 @@
 
 namespace lut { namespace site { namespace impl
 {
-    enum class Mode
+    enum class WorkState
     {
-        Master,
-        Slave
-    };
-
-    enum class StopMode
-    {
-        nonStop,
-        immediately,
-        graceful
+        null,
+        run,
+        stopGraceful,
+        stop,
     };
 
     class Instance
     {
     public:
-        Instance(Mode mode);
+        Instance();
         ~Instance();
 
         std::error_code run();
-        std::error_code stop(StopMode stopMode);
+        async::Future<std::error_code> stop(bool graceful = true);
 
     private:
-        Mode        _mode;
-        StopMode    _stopMode;
+        async::Future<std::error_code> loadModules();
+        async::Future<std::error_code> startModules();
+        async::Future<std::error_code> stopModules();
+        async::Future<std::error_code> unloadModules();
 
     private:
+        bool        _modulesLoaded;
+        bool        _modulesStarted;
+        WorkState   _workState;
 
-        std::vector<module::ControllerPtr> _controllers;
+    private:
+        //TODO: состояние по проинсталированным модулям
+        std::vector<module::ControllerPtr> _modules;
 
     };
 }}}

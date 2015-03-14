@@ -1,12 +1,17 @@
 #include <cstdlib>
 
 #include "lut/site/impl/instance.hpp"
+#include "lut/async/functions.hpp"
 
 #include <csignal>
 #include <boost/program_options.hpp>
 #include <boost/program_options/parsers.hpp>
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 
 /*
@@ -29,7 +34,13 @@ void signalHandler(int signum)
     case SIGKILL:
         if(instance)
         {
-            instance->stop(lut::site::impl::StopMode::immediately);
+            lut::async::spawn([](){
+                std::error_code ec = instance->stop(false).value<0>();
+                if(ec)
+                {
+                    std::cerr<<"stop: "<<ec.message()<<std::endl;
+                }
+            });
         }
         break;
 
@@ -37,7 +48,13 @@ void signalHandler(int signum)
     case SIGTERM:
         if(instance)
         {
-            instance->stop(lut::site::impl::StopMode::graceful);
+            lut::async::spawn([](){
+                std::error_code ec = instance->stop(true).value<0>();
+                if(ec)
+                {
+                    std::cerr<<"graceful stop: "<<ec.message()<<std::endl;
+                }
+            });
         }
         break;
 
@@ -48,13 +65,14 @@ void signalHandler(int signum)
 
 int main(int argc, char *argv[])
 {
+    //set current path as bin/..
+    fs::current_path(fs::system_complete(argv[0]).normalize().parent_path().parent_path());
 
     ////////////////////////////////////////////////////////////////////////////////
     po::options_description desc("lut site");
     desc.add_options()
             ("help", "produce help message")
             ("version", "print version info")
-            ("mode", po::value<std::string>()->default_value("master"), "mode: master, slave")
             ;
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -89,25 +107,7 @@ int main(int argc, char *argv[])
 
     ////////////////////////////////////////////////////////////////////////////////
     {
-        std::string smode {vars["mode"].as<std::string>()};
-
-        lut::site::impl::Mode mode;
-
-        if("master" == smode)
-        {
-            mode = lut::site::impl::Mode::Master;
-        }
-        else if("slave" == smode)
-        {
-            mode = lut::site::impl::Mode::Master;
-        }
-        else
-        {
-            std::cerr<<"unknown mode: "<<smode<<std::endl;
-            return EXIT_FAILURE;
-        }
-
-        instance = new lut::site::impl::Instance{mode};
+        instance = new lut::site::impl::Instance{};
 
         signal(SIGINT,  signalHandler);
         signal(SIGTERM, signalHandler);
