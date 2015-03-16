@@ -10,6 +10,8 @@
 #include "lut/io/client.hpp"
 #include "lut/io/server.hpp"
 
+#include "lut/logger/logger.hpp"
+
 #include <system_error>
 
 lut::async::Promise<> p;
@@ -30,50 +32,50 @@ int main()
 //    {
 //        lut::async::spawn([]()
 //        {
-//            std::cout<<"3"<<std::endl;
+//            LOGT("3");
 //            p.setException(std::make_exception_ptr(std::runtime_error("tratata")));
-//            std::cout<<"4"<<std::endl;
+//            LOGT("4");
 //        });
 
-//        std::cout<<"1"<<std::endl;
+//        LOGT("1");
 //        try
 //        {
 //            f.value();
 //        }
 //        catch(std::exception &e)
 //        {
-//            std::cout<<e.what()<<std::endl;
+//            LOGT(e.what());
 //        }
 
-//        std::cout<<"2"<<std::endl;
+//        LOGT("2");
 //    });
 
     if(1)
     {
         lut::async::spawn([]()
         {
-            //std::cout<<"try connect "<<std::endl;
+            //LOGT("try connect ");
 
             lut::io::Server server;
 
             auto lr = server.listen("ip://127.0.0.1:8000");
             if(lr)
             {
-                std::cout<<"listen: "<<lr.message()<<std::endl;
+                LOGT("listen: "<<lr);
                 return;
             }
 
             for(;;)
             {
-//                std::cout<<"ac0: "<<++ac0<<std::endl;
+//                LOGT("ac0: "<<++ac0);
                 auto ar = server.accept();
 
                 if(ar.value<0>())
                 {
-                    std::cout<<"accept: "<<ar.value<0>().message()<<std::endl;
+                    LOGT("accept: "<<ar.value<0>());
                     return;
                 }
-//                std::cout<<"ac1: "<<++ac1<<std::endl;
+//                LOGT("ac1: "<<++ac1);
 
                 lut::io::Stream stream = ar.detachValue<1>();
 
@@ -81,9 +83,9 @@ int main()
 
                     {
                         lut::io::Data data;
-//                        std::cout<<"rc0: "<<++rc0<<std::endl;
+//                        LOGT("rc0: "<<++rc0);
                         data = s.read().detachValue<1>();
-//                        std::cout<<"rc1: "<<++rc1<<std::endl;
+//                        LOGT("rc1: "<<++rc1);
 
                         if(data.toString() !=
                             "GET / HTTP/1.0\r\n"
@@ -92,12 +94,12 @@ int main()
                             "Accept: */*\r\n"
                             "\r\n")
                         {
-                            std::cout<<"ahtung"<<std::endl;
+                            LOGT("ahtung");
                         }
                     }
 
 
-                    //std::cout<<data.toString()<<std::endl;
+                    //LOGT(data.toString());
 
                     {
                         lut::io::Data data;
@@ -115,9 +117,9 @@ int main()
                                 "Accept-Ranges: bytes\r\n"
                                 "\r\n";
 
-//                        std::cout<<"wc0: "<<++wc0<<std::endl;
+//                        LOGT("wc0: "<<++wc0);
                         s.write(std::move(data)).wait();
-//                        std::cout<<"wc1: "<<++wc1<<std::endl;
+//                        LOGT("wc1: "<<++wc1);
                     }
                     s.close();
                 });
@@ -125,14 +127,14 @@ int main()
         });
 
 
-        std::cout << lut::io::loop::run().message() << std::endl;
+        std::cout << lut::io::loop::run() << std::endl;
     }
 
     if(0)
     {
         lut::async::spawn([]()
         {
-            //std::cout<<"try connect "<<std::endl;
+            //LOGT("try connect ");
 
             lut::io::Client client;
 
@@ -141,7 +143,7 @@ int main()
             errAndStream.wait();
             if(errAndStream.value<0>())
             {
-                std::cout<<"connect: "<<errAndStream.value<0>().message()<<std::endl;
+                LOGT("connect: "<<errAndStream.value<0>());
             }
             lut::io::Stream stream = errAndStream.detachValue<1>();
 
@@ -155,19 +157,19 @@ int main()
             auto wr = stream.write(std::move(dw));
             if(wr.value<0>())
             {
-                std::cout<<"write: "<<wr.value<0>().message()<<std::endl;
+                LOGT("write: "<<wr.value<0>());
             }
 
             lut::async::spawn([s = std::move(stream)] () mutable {
                 auto rr = s.read(1);
                 if(rr.value<0>())
                 {
-                    std::cout<<"read: "<<rr.value<0>().message()<<std::endl;
+                    LOGT("read: "<<rr.value<0>());
                 }
 
                 lut::io::Data dr = rr.detachValue<1>();
 
-                std::cout << "response: "<<dr.toString() << std::endl;
+                LOGT("response: "<<dr.toString());
 
                 s.close();
             });
@@ -178,7 +180,7 @@ int main()
         });
 
 
-        std::cout << "end: " << lut::io::loop::run().message() << std::endl;
+        std::cout << "end: " << lut::io::loop::run() << std::endl;
     }
 
     return 0;

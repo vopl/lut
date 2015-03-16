@@ -9,13 +9,18 @@ namespace lut { namespace module
     {
     }
 
-    Controller::Controller(const Place &place)
-        : himpl::FaceLayout<impl::Controller>(himpl::face2Impl(place))
+    Controller::~Controller()
     {
     }
 
-    Controller::~Controller()
+    std::error_code Controller::attach(const Place &place)
     {
+        return impl().attach(himpl::face2Impl(place));
+    }
+
+    std::error_code Controller::detach()
+    {
+        return impl().detach();
     }
 
     const std::string &Controller::getProvider() const
@@ -23,7 +28,7 @@ namespace lut { namespace module
         return impl().getProvider();
     }
 
-    Mid Controller::getId() const
+    const Mid &Controller::getId() const
     {
         return impl().getId();
     }

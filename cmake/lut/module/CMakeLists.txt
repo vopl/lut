@@ -8,6 +8,7 @@ set(PSRC ${SRCDIR}/lut/module)
 
 ############################################################
 set(INC
+    ${PINC}/error.hpp
     ${PINC}/controller.hpp
     ${PINC}/place.hpp
 )
@@ -15,6 +16,7 @@ source_group(include/module FILES ${INC})
 
 ############################################################
 set(SRC
+    ${PSRC}/error.cpp
     ${PSRC}/controller.cpp
     ${PSRC}/place.cpp
 )
@@ -86,4 +88,7 @@ add_library(${PROJECT} STATIC
 
 
 target_link_libraries(${PROJECT}
-    lut-couple-runtime)
+    lut-couple-runtime
+    lut-async
+    dl
+)

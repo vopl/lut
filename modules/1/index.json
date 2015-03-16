@@ -1,0 +1,25 @@
+{
+    "id": "abcdefABCDEFcDEF0123456789abcDEF",
+    "provider": "i am a provider",
+    "serviceIds": [
+        "abcdefABCDEFcDEF0123456789abcDE1",
+        "abcdefABCDEFcDEF0123456789abcDE2",
+        "abcdefABCDEFcDEF0123456789abcDE3"
+    ],
+    "revision": 21,
+    "name": "i am a name",
+    "description": "i am a description",
+    "tags": ["tag1", "tag2"],
+    "requiredServiceIds": [
+        "abcdefABCDEFcDEF0123456789abcDE1",
+        "abcdefABCDEFcDEF0123456789abcDE2",
+        "abcdefABCDEFcDEF0123456789abcDE3"
+    ],
+    "requiredModuleIds": [
+        "abcdefABCDEFcDEF0123456789abcDE1",
+        "abcdefABCDEFcDEF0123456789abcDE2",
+        "abcdefABCDEFcDEF0123456789abcDE3"
+    ],
+    "mainBinary": "entry.so"
+    
+}

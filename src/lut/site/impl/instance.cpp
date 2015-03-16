@@ -53,20 +53,22 @@ namespace lut { namespace site { namespace impl
             std::error_code ec = initializeModules().value<0>();
             if(ec)
             {
-                LOGE("initialize modules: "<<ec.message());
+                LOGE("initialize modules: "<<ec);
                 return;
             }
 
             ec = loadModules().value<0>();
             if(ec)
             {
-                LOGE("load modules: "<<ec.message());
+                LOGE("load modules: "<<ec);
                 return;
             }
 
             ec = startModules().value<0>();
+
+            if(ec)
             {
-                LOGE("start modules: "<<ec.message());
+                LOGE("start modules: "<<ec);
                 return;
             }
         });
@@ -88,14 +90,14 @@ namespace lut { namespace site { namespace impl
                 std::error_code ec = stopModules().value<0>();
                 if(ec)
                 {
-                    LOGE("stop modules: "<<ec.message());
+                    LOGE("stop modules: "<<ec);
                     break;
                 }
 
                 ec = unloadModules().value<0>();
                 if(ec)
                 {
-                    LOGE("unload modules: "<<ec.message());
+                    LOGE("unload modules: "<<ec);
                     break;
                 }
             }
@@ -134,8 +136,16 @@ namespace lut { namespace site { namespace impl
             {
                 if(fs::is_directory(*diter))
                 {
-                    module::Place place{diter->path().string()};
-                    _modules.emplace_back(module::ControllerPtr{new module::Controller{place}});
+                    module::ControllerPtr c{new module::Controller};
+                    std::error_code ec = c->attach(diter->path().string());
+                    if(ec)
+                    {
+                        LOGE("unable to attach to module in"<<diter->path().string());
+                    }
+                    else
+                    {
+                        _modules.emplace_back(std::move(c));
+                    }
                 }
             }
         }
@@ -187,14 +197,14 @@ namespace lut { namespace site { namespace impl
         {
             if(std::get<1>(r).value<0>())
             {
-                LOGE(name<<" module "<<std::get<0>(r)->getName()<<": "<<std::get<1>(r).value<0>().message());
+                LOGE(name<<" module \""<<std::get<0>(r)->getName()<<"\": "<<std::get<1>(r).value<0>());
                 hasErrors = true;
             }
         }
 
         if(hasErrors)
         {
-            async::mkReadyFuture(make_error_code(error::general::failed));
+            return async::mkReadyFuture(make_error_code(error::general::failed));
         }
 
         return async::mkReadyFuture(std::error_code{});

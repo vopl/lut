@@ -32,13 +32,15 @@ namespace lut { namespace module
 
     public:
         Controller();
-        Controller(const Place &place);
         ~Controller();
+
+        std::error_code attach(const Place &place);
+        std::error_code detach();
 
         ////////////// identify
         const std::string &getProvider() const;
 
-        Mid getId() const;
+        const Mid &getId() const;
         const std::vector<couple::runtime::Iid> &getServieceIds() const;
 
         std::size_t getRevision() const;
@@ -47,16 +49,9 @@ namespace lut { namespace module
         const std::string &getDescription() const;
         const std::vector<std::string> &getTags() const;
 
-
-
-
         /////////////////// dependencies
         const std::vector<couple::runtime::Iid> &getRequiredServiceIds() const;
         const std::vector<Mid> &getRequiredModuleIds() const;
-
-
-
-
 
         /////////////// install
         State getState() const;

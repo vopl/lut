@@ -1,6 +1,7 @@
 #include "lut/couple/parser/errorInfo.hpp"
 #include "lut/couple/parser/impl/ast.hpp"
 #include "lut/couple/meta/libraryBuilder.hpp"
+#include "lut/logger/logger.hpp"
 #include <algorithm>
 
 namespace  lut { namespace couple { namespace parser { namespace impl { namespace ast
@@ -240,7 +241,7 @@ namespace  lut { namespace couple { namespace parser { namespace impl { namespac
             }
             catch(const std::runtime_error &e)
             {
-                std::cerr<<e.what()<<std::endl;
+                LOGE(e.what());
                 _lb.setArraySize(v->meta, 0);
             }
         }

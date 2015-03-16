@@ -6,6 +6,7 @@
 #include "lut/couple/parser/errorInfo.hpp"
 #include "lut/couple/parser/exec.hpp"
 
+#include "lut/logger/logger.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -60,12 +61,12 @@ int main(int argc, const char **argv)
     }
     catch(std::exception &e)
     {
-        std::cout<<e.what()<<std::endl;
+        LOGE("exception: "<<e.what());
         return EXIT_FAILURE;
     }
     catch(...)
     {
-        std::cout<<"unknown exception"<<std::endl;
+        LOGE("unknown exception");
         return EXIT_FAILURE;
     }
     po::notify(vars);

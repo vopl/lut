@@ -1,5 +1,6 @@
 #include "lut/stable.hpp"
 #include "lut/async/impl/ctx/engine_ucontext.hpp"
+#include "lut/logger/logger.hpp"
 
 #include <cstdlib>
 
@@ -10,7 +11,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
     {
         if(getcontext(this))
         {
-            std::cerr<<__FUNCTION__<<", getcontext failed"<<std::endl;
+            LOGE(__FUNCTION__<<", getcontext failed");
             std::terminate();
             return;
         }
@@ -77,7 +78,7 @@ namespace lut { namespace async { namespace impl { namespace ctx
     {
         if(getcontext(this))
         {
-            std::cerr<<__FUNCTION__<<", getcontext failed"<<std::endl;
+            LOGE(__FUNCTION__<<", getcontext failed");
             std::terminate();
             return;
         }

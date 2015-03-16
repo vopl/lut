@@ -2,6 +2,7 @@
 #include "lut/async/impl/ctx/coro.hpp"
 #include "lut/mm/functions.hpp"
 #include "lut/async/impl/scheduler.hpp"
+#include "lut/logger/logger.hpp"
 
 namespace lut { namespace async { namespace impl { namespace ctx
 {
@@ -96,12 +97,12 @@ namespace lut { namespace async { namespace impl { namespace ctx
             }
             catch(const std::exception &e)
             {
-                std::cerr<<"std exception catched in contextProc: "<<e.what();
+                LOGE("std exception catched in contextProc: "<<e.what());
                 abort();
             }
             catch(...)
             {
-                std::cerr<<"unknown exception catched in contextProc";
+                LOGE("unknown exception catched in contextProc");
                 abort();
             }
 

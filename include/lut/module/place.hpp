@@ -1,7 +1,10 @@
 #pragma once
 
 #include "lut/himpl/faceLayout.hpp"
-#include "lut/module/sizeProvider.hpp"
+
+#if !GENERATE_SIZEPROVIDER
+#   include "lut/module/sizeProvider.hpp"
+#endif
 
 #include <string>
 
@@ -20,5 +23,7 @@ namespace lut { namespace module
         Place(const std::string &dir);
         ~Place();
 
+        const std::string &getDir() const;
+        void setDir(const std::string &dir);
     };
 }}

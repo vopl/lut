@@ -2,6 +2,7 @@
 
 #include "lut/site/impl/instance.hpp"
 #include "lut/async/functions.hpp"
+#include "lut/logger/logger.hpp"
 
 #include <csignal>
 #include <boost/program_options.hpp>
@@ -38,7 +39,7 @@ void signalHandler(int signum)
                 std::error_code ec = instance->stop(false).value<0>();
                 if(ec)
                 {
-                    std::cerr<<"stop: "<<ec.message()<<std::endl;
+                    LOGE("stop: "<<ec);
                 }
             });
         }
@@ -52,7 +53,7 @@ void signalHandler(int signum)
                 std::error_code ec = instance->stop(true).value<0>();
                 if(ec)
                 {
-                    std::cerr<<"graceful stop: "<<ec.message()<<std::endl;
+                    LOGE("graceful stop: "<<ec);
                 }
             });
         }
@@ -63,10 +64,28 @@ void signalHandler(int signum)
     }
 }
 
+
 int main(int argc, char *argv[])
 {
     //set current path as bin/..
-    fs::current_path(fs::system_complete(argv[0]).normalize().parent_path().parent_path());
+    {
+        boost::system::error_code ec;
+        fs:: path p{argv[0]};
+        p = fs::system_complete(p, ec);
+        if(ec)
+        {
+            LOGE("unable to determine current directory: "<<ec);
+            return EXIT_FAILURE;
+        }
+
+        p = p.normalize().parent_path().parent_path();
+        fs::current_path(p, ec);
+        if(ec)
+        {
+            LOGE("unable to set current directory to "<<p<<": "<<ec);
+            return EXIT_FAILURE;
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////////
     po::options_description desc("lut site");
@@ -83,12 +102,12 @@ int main(int argc, char *argv[])
     }
     catch(std::exception &e)
     {
-        std::cerr<<e.what()<<std::endl;
+        LOGE("exception: "<<e.what());
         return EXIT_FAILURE;
     }
     catch(...)
     {
-        std::cerr<<"unknown exception"<<std::endl;
+        LOGE("unknown exception");
         return EXIT_FAILURE;
     }
     po::notify(vars);
@@ -124,7 +143,7 @@ int main(int argc, char *argv[])
 
         if(ec)
         {
-            std::cerr<<ec.message()<<std::endl;
+            LOGE(ec);
             return ec.value();
         }
     }

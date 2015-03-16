@@ -4,8 +4,9 @@ namespace lut { namespace module
 {
     enum class State
     {
-        unknown,
+        null,
         installed,
+        installedCorrupted,
         loaded,
         started,
     };
