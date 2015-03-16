@@ -46,8 +46,7 @@ namespace lut { namespace module { namespace impl
 
     Controller::~Controller()
     {
-        unload().wait();
-        detach();
+        assert(State::null == _state);
     }
 
     std::error_code Controller::attach(const Place &place)

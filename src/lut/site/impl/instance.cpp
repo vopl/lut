@@ -50,7 +50,7 @@ namespace lut { namespace site { namespace impl
         _workState = WorkState::run;
         async::spawn([this](){
 
-            std::error_code ec = initializeModules().value<0>();
+            std::error_code ec = initializeModules();
             if(ec)
             {
                 LOGE("initialize modules: "<<ec);
@@ -100,7 +100,16 @@ namespace lut { namespace site { namespace impl
                     LOGE("unload modules: "<<ec);
                     break;
                 }
+
+                ec = deinitializeModules();
+                if(ec)
+                {
+                    LOGE("detach modules: "<<ec);
+                    break;
+                }
+
             }
+            break;
 
         case WorkState::stopGraceful:
             //secondary request - force hard stop
@@ -115,9 +124,8 @@ namespace lut { namespace site { namespace impl
         return async::mkReadyFuture(lut::io::loop::stop());
     }
 
-    async::Future<std::error_code> Instance::initializeModules()
+    std::error_code Instance::initializeModules()
     {
-
         if(!_modulesInitialized)
         {
             _modulesInitialized = true;
@@ -127,7 +135,7 @@ namespace lut { namespace site { namespace impl
             if(!fs::exists(modulesDir))
             {
                 LOGE("site initialization: modules direactory is absent");
-                return async::mkReadyFuture(make_error_code(error::general::modules_directory_absent));
+                return make_error_code(error::general::modules_directory_absent);
             }
 
             fs::directory_iterator diter(modulesDir);
@@ -140,7 +148,7 @@ namespace lut { namespace site { namespace impl
                     std::error_code ec = c->attach(diter->path().string());
                     if(ec)
                     {
-                        LOGE("unable to attach to module in"<<diter->path().string());
+                        LOGE("unable to attach to module in "<<diter->path().string());
                     }
                     else
                     {
@@ -150,7 +158,7 @@ namespace lut { namespace site { namespace impl
             }
         }
 
-        return async::mkReadyFuture(std::error_code{});
+        return std::error_code{};
     }
 
     async::Future<std::error_code> Instance::loadModules()
@@ -179,6 +187,28 @@ namespace lut { namespace site { namespace impl
         return massModulesOperation("unload", [](const module::ControllerPtr &c)->async::Future<std::error_code> {
             return c->unload();
         });
+    }
+
+    std::error_code Instance::deinitializeModules()
+    {
+        if(_modulesInitialized)
+        {
+            _modulesInitialized = false;
+
+            for(const auto &c : _modules)
+            {
+                std::error_code ec = c->detach();
+                if(ec)
+                {
+                    LOGE("unable to detach to module "<<c->getName());
+                }
+            }
+
+            _modules.clear();
+        }
+
+        return std::error_code{};
+
     }
 
     template <class F>
