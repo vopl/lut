@@ -56,8 +56,6 @@ namespace lut { namespace site { namespace error
                 {
                 case module::unknown:
                     return "unknown";
-                case module::already_attached:
-                    return "already attached";
                 case module::busy:
                     return "busy";
                 case module::wrong_state:

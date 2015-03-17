@@ -19,7 +19,6 @@ namespace lut { namespace site { namespace error
     enum class module
     {
         unknown = 1,
-        already_attached,
         busy,
         wrong_state,
         unable_load_binary,

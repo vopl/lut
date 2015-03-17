@@ -27,7 +27,7 @@ namespace lut { namespace site { namespace impl
 
         , _mainBinary{}
 
-        , _state{State::null}
+        , _state{ModuleState::null}
         , _place{}
 
         , _moduleInstall{}
@@ -46,17 +46,68 @@ namespace lut { namespace site { namespace impl
 
     Module::~Module()
     {
-        assert(State::null == _state);
+        assert(ModuleState::null == _state);
+    }
+
+    const std::string &Module::getProvider() const
+    {
+        return _provider;
+    }
+
+    const Mid &Module::getId() const
+    {
+        return _id;
+    }
+
+    const std::vector<couple::runtime::Iid> &Module::getServieceIds() const
+    {
+        return _serviceIds;
+    }
+
+    std::size_t Module::getRevision() const
+    {
+        return _revision;
+    }
+
+    const std::string &Module::getName() const
+    {
+        return _name;
+    }
+
+    const std::string &Module::getDescription() const
+    {
+        return _description;
+    }
+
+    const std::vector<std::string> &Module::getTags() const
+    {
+        return _tags;
+    }
+
+    const std::vector<couple::runtime::Iid> &Module::getRequiredServiceIds() const
+    {
+        return _requiredServiceIds;
+    }
+
+    const std::vector<Mid> &Module::getRequiredModuleIds() const
+    {
+        return _requiredModuleIds;
+    }
+
+    ModuleState Module::getState() const
+    {
+        return _state;
     }
 
     std::error_code Module::attach(const ModulePlace &place)
     {
-        if(State::null != _state)
+        if(ModuleState::null != _state)
         {
-            return make_error_code(error::module::already_attached);
+            return make_error_code(error::module::wrong_state);
         }
+
         _place = place;
-        _state = State::installedCorrupted;
+        _state = ModuleState::attachError;
 
         boost::property_tree::ptree pt;
 
@@ -130,7 +181,7 @@ namespace lut { namespace site { namespace impl
             return make_error_code(error::module::bad_info_file);
         }
 
-        _state = State::installed;
+        _state = ModuleState::attached;
 
         return std::error_code{};
     }
@@ -139,12 +190,9 @@ namespace lut { namespace site { namespace impl
     {
         switch(_state)
         {
-        case State::null:
-            return std::error_code{};
-            break;
-
-        case State::installed:
-        case State::installedCorrupted:
+        case ModuleState::attached:
+        case ModuleState::attachError:
+        case ModuleState::loadError:
             break;
 
         default:
@@ -163,7 +211,7 @@ namespace lut { namespace site { namespace impl
         _requiredServiceIds.clear();
         _requiredModuleIds.clear();
 
-        _state = State::null;
+        _state = ModuleState::null;
         _place.setDir(std::string{});
 
         _mainBinary.clear();
@@ -171,88 +219,36 @@ namespace lut { namespace site { namespace impl
         return std::error_code{};
     }
 
-    const std::string &Module::getProvider() const
-    {
-        return _provider;
-    }
-
-    const Mid &Module::getId() const
-    {
-        return _id;
-    }
-
-    const std::vector<couple::runtime::Iid> &Module::getServieceIds() const
-    {
-        return _serviceIds;
-    }
-
-    std::size_t Module::getRevision() const
-    {
-        return _revision;
-    }
-
-    const std::string &Module::getName() const
-    {
-        return _name;
-    }
-
-    const std::string &Module::getDescription() const
-    {
-        return _description;
-    }
-
-    const std::vector<std::string> &Module::getTags() const
-    {
-        return _tags;
-    }
-
-    const std::vector<couple::runtime::Iid> &Module::getRequiredServiceIds() const
-    {
-        return _requiredServiceIds;
-    }
-
-    const std::vector<Mid> &Module::getRequiredModuleIds() const
-    {
-        return _requiredModuleIds;
-    }
-
-    State Module::getState() const
-    {
-        return _state;
-    }
-
     async::Future<std::error_code> Module::install(const ModulePlace &place)
     {
-        assert(0);
+        assert(!"not impl");
     }
 
     async::Future<std::error_code> Module::uninstall()
     {
-        assert(0);
-    }
-
-    async::Future<std::error_code> Module::installAfterUpgrade(const ModulePlace &place)
-    {
-        assert(0);
-    }
-
-    async::Future<std::error_code> Module::uninstallBeforeUpgrade()
-    {
-        assert(0);
+        assert(!"not impl");
     }
 
     async::Future<std::error_code> Module::load()
     {
+        switch(_state)
+        {
+        case ModuleState::attached:
+        case ModuleState::loadError:
+            break;
+
+        default:
+            return async::mkReadyFuture(make_error_code(error::module::wrong_state));
+        }
+
+        _state = ModuleState::loading;
+
         async::Promise<std::error_code> p;
         async::Future<std::error_code> f = p.future();
 
         async::spawn([p=std::move(p), this] () mutable {
 
-            if(State::installed != _state)
-            {
-                p.setValue(make_error_code(error::module::wrong_state));
-                return;
-            }
+            assert(ModuleState::loading == _state);
 
             boost::filesystem::path mainBinaryPath{_place.getDir()};
             mainBinaryPath /= _mainBinary;
@@ -263,6 +259,7 @@ namespace lut { namespace site { namespace impl
             if(!_mainBinaryHandle)
             {
                 LOGE(dlerror());
+                _state = ModuleState::loadError;
                 p.setValue(make_error_code(error::module::unable_load_binary));
                 return;
             }
@@ -294,6 +291,8 @@ namespace lut { namespace site { namespace impl
                  std::error_code ec = _moduleLoad(himpl::impl2Face<lut::site::ModulePlace>(_place)).value<0>();
                  if(ec)
                  {
+                     LOGE("loading module \""<<_name<<"\": "<<ec);
+
                      _moduleInstall             = nullptr;
                      _moduleUninstall           = nullptr;
 
@@ -305,16 +304,18 @@ namespace lut { namespace site { namespace impl
 
                      _moduleGetServiceInstance  = nullptr;
 
+
+                     assert(_mainBinaryHandle);
                      dlclose(_mainBinaryHandle);
                      _mainBinaryHandle = nullptr;
 
-                     LOGE("module \""<<_name<<"\" loading: "<<ec);
+                     _state = ModuleState::loadError;
                      p.setValue(std::move(ec));
                      return;
                  }
              }
 
-            _state = State::loaded;
+            _state = ModuleState::loaded;
             p.setValue(std::error_code{});
         });
 
@@ -323,25 +324,32 @@ namespace lut { namespace site { namespace impl
 
     async::Future<std::error_code> Module::unload()
     {
+        switch(_state)
+        {
+        case ModuleState::loaded:
+        case ModuleState::loadError:
+            break;
+
+        default:
+            return async::mkReadyFuture(make_error_code(error::module::wrong_state));
+        }
+
+        _state = ModuleState::unloading;
+
         async::Promise<std::error_code> p;
         async::Future<std::error_code> f = p.future();
 
         async::spawn([p=std::move(p), this] () mutable {
 
-            if(State::loaded != _state)
-            {
-                p.setValue(make_error_code(error::module::wrong_state));
-                return;
-            }
+            assert(ModuleState::unloading == _state);
 
             if(_moduleUnload)
             {
                 std::error_code ec = _moduleUnload(himpl::impl2Face<lut::site::ModulePlace>(_place)).value<0>();
                 if(ec)
                 {
-                    LOGE("module \""<<_name<<"\" unloading: "<<ec);
-                    p.setValue(std::move(ec));
-                    return;
+                    LOGE("unloading module \""<<_name<<"\": "<<ec);
+                    //ignore error
                 }
             }
 
@@ -361,8 +369,7 @@ namespace lut { namespace site { namespace impl
             dlclose(_mainBinaryHandle);
             _mainBinaryHandle = nullptr;
 
-            _state = State::installed;
-
+            _state = ModuleState::attached;
             p.setValue(std::error_code{});
             return;
         });
@@ -372,30 +379,37 @@ namespace lut { namespace site { namespace impl
 
     async::Future<std::error_code> Module::start()
     {
+        switch(_state)
+        {
+        case ModuleState::loaded:
+            break;
+
+        default:
+            return async::mkReadyFuture(make_error_code(error::module::wrong_state));
+        }
+
+        _state = ModuleState::starting;
+
         async::Promise<std::error_code> p;
         async::Future<std::error_code> f = p.future();
 
         async::spawn([p=std::move(p), this] () mutable {
 
-            if(State::loaded != _state)
-            {
-                p.setValue(make_error_code(error::module::wrong_state));
-                return;
-            }
+            assert(ModuleState::starting == _state);
 
             if(_moduleStart)
             {
                 std::error_code ec = _moduleStart(himpl::impl2Face<lut::site::ModulePlace>(_place)).value<0>();
                 if(ec)
                 {
-                    LOGE("module \""<<_name<<"\" starting: "<<ec);
+                    LOGE("starting module \""<<_name<<"\": "<<ec);
+                    _state = ModuleState::startError;
                     p.setValue(std::move(ec));
                     return;
                 }
             }
 
-            _state = State::started;
-
+            _state = ModuleState::started;
             p.setValue(std::error_code{});
             return;
         });
@@ -405,30 +419,36 @@ namespace lut { namespace site { namespace impl
 
     async::Future<std::error_code> Module::stop()
     {
+        switch(_state)
+        {
+        case ModuleState::started:
+        case ModuleState::startError:
+            break;
+
+        default:
+            return async::mkReadyFuture(make_error_code(error::module::wrong_state));
+        }
+
+        _state = ModuleState::stopping;
+
         async::Promise<std::error_code> p;
         async::Future<std::error_code> f = p.future();
 
         async::spawn([p=std::move(p), this] () mutable {
 
-            if(State::started != _state)
-            {
-                p.setValue(make_error_code(error::module::wrong_state));
-                return;
-            }
+            assert(ModuleState::stopping == _state);
 
             if(_moduleStop)
             {
                 std::error_code ec = _moduleStop(himpl::impl2Face<lut::site::ModulePlace>(_place)).value<0>();
                 if(ec)
                 {
-                    LOGE("module \""<<_name<<"\" stopping: "<<ec);
-                    p.setValue(std::move(ec));
-                    return;
+                    LOGE("stopping module \""<<_name<<"\": "<<ec);
+                    //ignore error
                 }
             }
 
-            _state = State::loaded;
-
+            _state = ModuleState::loaded;
             p.setValue(std::error_code{});
             return;
         });

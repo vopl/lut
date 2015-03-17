@@ -2,12 +2,21 @@
 
 namespace lut { namespace site { namespace impl
 {
-    enum class State
+    enum class ModuleState
     {
         null,
-        installed,
-        installedCorrupted,
+
+        attached,
+        attachError,
+
+        loading,
         loaded,
+        loadError,
+        unloading,
+
+        starting,
         started,
+        startError,
+        stopping,
     };
 }}}

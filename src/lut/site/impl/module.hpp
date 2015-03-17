@@ -6,7 +6,6 @@
 #include "lut/site/impl/moduleState.hpp"
 #include "lut/site/modulePlace.hpp"
 #include "lut/site/impl/modulePlace.hpp"
-#include "lut/site/impl/moduleState.hpp"
 
 #include "lut/async/future.hpp"
 
@@ -24,9 +23,6 @@ namespace lut { namespace site { namespace impl
         Module();
         ~Module();
 
-        std::error_code attach(const ModulePlace &place);
-        std::error_code detach();
-
         ////////////// identify
         const std::string &getProvider() const;
 
@@ -43,18 +39,19 @@ namespace lut { namespace site { namespace impl
         const std::vector<couple::runtime::Iid> &getRequiredServiceIds() const;
         const std::vector<Mid> &getRequiredModuleIds() const;
 
-        /////////////// install
-        State getState() const;
+        ModuleState getState() const;
 
+        /////////////// attach
+        std::error_code attach(const ModulePlace &place);
+        std::error_code detach();
+
+        /////////////// install
         async::Future<std::error_code> install(const ModulePlace &place);
         async::Future<std::error_code> uninstall();
 
-        async::Future<std::error_code> installAfterUpgrade(const ModulePlace &place);
-        async::Future<std::error_code> uninstallBeforeUpgrade();
-
+        /////////////// load
         async::Future<std::error_code> load();
         async::Future<std::error_code> unload();
-
 
         /////////////// run
         async::Future<std::error_code> start();
@@ -81,7 +78,7 @@ namespace lut { namespace site { namespace impl
 
         std::string                         _mainBinary;
 
-        State                               _state;
+        ModuleState                               _state;
         ModulePlace                         _place;
 
 
