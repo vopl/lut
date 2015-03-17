@@ -12,7 +12,7 @@ set(SRC
 )
 source_group(src/couple/translator FILES ${SRC})
 
-set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost COMPONENTS program_options)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "boost program_options not found")

@@ -5,7 +5,7 @@ set(PSRC ${SRCDIR}/lut/couple/parser)
 
 
 ############################################################
-set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost COMPONENTS filesystem system)
 
 if(NOT Boost_FOUND)
@@ -113,7 +113,7 @@ include_directories(${SRCDIR})
 
 
 ############################################################
-add_library(${PROJECT} STATIC
+add_library(${PROJECT} SHARED
     ${INC}                  ${SRC}
     ${INC_IMPL}             ${SRC_IMPL}
 

@@ -5,7 +5,7 @@ set(PSRC ${SRCDIR}/lut/logger)
 
 
 
-add_library(${PROJECT} STATIC
+add_library(${PROJECT} SHARED
     ${PINC}/logger.hpp
     ${PSRC}/logger.cpp
 )

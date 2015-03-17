@@ -148,7 +148,7 @@ macro(mkHimplSizes)
 
 endmacro()
 
-add_library(${PROJECT} STATIC
+add_library(${PROJECT} SHARED
     ${PINC}/faceLayout.hpp
     ${PINC}/implLayout.hpp
     ${PINC}/layoutChecker.hpp

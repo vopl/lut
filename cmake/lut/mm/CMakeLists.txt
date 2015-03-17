@@ -84,7 +84,7 @@ include_directories(${SRCDIR})
 
 
 ############################################################
-add_library(${PROJECT} STATIC
+add_library(${PROJECT} SHARED
     ${INC}                  ${SRC}
 
     ${SRC_PCH}

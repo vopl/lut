@@ -3,6 +3,7 @@ include/lut/async/config.h
 cmake-build
 build
 bin/*
+lib/*
 tmp/*
 
 *.user

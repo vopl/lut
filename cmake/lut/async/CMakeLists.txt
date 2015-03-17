@@ -33,7 +33,7 @@ if(WIN32)
 endif()
 
 ############################################################
-set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost COMPONENTS context system)
 
 if(Boost_CONTEXT_FOUND)
@@ -278,7 +278,7 @@ mkHimplSizes(
 
 
 ############################################################
-add_library(${PROJECT} STATIC
+add_library(${PROJECT} SHARED
     ${INC}                  ${SRC}
     ${INC_DETAILS}          ${SRC_DETAILS}
     ${INC_DETAILS_IMPL}     ${SRC_DETAILS_IMPL}

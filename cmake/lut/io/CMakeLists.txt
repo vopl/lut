@@ -103,7 +103,7 @@ mkHimplSizes(
 
 
 ############################################################
-add_library(${PROJECT} STATIC
+add_library(${PROJECT} SHARED
     ${INC}                  ${SRC}
     ${INC_IMPL}             ${SRC_IMPL}
 

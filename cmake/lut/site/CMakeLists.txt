@@ -50,7 +50,7 @@ mkHimplSizes(
 
 
 
-set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost COMPONENTS program_options filesystem)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "boost program_options not found")
@@ -75,4 +75,5 @@ target_link_libraries(${PROJECT}
     lut-mm
     lut-async
     lut-io
-    lut-module)
+    dl
+)
