@@ -3,25 +3,25 @@
 #include "lut/himpl/faceLayout.hpp"
 
 #if !GENERATE_SIZEPROVIDER
-#   include "lut/module/sizeProvider.hpp"
+#   include "lut/site/sizeProvider.hpp"
 #endif
 
 #include <string>
 
-namespace lut { namespace module
+namespace lut { namespace site
 {
     namespace impl
     {
-        class Place;
+        class ModulePlace;
     }
 
-    class Place
-        : public himpl::FaceLayout<impl::Place>
+    class ModulePlace
+        : public himpl::FaceLayout<impl::ModulePlace>
     {
 
     public:
-        Place(const std::string &dir);
-        ~Place();
+        ModulePlace(const std::string &dir);
+        ~ModulePlace();
 
         const std::string &getDir() const;
         void setDir(const std::string &dir);

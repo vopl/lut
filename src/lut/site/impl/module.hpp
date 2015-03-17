@@ -1,11 +1,12 @@
 #include "lut/himpl/implLayout.hpp"
 
-#include "lut/module/place.hpp"
 #include "lut/couple/runtime/identifier.hpp"
 #include "lut/couple/runtime/iface.hpp"
-#include "lut/module/mid.hpp"
-#include "lut/module/state.hpp"
-#include "lut/module/impl/place.hpp"
+#include "lut/site/moduleId.hpp"
+#include "lut/site/impl/moduleState.hpp"
+#include "lut/site/modulePlace.hpp"
+#include "lut/site/impl/modulePlace.hpp"
+#include "lut/site/impl/moduleState.hpp"
 
 #include "lut/async/future.hpp"
 
@@ -14,16 +15,16 @@
 #include <system_error>
 #include <memory>
 
-namespace lut { namespace module { namespace impl
+namespace lut { namespace site { namespace impl
 {
-    class Controller
-        : public himpl::ImplLayout<Controller>
+    class Module
+        : public himpl::ImplLayout<Module>
     {
     public:
-        Controller();
-        ~Controller();
+        Module();
+        ~Module();
 
-        std::error_code attach(const Place &place);
+        std::error_code attach(const ModulePlace &place);
         std::error_code detach();
 
         ////////////// identify
@@ -45,10 +46,10 @@ namespace lut { namespace module { namespace impl
         /////////////// install
         State getState() const;
 
-        async::Future<std::error_code> install(const Place &place);
+        async::Future<std::error_code> install(const ModulePlace &place);
         async::Future<std::error_code> uninstall();
 
-        async::Future<std::error_code> installAfterUpgrade(const Place &place);
+        async::Future<std::error_code> installAfterUpgrade(const ModulePlace &place);
         async::Future<std::error_code> uninstallBeforeUpgrade();
 
         async::Future<std::error_code> load();
@@ -81,20 +82,20 @@ namespace lut { namespace module { namespace impl
         std::string                         _mainBinary;
 
         State                               _state;
-        Place                               _place;
+        ModulePlace                         _place;
 
 
     private:
         void *  _mainBinaryHandle;
 
-        using FModuleInstall            = async::Future<std::error_code> (*)(const lut::module::Place &place);
-        using FModuleUninstall          = async::Future<std::error_code> (*)(const lut::module::Place &place);
+        using FModuleInstall            = async::Future<std::error_code> (*)(const lut::site::ModulePlace &place);
+        using FModuleUninstall          = async::Future<std::error_code> (*)(const lut::site::ModulePlace &place);
 
-        using FModuleLoad               = async::Future<std::error_code> (*)(const lut::module::Place &place);
-        using FModuleUnload             = async::Future<std::error_code> (*)(const lut::module::Place &place);
+        using FModuleLoad               = async::Future<std::error_code> (*)(const lut::site::ModulePlace &place);
+        using FModuleUnload             = async::Future<std::error_code> (*)(const lut::site::ModulePlace &place);
 
-        using FModuleStart              = async::Future<std::error_code> (*)(const lut::module::Place &place);
-        using FModuleStop               = async::Future<std::error_code> (*)(const lut::module::Place &place);
+        using FModuleStart              = async::Future<std::error_code> (*)(const lut::site::ModulePlace &place);
+        using FModuleStop               = async::Future<std::error_code> (*)(const lut::site::ModulePlace &place);
 
         using FModuleGetServiceInstance = async::Future<std::error_code, couple::runtime::IfacePtr> (*)(const couple::runtime::Iid &iid);
 
@@ -113,4 +114,6 @@ namespace lut { namespace module { namespace impl
         FModuleGetServiceInstance   _moduleGetServiceInstance;
 
     };
+
+    using ModulePtr = std::unique_ptr<Module>;
 }}}

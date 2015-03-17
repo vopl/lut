@@ -20,7 +20,7 @@ namespace lut { namespace site { namespace impl
         : _modulesInitialized{false}
         , _modulesLoaded{false}
         , _modulesStarted{false}
-        , _workState{WorkState::null}
+        , _workState{WorkState::stopped}
     {
     }
 
@@ -32,14 +32,16 @@ namespace lut { namespace site { namespace impl
     {
         switch(_workState)
         {
-        case WorkState::null:
-        case WorkState::stop:
+        case WorkState::stopped:
             break;
 
-        case WorkState::run:
-            return make_error_code(error::general::already_runned);
+        case WorkState::starting:
+            return make_error_code(error::general::starting_in_progress);
 
-        case WorkState::stopGraceful:
+        case WorkState::started:
+            return make_error_code(error::general::already_started);
+
+        case WorkState::stopping:
             return make_error_code(error::general::stopping_in_progress);
 
         default:
@@ -47,81 +49,100 @@ namespace lut { namespace site { namespace impl
             abort();
         }
 
-        _workState = WorkState::run;
+        _workState = WorkState::starting;
         async::spawn([this](){
 
             std::error_code ec = initializeModules();
             if(ec)
             {
                 LOGE("initialize modules: "<<ec);
-                return;
             }
 
             ec = loadModules().value<0>();
             if(ec)
             {
                 LOGE("load modules: "<<ec);
-                return;
             }
 
             ec = startModules().value<0>();
-
             if(ec)
             {
                 LOGE("start modules: "<<ec);
-                return;
             }
+
+            _workState = WorkState::started;
         });
 
         return lut::io::loop::run();
     }
 
-    async::Future<std::error_code> Instance::stop(bool graceful)
+    async::Future<std::error_code> Instance::stop()
     {
         switch(_workState)
         {
-        case WorkState::null:
-        case WorkState::stop:
-            return async::mkReadyFuture(std::error_code{});
-
-        case WorkState::run:
-            _workState = WorkState::stopGraceful;
-            {
-                std::error_code ec = stopModules().value<0>();
-                if(ec)
-                {
-                    LOGE("stop modules: "<<ec);
-                    break;
-                }
-
-                ec = unloadModules().value<0>();
-                if(ec)
-                {
-                    LOGE("unload modules: "<<ec);
-                    break;
-                }
-
-                ec = deinitializeModules();
-                if(ec)
-                {
-                    LOGE("detach modules: "<<ec);
-                    break;
-                }
-
-            }
+        case WorkState::started:
             break;
 
-        case WorkState::stopGraceful:
-            //secondary request - force hard stop
-            break;
+        case WorkState::stopped:
+            return async::mkReadyFuture(make_error_code(error::general::already_stopped));
+
+        case WorkState::starting:
+            return async::mkReadyFuture(make_error_code(error::general::starting_in_progress));
+
+        case WorkState::stopping:
+            return async::mkReadyFuture(make_error_code(error::general::stopping_in_progress));
 
         default:
             assert("unknown work state");
             abort();
         }
 
-        _workState = WorkState::stop;
-        return async::mkReadyFuture(lut::io::loop::stop());
+        async::Promise<std::error_code> p;
+        async::Future<std::error_code> f = p.future();
+
+        _workState = WorkState::stopping;
+        async::spawn([p=std::move(p), this]() mutable{
+
+            bool hasErrors = false;
+
+            std::error_code ec = stopModules().value<0>();
+            if(ec)
+            {
+                LOGE("stop modules: "<<ec);
+                hasErrors = true;
+            }
+
+            ec = unloadModules().value<0>();
+            if(ec)
+            {
+                LOGE("unload modules: "<<ec);
+                hasErrors = true;
+            }
+
+            ec = deinitializeModules();
+            if(ec)
+            {
+                LOGE("detach modules: "<<ec);
+                hasErrors = true;
+            }
+
+
+            _workState = WorkState::stopped;
+
+            ec = io::loop::stop();
+            if(ec)
+            {
+                LOGE("stop io loop: "<<ec);
+                hasErrors = true;
+            }
+
+            p.setValue(
+                        hasErrors ?
+                            make_error_code(error::general::parial_failed) :
+                            std::error_code{});
+        });
+
+        return f;
     }
 
     std::error_code Instance::initializeModules()
@@ -138,17 +159,20 @@ namespace lut { namespace site { namespace impl
                 return make_error_code(error::general::modules_directory_absent);
             }
 
+            bool hasErrors = false;
+
             fs::directory_iterator diter(modulesDir);
             fs::directory_iterator dend;
             for(; diter!=dend; ++diter)
             {
                 if(fs::is_directory(*diter))
                 {
-                    module::ControllerPtr c{new module::Controller};
+                    ModulePtr c{new Module};
                     std::error_code ec = c->attach(diter->path().string());
                     if(ec)
                     {
-                        LOGE("unable to attach to module in "<<diter->path().string());
+                        LOGE("unable attach module in "<<diter->path().string()<<": "<<ec);
+                        hasErrors = true;
                     }
                     else
                     {
@@ -156,6 +180,10 @@ namespace lut { namespace site { namespace impl
                     }
                 }
             }
+
+            return hasErrors ?
+                        make_error_code(error::general::parial_failed) :
+                        std::error_code{};
         }
 
         return std::error_code{};
@@ -163,30 +191,58 @@ namespace lut { namespace site { namespace impl
 
     async::Future<std::error_code> Instance::loadModules()
     {
-        return massModulesOperation("load", [](const module::ControllerPtr &c)->async::Future<std::error_code> {
-            return c->load();
-        });
+        if(!_modulesLoaded)
+        {
+            _modulesLoaded = true;
+
+            return massModulesOperation("load", [](const ModulePtr &c)->async::Future<std::error_code> {
+                return c->load();
+            });
+        }
+
+        return async::mkReadyFuture(std::error_code{});
     }
 
     async::Future<std::error_code> Instance::startModules()
     {
-        return massModulesOperation("start", [](const module::ControllerPtr &c)->async::Future<std::error_code> {
-            return c->start();
-        });
+        if(!_modulesStarted)
+        {
+            _modulesStarted = true;
+
+            return massModulesOperation("start", [](const ModulePtr &c)->async::Future<std::error_code> {
+                return c->start();
+            });
+        }
+
+        return async::mkReadyFuture(std::error_code{});
     }
 
     async::Future<std::error_code> Instance::stopModules()
     {
-        return massModulesOperation("stop", [](const module::ControllerPtr &c)->async::Future<std::error_code> {
-            return c->stop();
-        });
+        if(_modulesStarted)
+        {
+            _modulesStarted = false;
+
+            return massModulesOperation("stop", [](const ModulePtr &c)->async::Future<std::error_code> {
+                return c->stop();
+            });
+        }
+
+        return async::mkReadyFuture(std::error_code{});
     }
 
     async::Future<std::error_code> Instance::unloadModules()
     {
-        return massModulesOperation("unload", [](const module::ControllerPtr &c)->async::Future<std::error_code> {
-            return c->unload();
-        });
+        if(_modulesLoaded)
+        {
+            _modulesLoaded = false;
+
+            return massModulesOperation("unload", [](const ModulePtr &c)->async::Future<std::error_code> {
+                return c->unload();
+            });
+        }
+
+        return async::mkReadyFuture(std::error_code{});
     }
 
     std::error_code Instance::deinitializeModules()
@@ -195,49 +251,61 @@ namespace lut { namespace site { namespace impl
         {
             _modulesInitialized = false;
 
+            bool hasErrors = false;
+
             for(const auto &c : _modules)
             {
                 std::error_code ec = c->detach();
                 if(ec)
                 {
-                    LOGE("unable to detach to module "<<c->getName());
+                    LOGE("unable detach module \""<<c->getName()<<"\": "<<ec);
+                    hasErrors = true;
                 }
             }
 
             _modules.clear();
+
+            return hasErrors ?
+                        make_error_code(error::general::parial_failed) :
+                        std::error_code{};
         }
 
         return std::error_code{};
-
     }
 
     template <class F>
     async::Future<std::error_code> Instance::massModulesOperation(const std::string &name, F operation)
     {
-        bool hasErrors = false;
+        async::Promise<std::error_code> p;
+        async::Future<std::error_code> f = p.future();
 
-        std::vector<std::tuple<module::Controller*, async::Future<std::error_code>>> results;
-        results.reserve(_modules.size());
-        for(const auto &c : _modules)
-        {
-            results.emplace_back(std::make_tuple(c.get(), operation(c)));
-        }
+        async::spawn([p=std::move(p), this, name, operation]() mutable {
 
-        for(auto &r : results)
-        {
-            if(std::get<1>(r).value<0>())
+            bool hasErrors = false;
+
+            std::vector<std::tuple<Module*, async::Future<std::error_code>>> results;
+            results.reserve(_modules.size());
+            for(const auto &c : _modules)
             {
-                LOGE(name<<" module \""<<std::get<0>(r)->getName()<<"\": "<<std::get<1>(r).value<0>());
-                hasErrors = true;
+                results.emplace_back(std::make_tuple(c.get(), operation(c)));
             }
-        }
 
-        if(hasErrors)
-        {
-            return async::mkReadyFuture(make_error_code(error::general::failed));
-        }
+            for(auto &r : results)
+            {
+                if(std::get<1>(r).value<0>())
+                {
+                    LOGE(name<<" module \""<<std::get<0>(r)->getName()<<"\": "<<std::get<1>(r).value<0>());
+                    hasErrors = true;
+                }
+            }
 
-        return async::mkReadyFuture(std::error_code{});
+            p.setValue(
+                        hasErrors ?
+                            make_error_code(error::general::parial_failed) :
+                            std::error_code{});
+        });
+
+        return f;
     }
 
 

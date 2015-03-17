@@ -14,46 +14,21 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-
-/*
- *
- * master:          start, stop
- * master/slave:    control
- * site/site        interact
- *
- *
- *
-*/
-
-
 lut::site::impl::Instance *instance = nullptr;
 
 void signalHandler(int signum)
 {
     switch(signum)
     {
-    case SIGKILL:
-        if(instance)
-        {
-            lut::async::spawn([](){
-                std::error_code ec = instance->stop(false).value<0>();
-                if(ec)
-                {
-                    LOGE("stop: "<<ec);
-                }
-            });
-        }
-        break;
-
     case SIGINT:
     case SIGTERM:
         if(instance)
         {
             lut::async::spawn([](){
-                std::error_code ec = instance->stop(true).value<0>();
+                std::error_code ec = instance->stop().value<0>();
                 if(ec)
                 {
-                    LOGE("graceful stop: "<<ec);
+                    LOGE("stop: "<<ec);
                 }
             });
         }
@@ -130,13 +105,15 @@ int main(int argc, char *argv[])
 
         signal(SIGINT,  signalHandler);
         signal(SIGTERM, signalHandler);
-        signal(SIGKILL, signalHandler);
 
         std::error_code ec = instance->run();
+        if(ec)
+        {
+            LOGE("run: "<<ec);
+        }
 
         signal(SIGINT,  SIG_DFL);
         signal(SIGTERM, SIG_DFL);
-        signal(SIGKILL, SIG_DFL);
 
         delete instance;
         instance = nullptr;

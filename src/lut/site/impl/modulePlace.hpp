@@ -2,15 +2,15 @@
 
 #include "lut/himpl/implLayout.hpp"
 
-namespace lut { namespace module { namespace impl
+namespace lut { namespace site { namespace impl
 {
-    class Place
-        : public himpl::ImplLayout<Place>
+    class ModulePlace
+        : public himpl::ImplLayout<ModulePlace>
     {
     public:
-        Place();
-        Place(const std::string &dir);
-        ~Place();
+        ModulePlace();
+        ModulePlace(const std::string &dir);
+        ~ModulePlace();
 
         const std::string &getDir() const;
         void setDir(const std::string &dir);

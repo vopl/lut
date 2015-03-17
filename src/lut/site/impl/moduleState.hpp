@@ -1,6 +1,6 @@
 #pragma once
 
-namespace lut { namespace module
+namespace lut { namespace site { namespace impl
 {
     enum class State
     {
@@ -10,4 +10,4 @@ namespace lut { namespace module
         loaded,
         started,
     };
-}}
+}}}

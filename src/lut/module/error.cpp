@@ -11,7 +11,7 @@ namespace lut { namespace module { namespace error
         public:
             const char* name() const noexcept
             {
-                return "lut.site.general";
+                return "lut.module.general";
             }
 
             std::string message(int value) const
@@ -20,21 +20,9 @@ namespace lut { namespace module { namespace error
                 {
                 case general::unknown:
                     return "unknown";
-                case general::module_already_attached:
-                    return "module already attached";
-                case general::module_busy:
-                    return "module busy";
-                case general::wrong_module_state:
-                    return "wrong module state";
-                case general::unable_load_binary:
-                    return "unable to load binary";
-                case general::malformed_module_binary:
-                    return "malformed module binary";
-                case general::bad_info_file:
-                    return "bad info file";
                 }
 
-                return "lut.site.general error";
+                return "lut.module.general error";
             }
         } generalCatogory;
     }

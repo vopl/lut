@@ -1,5 +1,5 @@
-#include "lut/module/impl/controller.hpp"
-#include "lut/module/error.hpp"
+#include "lut/site/impl/module.hpp"
+#include "lut/site/error.hpp"
 #include "lut/logger/logger.hpp"
 #include "lut/async/functions.hpp"
 
@@ -9,10 +9,10 @@
 
 #include <dlfcn.h>
 
-namespace lut { namespace module { namespace impl
+namespace lut { namespace site { namespace impl
 {
-    Controller::Controller()
-        : himpl::ImplLayout<Controller>{}
+    Module::Module()
+        : himpl::ImplLayout<Module>{}
         , _provider{}
         , _id{}
         , _serviceIds{}
@@ -44,16 +44,16 @@ namespace lut { namespace module { namespace impl
     {
     }
 
-    Controller::~Controller()
+    Module::~Module()
     {
         assert(State::null == _state);
     }
 
-    std::error_code Controller::attach(const Place &place)
+    std::error_code Module::attach(const ModulePlace &place)
     {
         if(State::null != _state)
         {
-            return make_error_code(error::general::module_already_attached);
+            return make_error_code(error::module::already_attached);
         }
         _place = place;
         _state = State::installedCorrupted;
@@ -70,7 +70,7 @@ namespace lut { namespace module { namespace impl
         catch(std::runtime_error &e)
         {
             LOGE("unable to parse module info: "<<e.what());
-            return make_error_code(error::general::bad_info_file);
+            return make_error_code(error::module::bad_info_file);
         }
 
 
@@ -127,7 +127,7 @@ namespace lut { namespace module { namespace impl
         catch(std::runtime_error &e)
         {
             LOGE("unable to interpret module info: "<<e.what());
-            return make_error_code(error::general::bad_info_file);
+            return make_error_code(error::module::bad_info_file);
         }
 
         _state = State::installed;
@@ -135,7 +135,7 @@ namespace lut { namespace module { namespace impl
         return std::error_code{};
     }
 
-    std::error_code Controller::detach()
+    std::error_code Module::detach()
     {
         switch(_state)
         {
@@ -148,12 +148,7 @@ namespace lut { namespace module { namespace impl
             break;
 
         default:
-            return make_error_code(error::general::module_already_attached);
-        }
-
-        if(State::installed != _state)
-        {
-            return make_error_code(error::general::module_already_attached);
+            return make_error_code(error::module::wrong_state);
         }
 
         _provider.clear();
@@ -176,77 +171,77 @@ namespace lut { namespace module { namespace impl
         return std::error_code{};
     }
 
-    const std::string &Controller::getProvider() const
+    const std::string &Module::getProvider() const
     {
         return _provider;
     }
 
-    const Mid &Controller::getId() const
+    const Mid &Module::getId() const
     {
         return _id;
     }
 
-    const std::vector<couple::runtime::Iid> &Controller::getServieceIds() const
+    const std::vector<couple::runtime::Iid> &Module::getServieceIds() const
     {
         return _serviceIds;
     }
 
-    std::size_t Controller::getRevision() const
+    std::size_t Module::getRevision() const
     {
         return _revision;
     }
 
-    const std::string &Controller::getName() const
+    const std::string &Module::getName() const
     {
         return _name;
     }
 
-    const std::string &Controller::getDescription() const
+    const std::string &Module::getDescription() const
     {
         return _description;
     }
 
-    const std::vector<std::string> &Controller::getTags() const
+    const std::vector<std::string> &Module::getTags() const
     {
         return _tags;
     }
 
-    const std::vector<couple::runtime::Iid> &Controller::getRequiredServiceIds() const
+    const std::vector<couple::runtime::Iid> &Module::getRequiredServiceIds() const
     {
         return _requiredServiceIds;
     }
 
-    const std::vector<Mid> &Controller::getRequiredModuleIds() const
+    const std::vector<Mid> &Module::getRequiredModuleIds() const
     {
         return _requiredModuleIds;
     }
 
-    State Controller::getState() const
+    State Module::getState() const
     {
         return _state;
     }
 
-    async::Future<std::error_code> Controller::install(const Place &place)
+    async::Future<std::error_code> Module::install(const ModulePlace &place)
     {
         assert(0);
     }
 
-    async::Future<std::error_code> Controller::uninstall()
+    async::Future<std::error_code> Module::uninstall()
     {
         assert(0);
     }
 
-    async::Future<std::error_code> Controller::installAfterUpgrade(const Place &place)
+    async::Future<std::error_code> Module::installAfterUpgrade(const ModulePlace &place)
     {
         assert(0);
     }
 
-    async::Future<std::error_code> Controller::uninstallBeforeUpgrade()
+    async::Future<std::error_code> Module::uninstallBeforeUpgrade()
     {
         assert(0);
     }
 
-    async::Future<std::error_code> Controller::load()
+    async::Future<std::error_code> Module::load()
     {
         async::Promise<std::error_code> p;
         async::Future<std::error_code> f = p.future();
@@ -255,7 +250,7 @@ namespace lut { namespace module { namespace impl
 
             if(State::installed != _state)
             {
-                p.setValue(make_error_code(error::general::wrong_module_state));
+                p.setValue(make_error_code(error::module::wrong_state));
                 return;
             }
 
@@ -268,7 +263,7 @@ namespace lut { namespace module { namespace impl
             if(!_mainBinaryHandle)
             {
                 LOGE(dlerror());
-                p.setValue(make_error_code(error::general::unable_load_binary));
+                p.setValue(make_error_code(error::module::unable_load_binary));
                 return;
             }
 
@@ -296,7 +291,7 @@ namespace lut { namespace module { namespace impl
 
              if(_moduleLoad)
              {
-                 std::error_code ec = _moduleLoad(himpl::impl2Face<lut::module::Place>(_place)).value<0>();
+                 std::error_code ec = _moduleLoad(himpl::impl2Face<lut::site::ModulePlace>(_place)).value<0>();
                  if(ec)
                  {
                      _moduleInstall             = nullptr;
@@ -326,7 +321,7 @@ namespace lut { namespace module { namespace impl
         return f;
     }
 
-    async::Future<std::error_code> Controller::unload()
+    async::Future<std::error_code> Module::unload()
     {
         async::Promise<std::error_code> p;
         async::Future<std::error_code> f = p.future();
@@ -335,13 +330,13 @@ namespace lut { namespace module { namespace impl
 
             if(State::loaded != _state)
             {
-                p.setValue(make_error_code(error::general::wrong_module_state));
+                p.setValue(make_error_code(error::module::wrong_state));
                 return;
             }
 
             if(_moduleUnload)
             {
-                std::error_code ec = _moduleUnload(himpl::impl2Face<lut::module::Place>(_place)).value<0>();
+                std::error_code ec = _moduleUnload(himpl::impl2Face<lut::site::ModulePlace>(_place)).value<0>();
                 if(ec)
                 {
                     LOGE("module \""<<_name<<"\" unloading: "<<ec);
@@ -375,7 +370,7 @@ namespace lut { namespace module { namespace impl
         return f;
     }
 
-    async::Future<std::error_code> Controller::start()
+    async::Future<std::error_code> Module::start()
     {
         async::Promise<std::error_code> p;
         async::Future<std::error_code> f = p.future();
@@ -384,13 +379,13 @@ namespace lut { namespace module { namespace impl
 
             if(State::loaded != _state)
             {
-                p.setValue(make_error_code(error::general::wrong_module_state));
+                p.setValue(make_error_code(error::module::wrong_state));
                 return;
             }
 
             if(_moduleStart)
             {
-                std::error_code ec = _moduleStart(himpl::impl2Face<lut::module::Place>(_place)).value<0>();
+                std::error_code ec = _moduleStart(himpl::impl2Face<lut::site::ModulePlace>(_place)).value<0>();
                 if(ec)
                 {
                     LOGE("module \""<<_name<<"\" starting: "<<ec);
@@ -408,7 +403,7 @@ namespace lut { namespace module { namespace impl
         return f;
     }
 
-    async::Future<std::error_code> Controller::stop()
+    async::Future<std::error_code> Module::stop()
     {
         async::Promise<std::error_code> p;
         async::Future<std::error_code> f = p.future();
@@ -417,13 +412,13 @@ namespace lut { namespace module { namespace impl
 
             if(State::started != _state)
             {
-                p.setValue(make_error_code(error::general::wrong_module_state));
+                p.setValue(make_error_code(error::module::wrong_state));
                 return;
             }
 
             if(_moduleStop)
             {
-                std::error_code ec = _moduleStop(himpl::impl2Face<lut::module::Place>(_place)).value<0>();
+                std::error_code ec = _moduleStop(himpl::impl2Face<lut::site::ModulePlace>(_place)).value<0>();
                 if(ec)
                 {
                     LOGE("module \""<<_name<<"\" stopping: "<<ec);
@@ -441,7 +436,7 @@ namespace lut { namespace module { namespace impl
         return f;
     }
 
-    async::Future<std::error_code, couple::runtime::IfacePtr> Controller::getServiceInstance(const couple::runtime::Iid &iid)
+    async::Future<std::error_code, couple::runtime::IfacePtr> Module::getServiceInstance(const couple::runtime::Iid &iid)
     {
         assert(0);
     }

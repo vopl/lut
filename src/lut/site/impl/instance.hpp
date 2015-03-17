@@ -1,16 +1,16 @@
 #pragma once
 
 #include <system_error>
-#include "lut/module/controller.hpp"
+#include "lut/site/impl/module.hpp"
 
 namespace lut { namespace site { namespace impl
 {
     enum class WorkState
     {
-        null,
-        run,
-        stopGraceful,
-        stop,
+        stopped,
+        starting,
+        started,
+        stopping,
     };
 
     class Instance
@@ -20,7 +20,7 @@ namespace lut { namespace site { namespace impl
         ~Instance();
 
         std::error_code run();
-        async::Future<std::error_code> stop(bool graceful = true);
+        async::Future<std::error_code> stop();
 
     private:
         std::error_code initializeModules();
@@ -41,7 +41,7 @@ namespace lut { namespace site { namespace impl
 
     private:
         //TODO: состояние по проинсталированным модулям
-        std::vector<module::ControllerPtr> _modules;
+        std::vector<ModulePtr> _modules;
 
     };
 }}}

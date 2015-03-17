@@ -7,12 +7,6 @@ namespace lut { namespace module { namespace error
     enum class general
     {
         unknown = 1,
-        module_already_attached,
-        module_busy,
-        wrong_module_state,
-        unable_load_binary,
-        malformed_module_binary,
-        bad_info_file,
     };
 
     const std::error_category& general_category();
