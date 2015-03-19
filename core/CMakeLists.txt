@@ -1,0 +1,12 @@
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/himpl/CMakeLists.txt)
+    add_subdirectory(himpl)
+endif()
+
+file(GLOB subs */CMakeLists.txt)
+foreach(sub ${subs})
+    get_filename_component(sub ${sub} DIRECTORY)
+    get_filename_component(sub ${sub} NAME)
+    if(NOT "himpl" STREQUAL sub)
+        add_subdirectory(${sub})
+    endif()
+endforeach()

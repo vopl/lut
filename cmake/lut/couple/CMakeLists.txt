@@ -1,5 +1,0 @@
-add_subdirectory(meta)
-add_subdirectory(parser)
-add_subdirectory(generator)
-add_subdirectory(translator)
-add_subdirectory(runtime)

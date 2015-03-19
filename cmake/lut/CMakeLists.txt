@@ -1,8 +1,0 @@
-add_subdirectory(himpl)
-add_subdirectory(mm)
-add_subdirectory(async)
-add_subdirectory(io)
-add_subdirectory(couple)
-add_subdirectory(site)
-add_subdirectory(module)
-add_subdirectory(logger)
