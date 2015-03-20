@@ -158,7 +158,7 @@ mkHimplSizes(${PROJECT}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/impl/libraryBuilder.hpp
 
     PREDECL
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/predecl.hpp
+        predecl.hpp
 
     CLASSES
         ::dci::couple::meta::impl::Alias

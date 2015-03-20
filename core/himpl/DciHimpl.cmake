@@ -26,9 +26,7 @@ macro(mkHimplSizes target)
             endif()
         endif()
     endforeach()
-
     #message("output: ${output}, headers: ${headers}, classes: ${classes}")
-
 
     ############################################################
     set(src "${CMAKE_CURRENT_BINARY_DIR}/sizeProviderGen.cpp")
@@ -36,10 +34,6 @@ macro(mkHimplSizes target)
     file(WRITE ${src} "#define GENERATE_SIZEPROVIDER 1\n")
     file(APPEND ${src} "#include <dci/himpl/sizeProviderDefault.hpp>\n")
     file(APPEND ${src} "#include <dci/himpl/sizeFetcher.hpp>\n")
-
-    if(predecl)
-        file(APPEND ${src} "#include \"${predecl}\"\n")
-    endif()
 
     foreach(header ${headers})
         file(APPEND ${src} "#include \"${header}\"\n")
@@ -96,14 +90,12 @@ macro(mkHimplSizes target)
     file(APPEND ${src} "    return 0;\n")
     file(APPEND ${src} "}\n")
 
-
     ############################################################
     set(sizeProviderGen ${target}-sizeProviderGen)
     add_executable(${sizeProviderGen} EXCLUDE_FROM_ALL ${src})
     set_target_properties(${sizeProviderGen} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
     set_target_properties(${sizeProviderGen} PROPERTIES CXX_STANDARD 14)
     set_target_properties(${sizeProviderGen} PROPERTIES CXX_STANDARD_REQUIRED ON)
-
 
     ############################################################
     add_custom_command(OUTPUT ${output}

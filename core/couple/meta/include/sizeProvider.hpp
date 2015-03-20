@@ -2,7 +2,7 @@
 
 #include <dci/himpl/sizeProvider.hpp>
 
-#include "/work/tmp/dci/core/couple/meta/include/predecl.hpp"
+#include "predecl.hpp"
 
 namespace dci { namespace himpl {
     template <> struct sizeProvider<::dci::couple::meta::impl::Alias> { static const std::size_t _value =  16;};
