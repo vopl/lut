@@ -112,6 +112,7 @@ int main(int argc, const char **argv)
             std::vector<lut::coupling::parser::ErrorInfo> errs;
             if(!lut::coupling::parser::exec(idlFiles, cfg, errs, lib))
             {
+                std::cerr << "parse failed" << std::endl;
                 for(const lut::coupling::parser::ErrorInfo &err : errs)
                 {
                     std::cerr << err.toString() << std::endl;

@@ -17,10 +17,11 @@ scope s1
             int8 y;
         }
         
-        iface myfBase {}
+        iface myfBase : myf {}
+        iface myfBase2 {}
         
         iface myf
-            : myfBase, ::s1::s2
+            : ::s1::xx::myfBase, myfBase2
         {
             in void m1(xx p1, x p2);
             

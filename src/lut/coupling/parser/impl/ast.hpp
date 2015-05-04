@@ -252,6 +252,17 @@ namespace lut { namespace coupling { namespace parser { namespace impl
         > asDecl;
 
         SScopeEntry *asScopedEntry;
+
+        std::string toString()
+        {
+            std::string res = std::accumulate(
+                        values.begin(),
+                        values.end(),
+                        std::string(),
+                        [](const std::string &state, const Name &v){return state.empty() ? v->value : state+"::"+v->value;});
+
+            return root ? "::"+res : res;
+        }
     };
 
     //    typeUse = primitive | list | set | map | ptr | array | scopedName
